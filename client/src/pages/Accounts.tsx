@@ -1,0 +1,198 @@
+import { useState } from 'react';
+import TopNav from '@/components/TopNav';
+import Sidebar from '@/components/Sidebar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+
+// Import mock data for development
+import { mockUserProfile, mockConnectedAccounts } from '@/lib/utils/mockData';
+
+export default function Accounts() {
+  const { toast } = useToast();
+  const [addAccountOpen, setAddAccountOpen] = useState(false);
+  
+  // Get the user data
+  const { data: userData, isLoading: userLoading } = useQuery({
+    queryKey: ['/api/users/profile'],
+    onError: () => {
+      console.error('Failed to load user profile, using mock data instead');
+    }
+  });
+  
+  // Get accounts data
+  const { data: accountsData, isLoading: accountsLoading } = useQuery({
+    queryKey: ['/api/accounts'],
+    onError: () => {
+      console.error('Failed to load accounts, using mock data instead');
+    }
+  });
+  
+  const user = userData || mockUserProfile;
+  const accounts = accountsData || mockConnectedAccounts;
+  
+  const accountTypes = {
+    checking: { icon: 'account_balance', color: 'bg-primary-50 text-primary-500' },
+    savings: { icon: 'savings', color: 'bg-secondary-50 text-secondary-500' },
+    credit: { icon: 'credit_card', color: 'bg-error-50 text-error-500' },
+    investment: { icon: 'trending_up', color: 'bg-accent-50 text-accent-500' },
+  };
+  
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+  
+  const handleConnectPlaid = () => {
+    toast({
+      title: "Connect Bank Account",
+      description: "This feature would normally open Plaid's Link interface.",
+      variant: "default",
+    });
+    setAddAccountOpen(false);
+  };
+  
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
+      <Sidebar user={user} />
+      
+      <main className="flex-1 overflow-x-hidden">
+        <TopNav title="Accounts" />
+        
+        <div className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <h1 className="text-2xl font-bold">Connected Accounts</h1>
+            
+            <Button 
+              className="mt-4 md:mt-0 flex items-center bg-primary-500 hover:bg-primary-600 text-white"
+              onClick={() => setAddAccountOpen(true)}
+            >
+              <span className="material-icons text-sm mr-1">add</span>
+              Connect New Account
+            </Button>
+          </div>
+          
+          {accountsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="bg-white rounded-xl shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="animate-pulse">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-neutral-200 rounded-lg mr-4"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-neutral-200 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                      <div className="h-6 bg-neutral-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-4 bg-neutral-200 rounded w-full"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {accounts.map((account) => {
+                const accountType = accountTypes[account.accountType as keyof typeof accountTypes] || accountTypes.checking;
+                
+                return (
+                  <Card key={account.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center mb-4">
+                        <div className={`w-10 h-10 ${accountType.color} rounded-lg flex items-center justify-center mr-4`}>
+                          <span className="material-icons">{accountType.icon}</span>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{account.accountName}</h3>
+                          <p className="text-sm text-neutral-500">{account.institutionName} • {account.accountNumber}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-baseline">
+                        <span className="text-xl font-bold tabular-nums mr-2">
+                          {formatCurrency(account.balance)}
+                        </span>
+                        <span className="text-sm text-neutral-500">
+                          {account.accountType.charAt(0).toUpperCase() + account.accountType.slice(1)}
+                        </span>
+                      </div>
+                      <div className="mt-4 flex">
+                        <Button variant="outline" size="sm" className="text-xs mr-2">
+                          <span className="material-icons text-sm mr-1">sync</span>
+                          Refresh
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs">
+                          <span className="material-icons text-sm mr-1">more_horiz</span>
+                          Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              
+              {/* Add Account Card */}
+              <Card 
+                className="bg-white rounded-xl shadow-sm border-2 border-dashed border-neutral-200 flex items-center justify-center cursor-pointer hover:bg-neutral-50 transition-colors"
+                onClick={() => setAddAccountOpen(true)}
+              >
+                <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-primary-50 text-primary-500 rounded-full flex items-center justify-center mb-3">
+                    <span className="material-icons">add</span>
+                  </div>
+                  <h3 className="font-semibold mb-1">Connect New Account</h3>
+                  <p className="text-sm text-neutral-500">
+                    Link your bank, credit card, or investment accounts
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </main>
+      
+      {/* Add Account Dialog */}
+      <Dialog open={addAccountOpen} onOpenChange={setAddAccountOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Connect a new account</DialogTitle>
+            <DialogDescription>
+              Link your bank, credit card, or investment accounts securely through Plaid.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <h4 className="font-medium">Popular Banks</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {['Chase', 'Bank of America', 'Wells Fargo', 'Citi', 'Capital One', 'Other'].map((bank) => (
+                  <Button 
+                    key={bank} 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={handleConnectPlaid}
+                  >
+                    {bank}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddAccountOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
