@@ -106,13 +106,21 @@ export function usePlaidAuth() {
   const { open, ready } = usePlaidLink(config);
 
   const openPlaidLink = useCallback(async () => {
+    console.log('openPlaidLink called', { ready, linkToken });
     if (ready && linkToken) {
+      console.log('Opening Plaid Link with existing token');
       open();
     } else {
-      const token = await getLinkToken();
-      if (token) {
-        // The hook will automatically update and open once the token is set
-        setLinkToken(token);
+      console.log('Getting a new link token');
+      try {
+        const token = await getLinkToken();
+        console.log('Received token:', token);
+        if (token) {
+          // The hook will automatically update and open once the token is set
+          setLinkToken(token);
+        }
+      } catch (err) {
+        console.error('Error opening Plaid Link:', err);
       }
     }
   }, [ready, linkToken, open, getLinkToken]);
