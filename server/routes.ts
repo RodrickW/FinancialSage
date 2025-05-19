@@ -584,6 +584,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to generate financial health report' });
     }
   });
+  
+  // Money Mind AI coaching endpoint
+  app.post('/api/ai/coaching', requireAuth, async (req, res) => {
+    try {
+      const { question } = req.body;
+      
+      if (!question) {
+        return res.status(400).json({ message: 'Question is required' });
+      }
+      
+      const user = req.user as User;
+      
+      // Get relevant user financial data to provide context to the model
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id, 50); // Last 50 transactions
+      const budgets = await storage.getBudgets(user.id);
+      const savingsGoals = await storage.getSavingsGoals(user.id);
+      const creditScore = await storage.getCreditScore(user.id);
+      
+      // Calculate financial stats
+      const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+      const totalExpenses = transactions
+        .filter(t => t.amount < 0)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      // Group transactions by category
+      const categorySpending: Record<string, number> = {};
+      transactions
+        .filter(t => t.amount < 0)
+        .forEach(t => {
+          const category = t.category || 'Other';
+          if (!categorySpending[category]) {
+            categorySpending[category] = 0;
+          }
+          categorySpending[category] += Math.abs(t.amount);
+        });
+      
+      // Personal information about the user to provide context
+      const userData = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        accounts: accounts.map(account => ({
+          type: account.accountType,
+          balance: account.balance,
+          institution: account.institutionName
+        })),
+        totalBalance,
+        totalExpenses,
+        savingsGoals: savingsGoals.map(g => ({
+          name: g.name,
+          target: g.targetAmount,
+          current: g.currentAmount
+        })),
+        spendingByCategory: categorySpending,
+        creditScore: creditScore ? creditScore.score : null
+      };
+      
+      // Add a personality to the coach in the prompt
+      const answer = await getFinancialCoaching(question, userData);
+      
+      res.json({ answer });
+    } catch (error) {
+      console.error('Error getting coaching advice:', error);
+      res.status(500).json({ message: 'Failed to get coaching advice' });
+    }
+  });
 
   // Mock Plaid connection for development/demo
   app.post('/api/plaid/mock-connect', requireAuth, async (req, res) => {

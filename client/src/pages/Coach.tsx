@@ -89,7 +89,15 @@ export default function FinancialCoach() {
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg">
-          <h3 className="text-lg font-medium mb-2">Summary</h3>
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+              <span className="text-white text-lg font-bold">MM</span>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind's Budget Analysis</h3>
+              <p className="text-sm text-neutral-600">Personalized budget recommendations</p>
+            </div>
+          </div>
           <p className="text-neutral-700">{budgetData.summary}</p>
           {budgetData.savingsRecommendation && (
             <div className="mt-3">
@@ -164,7 +172,15 @@ export default function FinancialCoach() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Your Credit Score</CardTitle>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white text-lg font-bold">MM</span>
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind's Credit Analysis</CardTitle>
+                  <p className="text-sm text-neutral-600">Smart insights to boost your credit score</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-center mb-2">
@@ -366,10 +382,17 @@ export default function FinancialCoach() {
       <div className="space-y-6">
         <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
           <CardContent className="p-6">
-            <h3 className="text-lg font-medium mb-3">Ask Your Financial Coach</h3>
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+                <span className="text-white text-lg font-bold">MM</span>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind</h3>
+                <p className="text-sm text-neutral-600">Your personal AI financial coach</p>
+              </div>
+            </div>
             <p className="text-neutral-600 mb-4">
-              Have a specific financial question? Ask our AI financial coach for personalized advice based on your
-              financial data.
+              Hi there! I'm Money Mind, your personal financial coach. I analyze your spending habits, account balances, and financial goals to provide personalized advice. What financial questions can I help you with today?
             </p>
             <div className="flex items-start">
               <textarea
