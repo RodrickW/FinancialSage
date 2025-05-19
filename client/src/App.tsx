@@ -70,7 +70,7 @@ function Router() {
         {(params) => <ProtectedRoute component={FinancialCoach} params={params} />}
       </Route>
       <Route path="/goals">
-        {(params) => <ProtectedRoute component={Goals} params={params} />}
+        {(params) => <ProtectedRoute component={SimpleGoals} params={params} />}
       </Route>
       <Route path="/">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}
