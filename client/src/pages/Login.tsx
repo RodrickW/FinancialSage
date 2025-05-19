@@ -43,7 +43,7 @@ export default function Login() {
           description: 'Welcome back!',
           variant: 'default',
         });
-        navigate('/');
+        setTimeout(() => { window.location.href = '/dashboard'; }, 500);
       } else {
         const errorData = await response.json();
         toast({

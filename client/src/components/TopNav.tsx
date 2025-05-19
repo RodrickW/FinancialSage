@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { logout, redirectToLogin } from '@/lib/auth';
 
 interface TopNavProps {
   title: string;
@@ -40,16 +41,9 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
         <button 
           className="flex items-center px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
           onClick={async () => {
-            try {
-              const response = await fetch('/api/auth/logout', {
-                method: 'GET',
-                credentials: 'include',
-              });
-              if (response.ok) {
-                window.location.href = '/login';
-              }
-            } catch (error) {
-              console.error('Logout failed:', error);
+            const success = await logout();
+            if (success) {
+              redirectToLogin();
             }
           }}
         >
