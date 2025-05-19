@@ -12,38 +12,56 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required' }),
-  password: z.string().min(1, { message: 'Password is required' }),
+  username: z.string().min(1, {
+    message: 'Username is required',
+  }),
+  password: z.string().min(1, {
+    message: 'Password is required',
+  }),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Demo login credentials
+  const defaultValues = {
+    username: 'demo',
+    password: 'password',
+  };
   
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: '',
-      password: '',
-    },
+    defaultValues,
   });
-  
+
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest('POST', '/api/auth/login', data);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
       
       if (response.ok) {
         toast({
           title: 'Login successful',
-          description: 'Welcome back!',
+          description: 'Welcome to Money Mind!',
           variant: 'default',
         });
-        setTimeout(() => { window.location.href = '/dashboard'; }, 500);
+        
+        // Navigate to dashboard after successful login
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 500);
       } else {
         const errorData = await response.json();
         toast({
@@ -53,6 +71,7 @@ export default function Login() {
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: 'Login failed',
         description: 'Something went wrong. Please try again.',
@@ -64,16 +83,18 @@ export default function Login() {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50 p-4">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <span className="material-icons text-primary-500 text-3xl mr-2">account_balance</span>
-            <h1 className="text-2xl font-bold text-primary-700">Mind My Money</h1>
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3">
+              <span className="material-icons text-white">account_balance</span>
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Mind My Money</h1>
           </div>
-          <CardTitle className="text-xl text-center">Log in to your account</CardTitle>
+          <CardTitle className="text-xl text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access your dashboard
+            Log in to access Money Mind, your AI financial coach
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,7 +107,7 @@ export default function Login() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="username" {...field} />
+                      <Input placeholder="demo" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,23 +120,34 @@ export default function Login() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="********" {...field} />
+                      <Input type="password" placeholder="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-primary-500 hover:bg-primary-600" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Log in'}
+              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <span className="material-icons animate-spin mr-2">refresh</span>
+                    Logging in...
+                  </>
+                ) : (
+                  'Log in with demo account'
+                )}
               </Button>
             </form>
           </Form>
+          <div className="mt-4 text-sm text-center text-neutral-500">
+            <p>Use the demo account to experience Money Mind AI</p>
+            <p>Username: demo | Password: password</p>
+          </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <div className="text-sm text-center text-neutral-500">
+          <div className="text-sm text-neutral-500 text-center">
             Don't have an account?{' '}
-            <Link href="/register" className="text-primary-500 hover:underline">
-              Sign up
+            <Link href="/register" className="text-primary-600 hover:underline">
+              Register here
             </Link>
           </div>
         </CardFooter>

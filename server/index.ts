@@ -6,6 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Import storage to create a test user
+import { storage } from "./storage";
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

@@ -80,6 +80,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create demo user if it doesn't exist
+  try {
+    const existingUser = await storage.getUserByUsername('demo');
+    if (!existingUser) {
+      await storage.createUser({
+        username: 'demo',
+        password: 'password',
+        firstName: 'Demo',
+        lastName: 'User',
+        email: 'demo@example.com'
+      });
+      console.log('Demo user created successfully');
+    }
+  } catch (error) {
+    console.error('Error creating demo user:', error);
+  }
+
   // Auth middleware
   const requireAuth = (req: any, res: any, next: any) => {
     if (req.isAuthenticated()) {
