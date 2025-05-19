@@ -2,8 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations } from "./openai";
+import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
@@ -140,9 +141,197 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Financial overview
-  app.get('/api/financial-overview', requireAuth, (req, res) => {
-    // In a real app, you would fetch this data from a database or external API
-    res.json(mockFinancialData);
+  app.get('/api/financial-overview', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      // Get all user accounts
+      const userAccounts = await storage.getAccounts(user.id);
+      
+      // Calculate total balance
+      const totalBalance = userAccounts.reduce((sum, account) => sum + account.balance, 0);
+      
+      // Get previous month balance (mock for now)
+      const previousMonthBalance = totalBalance * 0.95; // Mock 5% growth
+      
+      // Get monthly spending
+      const userTransactions = await storage.getTransactions(user.id);
+      const monthlySpending = userTransactions
+        .filter(t => t.amount < 0 && new Date(t.date).getMonth() === new Date().getMonth())
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      // Previous month spending (mock for now)
+      const previousMonthSpending = monthlySpending * 0.9; // Mock 10% increase
+      
+      // Get credit score
+      const creditScoreData = await storage.getCreditScore(user.id);
+      const creditScore = creditScoreData?.score || 750; // Default to 750 if not available
+      
+      // Get savings goal
+      const savingsGoals = await storage.getSavingsGoals(user.id);
+      const mainSavingsGoal = savingsGoals[0] || {
+        name: 'Vacation Fund',
+        targetAmount: 10000,
+        currentAmount: 5420
+      };
+      
+      const financialOverview = {
+        totalBalance,
+        previousMonthBalance,
+        monthlySpending,
+        previousMonthSpending,
+        creditScore,
+        savingsProgress: {
+          current: mainSavingsGoal.currentAmount,
+          target: mainSavingsGoal.targetAmount,
+          name: mainSavingsGoal.name
+        }
+      };
+      
+      res.json(financialOverview);
+    } catch (error) {
+      console.error('Error getting financial overview:', error);
+      // Fallback to mock data if there's an error
+      res.json(mockFinancialData);
+    }
+  });
+  
+  // Plaid routes
+  app.post('/api/plaid/create-link-token', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const linkToken = await createLinkToken(user.id, user.id.toString());
+      res.json(linkToken);
+    } catch (error) {
+      console.error('Error creating link token:', error);
+      res.status(500).json({ error: 'Failed to create link token' });
+    }
+  });
+  
+  app.post('/api/plaid/exchange-token', requireAuth, async (req, res) => {
+    try {
+      const { publicToken, metadata } = req.body;
+      const user = req.user as User;
+      
+      const exchangeResponse = await exchangePublicToken(publicToken);
+      const accessToken = exchangeResponse.access_token;
+      const itemId = exchangeResponse.item_id;
+      
+      // Get accounts from Plaid
+      const accountsResponse = await getAccounts(accessToken);
+      
+      // Save accounts to database
+      const institutionName = metadata.institution?.name || 'Financial Institution';
+      const accountsCreated = [];
+      
+      for (const plaidAccount of accountsResponse.accounts) {
+        const accountData = formatPlaidAccountData(plaidAccount, user.id, institutionName);
+        const newAccount = await storage.createAccount(accountData);
+        accountsCreated.push(newAccount);
+        
+        // Optional: Store access token securely in your database
+        // In a real app, you would store the access token and item ID in your database
+        // associated with the user's ID and account ID
+      }
+      
+      // Get and save transactions for the last 30 days
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      
+      const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+      const endDate = today.toISOString().split('T')[0];
+      
+      const transactionsResponse = await getTransactions(accessToken, startDate, endDate);
+      
+      for (const account of accountsCreated) {
+        const accountTransactions = transactionsResponse.transactions.filter(
+          t => t.account_id === account.id
+        );
+        
+        for (const plaidTransaction of accountTransactions) {
+          const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
+          await storage.createTransaction(transactionData);
+        }
+      }
+      
+      res.json({ success: true, accounts: accountsCreated });
+    } catch (error) {
+      console.error('Error exchanging token:', error);
+      res.status(500).json({ error: 'Failed to exchange token' });
+    }
+  });
+  
+  // Accounts routes
+  app.get('/api/accounts', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const accounts = await storage.getAccounts(user.id);
+      res.json(accounts);
+    } catch (error) {
+      console.error('Error getting accounts:', error);
+      res.status(500).json({ error: 'Failed to get accounts' });
+    }
+  });
+  
+  app.get('/api/accounts/:id', requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const account = await storage.getAccount(accountId);
+      
+      if (!account) {
+        return res.status(404).json({ error: 'Account not found' });
+      }
+      
+      const user = req.user as User;
+      
+      // Check if the account belongs to the user
+      if (account.userId !== user.id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+      
+      res.json(account);
+    } catch (error) {
+      console.error('Error getting account:', error);
+      res.status(500).json({ error: 'Failed to get account' });
+    }
+  });
+  
+  // Transactions routes
+  app.get('/api/transactions', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const transactions = await storage.getTransactions(user.id, limit);
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error getting transactions:', error);
+      res.status(500).json({ error: 'Failed to get transactions' });
+    }
+  });
+  
+  app.get('/api/accounts/:id/transactions', requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const account = await storage.getAccount(accountId);
+      
+      if (!account) {
+        return res.status(404).json({ error: 'Account not found' });
+      }
+      
+      const user = req.user as User;
+      
+      // Check if the account belongs to the user
+      if (account.userId !== user.id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const transactions = await storage.getAccountTransactions(accountId, limit);
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error getting account transactions:', error);
+      res.status(500).json({ error: 'Failed to get account transactions' });
+    }
   });
 
   // AI routes
