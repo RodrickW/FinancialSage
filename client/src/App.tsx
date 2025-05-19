@@ -12,6 +12,7 @@ import Register from "@/pages/Register";
 import Accounts from "@/pages/Accounts";
 import FinancialCoach from "@/pages/Coach";
 import SimpleGoals from "@/pages/SimpleGoals";
+import Goals from "@/pages/Goals";
 import NotFound from "@/pages/not-found";
 
 // Protected route component
@@ -69,7 +70,7 @@ function Router() {
         {(params) => <ProtectedRoute component={FinancialCoach} params={params} />}
       </Route>
       <Route path="/goals">
-        {(params) => <ProtectedRoute component={SimpleGoals} params={params} />}
+        {(params) => <ProtectedRoute component={Goals} params={params} />}
       </Route>
       <Route path="/">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}
