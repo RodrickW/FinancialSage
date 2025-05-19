@@ -3,6 +3,8 @@ import { ConnectedAccount } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useState } from 'react';
+import { PlaidBankOptions } from '@/components/PlaidLink';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ConnectedAccountsProps {
   accounts: ConnectedAccount[];
@@ -10,6 +12,7 @@ interface ConnectedAccountsProps {
 
 export default function ConnectedAccounts({ accounts }: ConnectedAccountsProps) {
   const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const queryClient = useQueryClient();
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -80,16 +83,14 @@ export default function ConnectedAccounts({ accounts }: ConnectedAccountsProps) 
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <h4 className="font-medium">Popular Banks</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {['Chase', 'Bank of America', 'Wells Fargo', 'Citi', 'Capital One', 'Other'].map((bank) => (
-                  <Button key={bank} variant="outline" className="justify-start">
-                    {bank}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <PlaidBankOptions 
+              onSuccess={() => {
+                setAddAccountOpen(false);
+                // Refresh the accounts list after successful connection
+                queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+              }} 
+              onClose={() => setAddAccountOpen(false)} 
+            />
           </div>
           
           <DialogFooter>
