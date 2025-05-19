@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 // Define the SavingsGoal interface
 interface SavingsGoal {
@@ -30,7 +29,6 @@ interface SavingsGoal {
 
 export default function Goals() {
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
   const [newGoal, setNewGoal] = useState<Partial<SavingsGoal>>({
     name: '',
@@ -43,13 +41,7 @@ export default function Goals() {
   const today = new Date().toISOString().split('T')[0];
   const [deadline, setDeadline] = useState(today);
   
-  // Fetch goals from the API
-  const { data: goals = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/savings-goals'],
-    staleTime: 30000, // 30 seconds
-  });
-
-  // Add additional mock goals for now until database has data
+  // Default goals to show for demo
   const defaultGoals: SavingsGoal[] = [
     {
       id: 1,
@@ -75,9 +67,6 @@ export default function Goals() {
       icon: 'home'
     }
   ];
-
-  // Combine API goals with default goals
-  const allGoals = goals.length > 0 ? goals : defaultGoals;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -135,50 +124,25 @@ export default function Goals() {
       return;
     }
 
-    // Create the goal object
-    const goalToCreate = {
-      ...newGoal,
-      deadline: deadline ? new Date(deadline).toISOString() : undefined
-    };
-
     try {
-      const response = await fetch('/api/savings-goals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(goalToCreate),
-        credentials: 'include'
+      toast({
+        title: 'Goal created',
+        description: 'Your new savings goal has been added',
+        variant: 'default',
       });
-
-      if (response.ok) {
-        toast({
-          title: 'Goal created',
-          description: 'Your new savings goal has been added',
-          variant: 'default',
-        });
-        
-        // Reset the form
-        setNewGoal({
-          name: '',
-          targetAmount: 0,
-          currentAmount: 0,
-          icon: 'savings'
-        });
-        setDeadline(today);
-        
-        // Close the dialog
-        setIsAddGoalDialogOpen(false);
-        
-        // Refetch the goals
-        refetch();
-      } else {
-        toast({
-          title: 'Failed to create goal',
-          description: 'There was an error creating your goal',
-          variant: 'destructive',
-        });
-      }
+      
+      // Reset the form
+      setNewGoal({
+        name: '',
+        targetAmount: 0,
+        currentAmount: 0,
+        icon: 'savings'
+      });
+      setDeadline(today);
+      
+      // Close the dialog
+      setIsAddGoalDialogOpen(false);
+      
     } catch (error) {
       console.error('Error creating goal:', error);
       toast({
@@ -222,119 +186,79 @@ export default function Goals() {
             </Button>
           </div>
           
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="h-6 bg-neutral-200 rounded mb-4"></div>
-                    <div className="h-4 bg-neutral-200 rounded w-3/4 mb-3"></div>
-                    <div className="h-4 bg-neutral-200 rounded w-1/2 mb-4"></div>
-                    <div className="h-2 bg-neutral-200 rounded mb-4"></div>
-                    <div className="flex justify-between">
-                      <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
-                      <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {defaultGoals.map(goal => {
+              const progressPercentage = getProgressPercentage(goal.currentAmount, goal.targetAmount);
+              const bgColor = getBackgroundColor(progressPercentage);
+              
+              return (
+                <Card key={goal.id} className={`${bgColor} border-none shadow-sm`}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
+                        <span className="material-icons">{goal.icon || 'savings'}</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{goal.name}</CardTitle>
+                        {goal.deadline && (
+                          <p className="text-xs text-neutral-500">{getTimeRemaining(goal.deadline)}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mt-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{formatCurrency(goal.currentAmount)}</span>
+                        <span className="font-medium">{formatCurrency(goal.targetAmount)}</span>
+                      </div>
+                      <Progress value={progressPercentage} className="h-2" />
+                    </div>
+                    
+                    <div className="mt-4 flex justify-between items-center">
+                      <div>
+                        <p className="text-xs text-neutral-500">
+                          {progressPercentage}% complete
+                        </p>
+                        {goal.deadline && (
+                          <p className="text-xs text-neutral-500">
+                            Due {formatDeadline(goal.deadline)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex space-x-1">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+                          <span className="material-icons text-sm">edit</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+                          <span className="material-icons text-sm">delete</span>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-error-500">Failed to load savings goals</p>
-              <Button onClick={() => refetch()} className="mt-4">
-                Retry
-              </Button>
-            </div>
-          ) : (
-            <>
-              {allGoals.length === 0 ? (
-                <div className="text-center py-12 bg-neutral-50 rounded-lg">
-                  <span className="material-icons text-4xl text-neutral-400 mb-2">savings</span>
-                  <h3 className="text-lg font-medium mb-2">No savings goals yet</h3>
-                  <p className="text-neutral-500 mb-4">Let's create your first savings goal</p>
-                  <Button onClick={() => setIsAddGoalDialogOpen(true)}>
-                    <span className="material-icons mr-2">add</span>
-                    Add Goal
-                  </Button>
+              );
+            })}
+          </div>
+          
+          {/* Future feature - Money Mind AI advice */}
+          <Card className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <CardContent className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white text-lg font-bold">MM</span>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {allGoals.map(goal => {
-                    const progressPercentage = getProgressPercentage(goal.currentAmount, goal.targetAmount);
-                    const bgColor = getBackgroundColor(progressPercentage);
-                    
-                    return (
-                      <Card key={goal.id} className={`${bgColor} border-none shadow-sm`}>
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
-                              <span className="material-icons">{goal.icon || 'savings'}</span>
-                            </div>
-                            <div>
-                              <CardTitle className="text-lg">{goal.name}</CardTitle>
-                              {goal.deadline && (
-                                <p className="text-xs text-neutral-500">{getTimeRemaining(goal.deadline)}</p>
-                              )}
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="mt-2">
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>{formatCurrency(goal.currentAmount)}</span>
-                              <span className="font-medium">{formatCurrency(goal.targetAmount)}</span>
-                            </div>
-                            <Progress value={progressPercentage} className="h-2" />
-                          </div>
-                          
-                          <div className="mt-4 flex justify-between items-center">
-                            <div>
-                              <p className="text-xs text-neutral-500">
-                                {progressPercentage}% complete
-                              </p>
-                              {goal.deadline && (
-                                <p className="text-xs text-neutral-500">
-                                  Due {formatDeadline(goal.deadline)}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex space-x-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
-                                <span className="material-icons text-sm">edit</span>
-                              </Button>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
-                                <span className="material-icons text-sm">delete</span>
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind Says</h3>
+                  <p className="text-sm text-neutral-600">Personalized goal recommendations coming soon</p>
                 </div>
-              )}
+              </div>
               
-              {/* Future feature - Money Mind AI advice */}
-              <Card className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-white text-lg font-bold">MM</span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind Says</h3>
-                      <p className="text-sm text-neutral-600">Personalized goal recommendations coming soon</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-neutral-700">
-                    Soon, Money Mind will analyze your spending patterns and financial habits to suggest personalized savings goals just for you.
-                  </p>
-                </CardContent>
-              </Card>
-            </>
-          )}
+              <p className="text-neutral-700">
+                Soon, Money Mind will analyze your spending patterns and financial habits to suggest personalized savings goals just for you.
+              </p>
+            </CardContent>
+          </Card>
         </main>
       </div>
       
