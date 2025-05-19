@@ -37,6 +37,25 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <button 
+          className="flex items-center px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/auth/logout', {
+                method: 'GET',
+                credentials: 'include',
+              });
+              if (response.ok) {
+                window.location.href = '/login';
+              }
+            } catch (error) {
+              console.error('Logout failed:', error);
+            }
+          }}
+        >
+          <span className="material-icons text-sm mr-1">logout</span>
+          Logout
+        </button>
       </div>
     </header>
   );

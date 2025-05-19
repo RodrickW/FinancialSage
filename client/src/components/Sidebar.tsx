@@ -108,24 +108,6 @@ export default function Sidebar({ user }: SidebarProps) {
             <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
             <p className="text-xs text-neutral-500">{user.email}</p>
           </div>
-          <button 
-            className="ml-auto hover:bg-neutral-100 p-2 rounded-full transition-colors"
-            onClick={async () => {
-              try {
-                const response = await fetch('/api/auth/logout', {
-                  method: 'GET',
-                  credentials: 'include',
-                });
-                if (response.ok) {
-                  window.location.href = '/login';
-                }
-              } catch (error) {
-                console.error('Logout failed:', error);
-              }
-            }}
-          >
-            <span className="material-icons text-neutral-400">logout</span>
-          </button>
         </div>
       </div>
     </aside>
