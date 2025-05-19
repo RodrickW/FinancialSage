@@ -1,8 +1,9 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
+import { User } from "@shared/schema";
 import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations } from "./openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import passport from "passport";
@@ -46,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Configure Passport local strategy
   passport.use(new LocalStrategy(
-    async (username, password, done) => {
+    async (username: string, password: string, done: (error: any, user?: any, options?: { message: string }) => void) => {
       try {
         const user = await storage.getUserByUsername(username);
         if (!user) {
@@ -110,12 +111,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post('/api/auth/login', (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
+    passport.authenticate('local', (err: any, user: User | false, info: { message: string } | undefined) => {
       if (err) {
         return next(err);
       }
       if (!user) {
-        return res.status(401).json({ message: info.message || 'Authentication failed' });
+        return res.status(401).json({ message: info?.message || 'Authentication failed' });
       }
       req.logIn(user, (err) => {
         if (err) {
@@ -244,13 +245,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactionsResponse = await getTransactions(accessToken, startDate, endDate);
       
       for (const account of accountsCreated) {
-        const accountTransactions = transactionsResponse.transactions.filter(
-          t => t.account_id === account.id
-        );
+        // Get the Plaid account ID from metadata
+        const plaidAccountId = accountsResponse.accounts.find(a => 
+          a.name === account.accountName && 
+          a.type === account.accountType
+        )?.account_id;
         
-        for (const plaidTransaction of accountTransactions) {
-          const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
-          await storage.createTransaction(transactionData);
+        if (plaidAccountId) {
+          const accountTransactions = transactionsResponse.transactions.filter(
+            t => t.account_id === plaidAccountId
+          );
+          
+          for (const plaidTransaction of accountTransactions) {
+            const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
+            await storage.createTransaction(transactionData);
+          }
         }
       }
       

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { PlaidBankOptions } from '@/components/PlaidLink';
+import { UserProfile, ConnectedAccount } from '@/types';
 
 // Import mock data for development
 import { mockUserProfile, mockConnectedAccounts } from '@/lib/utils/mockData';
@@ -50,12 +52,7 @@ export default function Accounts() {
   };
   
   const handleConnectPlaid = () => {
-    toast({
-      title: "Connect Bank Account",
-      description: "This feature would normally open Plaid's Link interface.",
-      variant: "default",
-    });
-    setAddAccountOpen(false);
+    setAddAccountOpen(true);
   };
   
   return (
@@ -168,22 +165,11 @@ export default function Accounts() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <h4 className="font-medium">Popular Banks</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {['Chase', 'Bank of America', 'Wells Fargo', 'Citi', 'Capital One', 'Other'].map((bank) => (
-                  <Button 
-                    key={bank} 
-                    variant="outline" 
-                    className="justify-start"
-                    onClick={handleConnectPlaid}
-                  >
-                    {bank}
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <div className="py-4">
+            <PlaidBankOptions 
+              onSuccess={() => setAddAccountOpen(false)} 
+              onClose={() => setAddAccountOpen(false)}
+            />
           </div>
           
           <DialogFooter>
