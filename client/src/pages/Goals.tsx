@@ -201,7 +201,7 @@ export default function Goals() {
     <div className="flex flex-col min-h-screen">
       <TopNav title="Savings Goals" />
       
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         <Sidebar user={{
           id: 1,
           username: 'demo',

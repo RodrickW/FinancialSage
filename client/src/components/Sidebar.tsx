@@ -31,7 +31,7 @@ export default function Sidebar({ user }: SidebarProps) {
   ];
   
   return (
-    <aside className="w-full md:w-64 bg-white border-r border-neutral-100 md:min-h-screen">
+    <aside className="w-full md:w-64 bg-white border-r border-neutral-100 md:min-h-screen flex-shrink-0">
       <div className="flex items-center justify-between md:justify-center p-4 border-b border-neutral-100">
         <div className="flex items-center">
           <span className="material-icons text-primary-500 mr-2">account_balance</span>
