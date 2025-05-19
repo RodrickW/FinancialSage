@@ -421,6 +421,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mock Plaid connection for development/demo
+  app.post('/api/plaid/mock-connect', requireAuth, async (req, res) => {
+    try {
+      const { bankName } = req.body;
+      const user = req.user as User;
+      
+      // Create mock accounts
+      const mockAccounts = [
+        {
+          userId: user.id,
+          accountName: 'Checking',
+          accountType: 'checking',
+          accountNumber: '****1234',
+          balance: 2543.21,
+          institutionName: bankName || 'Demo Bank',
+          institutionLogo: '',
+          isConnected: true
+        },
+        {
+          userId: user.id,
+          accountName: 'Savings',
+          accountType: 'savings',
+          accountNumber: '****5678',
+          balance: 12750.83,
+          institutionName: bankName || 'Demo Bank',
+          institutionLogo: '',
+          isConnected: true
+        },
+        {
+          userId: user.id,
+          accountName: 'Credit Card',
+          accountType: 'credit',
+          accountNumber: '****9012',
+          balance: -430.15,
+          institutionName: bankName || 'Demo Bank',
+          institutionLogo: '',
+          isConnected: true
+        }
+      ];
+      
+      // Store accounts in database
+      const accountsCreated = [];
+      for (const mockAccount of mockAccounts) {
+        const newAccount = await storage.createAccount(mockAccount);
+        accountsCreated.push(newAccount);
+      }
+      
+      // Create some mock transactions
+      const categories = ['Groceries', 'Dining', 'Transportation', 'Entertainment', 'Shopping', 'Utilities'];
+      const merchants = ['Whole Foods', 'Amazon', 'Uber', 'Netflix', 'Target', 'Electric Company'];
+      
+      // Get the checking account ID
+      const checkingAccount = accountsCreated.find(acc => acc.accountType === 'checking');
+      
+      if (checkingAccount) {
+        // Create 10 mock transactions
+        for (let i = 0; i < 10; i++) {
+          const date = new Date();
+          date.setDate(date.getDate() - Math.floor(Math.random() * 30)); // Random date in the last 30 days
+          
+          const categoryIndex = Math.floor(Math.random() * categories.length);
+          const merchantIndex = Math.floor(Math.random() * merchants.length);
+          
+          const transaction = {
+            userId: user.id,
+            accountId: checkingAccount.id,
+            amount: -(Math.floor(Math.random() * 200) + 5), // Random amount between $5 and $205
+            category: categories[categoryIndex],
+            description: `Purchase at ${merchants[merchantIndex]}`,
+            date: date,
+            merchantName: merchants[merchantIndex],
+            merchantIcon: 'shopping_bag'
+          };
+          
+          await storage.createTransaction(transaction);
+        }
+      }
+      
+      // Create a mock budget
+      const budget = {
+        userId: user.id,
+        category: 'Groceries',
+        limit: 400,
+        period: 'monthly',
+        spent: 210.35,
+        remaining: 189.65,
+        icon: 'shopping_cart',
+        color: '#4f46e5',
+      };
+      
+      await storage.createBudget(budget);
+      
+      // Create a mock savings goal
+      const savingsGoal = {
+        userId: user.id,
+        name: 'Vacation Fund',
+        targetAmount: 3000,
+        currentAmount: 1250,
+        targetDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+        icon: 'flight',
+        color: '#06b6d4',
+      };
+      
+      await storage.createSavingsGoal(savingsGoal);
+      
+      res.json({ success: true, accounts: accountsCreated });
+    } catch (error) {
+      console.error('Error creating mock connection:', error);
+      res.status(500).json({ error: 'Failed to create mock connection' });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
