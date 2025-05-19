@@ -71,18 +71,18 @@ export function PlaidBankOptions({ onSuccess, onClose }: PlaidBankOptionProps) {
   return (
     <div className="space-y-4">
       <h3 className="font-medium text-lg">Select your bank</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto p-1">
         {popularBanks.map((bank) => (
           <Button
             key={bank.name}
             variant="outline"
-            className="flex items-center justify-start h-auto py-3 px-4"
+            className="flex items-center justify-start h-auto py-3 px-4 w-full"
             onClick={handleBankClick}
             disabled={isLoading}
           >
-            <span className="material-icons mr-2 text-primary-500">{bank.logo}</span>
+            <span className="mr-2 text-primary-500">🏦</span>
             <span className="text-sm">{bank.name}</span>
-            {bank.name === 'Other Banks' && <span className="material-icons ml-auto text-sm">chevron_right</span>}
+            {bank.name === 'Other Banks' && <span className="ml-auto text-sm">→</span>}
           </Button>
         ))}
       </div>
