@@ -139,6 +139,9 @@ export default function Dashboard() {
                 healthScore={{ score: 78, maxScore: 100, rating: 'Good' }}
               />
               
+              {/* Savings Goals */}
+              <SavingsGoalCard />
+              
               {/* Connected Accounts */}
               <ConnectedAccounts accounts={mockConnectedAccounts} />
               
