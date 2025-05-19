@@ -66,7 +66,7 @@ export async function generateBudgetRecommendations(spendingData: any): Promise<
         {
           role: "system",
           content:
-            "You are a budget optimization expert. Analyze the user's spending patterns and recommend budget allocations. Provide your response as JSON with the following structure: {recommendations: [{category: string, currentSpending: number, recommendedBudget: number, reasoning: string}], summary: string}"
+            "You are a budget optimization expert. Analyze the user's spending patterns and recommend budget allocations based on the 50/30/20 rule (50% needs, 30% wants, 20% savings) or other appropriate budget strategies. Consider their income level and current spending habits. Provide your response as JSON with the following structure: {recommendations: [{category: string, currentSpending: number, recommendedBudget: number, percentOfIncome: number, reasoning: string}], summary: string, savingsRecommendation: string}"
         },
         {
           role: "user",
@@ -80,5 +80,57 @@ export async function generateBudgetRecommendations(spendingData: any): Promise<
   } catch (error: any) {
     console.error("Error generating budget recommendations:", error.message);
     throw new Error("Failed to generate budget recommendations");
+  }
+}
+
+// Analyze credit score and provide improvement recommendations
+export async function analyzeCreditScore(creditData: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a credit score improvement specialist. Analyze the user's credit score and profile, then provide actionable advice to improve their score. Format your response as JSON with the following structure: {currentScore: {score: number, rating: string}, analysis: string, improvementSteps: [{title: string, description: string, impactLevel: 'high'|'medium'|'low', timeFrame: 'immediate'|'short-term'|'long-term'}], targetScore: {score: number, timeEstimate: string}}"
+        },
+        {
+          role: "user",
+          content: JSON.stringify(creditData)
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error: any) {
+    console.error("Error analyzing credit score:", error.message);
+    throw new Error("Failed to analyze credit score");
+  }
+}
+
+// Advanced financial health assessment combining multiple data sources
+export async function generateFinancialHealthReport(userData: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a comprehensive financial health advisor. Analyze the user's complete financial profile including transaction history, credit score, income, expenses, assets, and liabilities. Provide a detailed financial health assessment and personalized recommendations. Format your response as JSON with the following structure: {overallHealth: {score: number, rating: string}, strengths: [string], weaknesses: [string], recommendations: [{area: string, recommendation: string, priority: 'high'|'medium'|'low'}], longTermOutlook: string}"
+        },
+        {
+          role: "user",
+          content: JSON.stringify(userData)
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error: any) {
+    console.error("Error generating financial health report:", error.message);
+    throw new Error("Failed to generate financial health report");
   }
 }

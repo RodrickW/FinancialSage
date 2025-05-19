@@ -400,17 +400,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/ai/budget-recommendations', requireAuth, async (req, res) => {
     try {
-      // In a real app, you would fetch user's spending data and pass it to the AI
+      const user = req.user as User;
+      
+      // Get user's transactions to calculate spending by category
+      const transactions = await storage.getTransactions(user.id);
+      const accounts = await storage.getAccounts(user.id);
+      
+      // Calculate total balance
+      const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+      
+      // Group transactions by category and calculate spending
+      const categorySpending: Record<string, number> = {};
+      transactions.forEach(transaction => {
+        // Only consider expenses (negative amounts)
+        if (transaction.amount < 0) {
+          const category = transaction.category || 'Other';
+          if (!categorySpending[category]) {
+            categorySpending[category] = 0;
+          }
+          categorySpending[category] += Math.abs(transaction.amount);
+        }
+      });
+      
+      // Convert to array format for the AI
+      const categories = Object.entries(categorySpending).map(([name, spending]) => ({
+        name,
+        spending
+      }));
+      
+      // Estimate monthly income (in a real app, this would come from user input or detected income transactions)
+      // For now, we'll use a default or calculate based on deposits
+      let income = 5000; // Default income
+      
+      // Try to detect income from positive transactions
+      const possibleIncomeTransactions = transactions.filter(t => t.amount > 0 && 
+        (t.description?.toLowerCase().includes('deposit') || 
+         t.description?.toLowerCase().includes('salary') || 
+         t.description?.toLowerCase().includes('payroll')));
+      
+      if (possibleIncomeTransactions.length > 0) {
+        // Use the largest positive transaction as a proxy for monthly income
+        income = Math.max(...possibleIncomeTransactions.map(t => t.amount));
+      }
+      
       const spendingData = {
-        income: 5000,
-        categories: [
-          { name: 'Food & Dining', spending: 820.45 },
-          { name: 'Housing', spending: 1450.00 },
-          { name: 'Transportation', spending: 385.20 },
-          { name: 'Shopping', spending: 605.85 },
-          { name: 'Entertainment', spending: 250.00 },
-          { name: 'Utilities', spending: 320.00 }
-        ]
+        income,
+        totalBalance,
+        categories,
+        transactionCount: transactions.length,
+        periodDays: 30 // Assuming data covers roughly the last month
       };
       
       const recommendations = await generateBudgetRecommendations(spendingData);
@@ -418,6 +456,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error generating budget recommendations:', error);
       res.status(500).json({ message: 'Failed to generate budget recommendations' });
+    }
+  });
+  
+  // Credit score analysis and improvement recommendations
+  app.get('/api/ai/credit-score-analysis', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Get credit score data
+      const creditScoreData = await storage.getCreditScore(user.id);
+      
+      if (!creditScoreData) {
+        return res.status(404).json({ message: 'Credit score data not found' });
+      }
+      
+      // Prepare data for the AI
+      const creditData = {
+        score: creditScoreData.score,
+        factors: [
+          { 
+            name: 'Payment History', 
+            impact: 'High',
+            status: creditScoreData.score > 700 ? 'Good' : 'Needs Improvement' 
+          },
+          { 
+            name: 'Credit Utilization', 
+            impact: 'High',
+            status: creditScoreData.score > 680 ? 'Good' : 'Needs Improvement' 
+          },
+          { 
+            name: 'Credit Age', 
+            impact: 'Medium',
+            status: creditScoreData.score > 650 ? 'Average' : 'Short History' 
+          },
+          { 
+            name: 'Account Mix', 
+            impact: 'Low',
+            status: creditScoreData.score > 720 ? 'Diverse' : 'Limited' 
+          },
+          { 
+            name: 'Recent Inquiries', 
+            impact: 'Low',
+            status: creditScoreData.score > 690 ? 'Few' : 'Several Recent' 
+          }
+        ],
+        user: {
+          hasLatePaments: creditScoreData.score < 650,
+          highUtilization: creditScoreData.score < 680,
+          shortHistory: creditScoreData.score < 650
+        }
+      };
+      
+      const analysis = await analyzeCreditScore(creditData);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error analyzing credit score:', error);
+      res.status(500).json({ message: 'Failed to analyze credit score' });
+    }
+  });
+  
+  // Comprehensive financial health assessment
+  app.get('/api/ai/financial-health', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Get all relevant user data
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id, 100); // Last 100 transactions
+      const budgets = await storage.getBudgets(user.id);
+      const savingsGoals = await storage.getSavingsGoals(user.id);
+      const creditScore = await storage.getCreditScore(user.id);
+      
+      // Prepare comprehensive user data
+      const userData = {
+        accounts: accounts.map(account => ({
+          type: account.accountType,
+          balance: account.balance,
+          institution: account.institutionName
+        })),
+        
+        totalAssets: accounts
+          .filter(a => a.balance > 0)
+          .reduce((sum, a) => sum + a.balance, 0),
+          
+        totalDebt: accounts
+          .filter(a => a.balance < 0)
+          .reduce((sum, a) => sum + Math.abs(a.balance), 0),
+        
+        recentTransactions: transactions.map(t => ({
+          amount: t.amount,
+          category: t.category,
+          date: t.date,
+          description: t.description
+        })),
+        
+        spendingByCategory: transactions
+          .filter(t => t.amount < 0)
+          .reduce((categories: Record<string, number>, t) => {
+            const category = t.category || 'Other';
+            if (!categories[category]) categories[category] = 0;
+            categories[category] += Math.abs(t.amount);
+            return categories;
+          }, {}),
+        
+        budgets: budgets.map(b => ({
+          category: b.category,
+          limit: b.limit,
+          spent: b.spent,
+          remaining: b.remaining
+        })),
+        
+        savingsGoals: savingsGoals.map(g => ({
+          name: g.name,
+          target: g.targetAmount,
+          current: g.currentAmount,
+          progress: (g.currentAmount / g.targetAmount) * 100
+        })),
+        
+        creditScore: creditScore ? creditScore.score : null
+      };
+      
+      const healthReport = await generateFinancialHealthReport(userData);
+      res.json(healthReport);
+    } catch (error) {
+      console.error('Error generating financial health report:', error);
+      res.status(500).json({ message: 'Failed to generate financial health report' });
     }
   });
 

@@ -9,6 +9,7 @@ import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Accounts from "@/pages/Accounts";
+import FinancialCoach from "@/pages/Coach";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/accounts" component={Accounts} />
+      <Route path="/coach" component={FinancialCoach} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
