@@ -8,6 +8,7 @@ import AIInsights from '@/components/Dashboard/AIInsights';
 import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
 import CreditScore from '@/components/Dashboard/CreditScore';
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
+import SavingsGoalCard from '@/components/Dashboard/SavingsGoalCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';

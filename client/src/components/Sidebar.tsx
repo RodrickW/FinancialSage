@@ -17,7 +17,6 @@ export default function Sidebar({ user }: SidebarProps) {
     { name: 'Dashboard', path: '/', icon: 'dashboard' },
     { name: 'Accounts', path: '/accounts', icon: 'account_balance_wallet' },
     { name: 'Budgets', path: '/budgets', icon: 'pie_chart' },
-    { name: 'Goals', path: '/goals', icon: 'insights' },
   ];
   
   const aiItems = [
