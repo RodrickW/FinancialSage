@@ -12,6 +12,8 @@ import SavingsGoalCard from '@/components/Dashboard/SavingsGoalCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
 
 // Import mock data for development
 import { 
@@ -29,6 +31,7 @@ import {
 export default function Dashboard() {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState('');
+  const [addAccountOpen, setAddAccountOpen] = useState(false);
   
   // Format the current date
   useEffect(() => {
@@ -96,13 +99,18 @@ export default function Dashboard() {
             </div>
             
             <div className="mt-4 md:mt-0 flex space-x-2">
-              <Button 
+              <PlaidLinkButton 
                 className="flex items-center bg-primary-500 hover:bg-primary-600 text-white"
-                onClick={handleConnectAccount}
+                onSuccess={() => {
+                  toast({
+                    title: "Account connected",
+                    description: "Your account has been successfully connected.",
+                  });
+                }}
               >
                 <span className="material-icons text-sm mr-1">add</span>
                 Connect Account
-              </Button>
+              </PlaidLinkButton>
               <Button 
                 variant="outline"
                 className="flex items-center bg-white border border-neutral-200 hover:bg-neutral-50"
