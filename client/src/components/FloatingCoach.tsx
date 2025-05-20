@@ -1,0 +1,189 @@
+import React, { useState, useEffect } from 'react';
+import { X, MessageCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+
+export default function FloatingCoach() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [conversation, setConversation] = useState<{role: 'user' | 'assistant'; content: string}[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Sample suggested questions
+  const suggestedQuestions = [
+    "How can I improve my credit score?",
+    "How much should I save for retirement?",
+    "What's a good emergency fund amount?",
+    "Should I pay off debt or invest?"
+  ];
+
+  // Function to handle sending a message
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+    
+    // Add user message to conversation
+    const userMessage = { role: 'user' as const, content: message };
+    setConversation(prev => [...prev, userMessage]);
+    
+    // Clear input field
+    setMessage('');
+    
+    // Set loading state
+    setIsLoading(true);
+    
+    try {
+      // In a real implementation, this would call the API
+      // For now, we'll simulate a response after a delay
+      setTimeout(() => {
+        // Simulate AI response
+        let aiResponse;
+        
+        if (message.toLowerCase().includes('credit score')) {
+          aiResponse = "To improve your credit score: 1) Pay bills on time 2) Reduce credit card balances 3) Don't close old accounts 4) Limit new credit applications 5) Check your credit report for errors.";
+        } else if (message.toLowerCase().includes('retirement')) {
+          aiResponse = "A good rule of thumb is to save 15% of your income for retirement. The earlier you start, the better, due to compound interest. Consider maximizing employer matches in your 401(k) first.";
+        } else if (message.toLowerCase().includes('emergency fund')) {
+          aiResponse = "A good emergency fund typically covers 3-6 months of essential expenses. If your income is variable or you have dependents, consider aiming for the higher end of that range.";
+        } else if (message.toLowerCase().includes('debt') && message.toLowerCase().includes('invest')) {
+          aiResponse = "Generally, pay off high-interest debt (like credit cards) first, then build an emergency fund, then invest while paying down lower-interest debt. Always capture any employer 401(k) match regardless.";
+        } else {
+          aiResponse = "Based on your financial profile, I'd recommend focusing on building your emergency fund first, then tackling high-interest debt, and finally increasing your retirement contributions. Would you like more specific advice on any of these areas?";
+        }
+        
+        setConversation(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+        setIsLoading(false);
+      }, 1500);
+      
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get a response. Please try again.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+    }
+  };
+
+  // Handle pressing Enter to send message
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Handle clicking a suggested question
+  const handleSuggestedQuestion = (question: string) => {
+    setMessage(question);
+  };
+
+  return (
+    <div className="fixed bottom-20 right-4 z-50 md:bottom-8">
+      {/* Chat Icon Button */}
+      {!isOpen && (
+        <Button 
+          onClick={() => setIsOpen(true)}
+          className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-0 flex items-center justify-center"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      )}
+      
+      {/* Chat Window */}
+      {isOpen && (
+        <Card className="w-80 md:w-96 shadow-lg max-h-[500px] flex flex-col">
+          <CardHeader className="p-3 flex flex-row items-center justify-between bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
+            <CardTitle className="text-base flex items-center">
+              <div className="bg-white text-blue-600 h-6 w-6 rounded-full flex items-center justify-center mr-2">
+                <span className="text-xs font-bold">MM</span>
+              </div>
+              Money Mind Coach
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsOpen(false)}
+              className="h-8 w-8 p-0 text-white hover:bg-blue-600/20"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          
+          <div className="flex-1 overflow-y-auto p-3 max-h-80 bg-white">
+            {/* Welcome message if no conversation */}
+            {conversation.length === 0 && (
+              <div className="text-center p-4">
+                <h3 className="font-medium text-neutral-800">How can Money Mind help you today?</h3>
+                <p className="text-sm text-neutral-500 mt-1 mb-4">Ask me anything about your finances!</p>
+                
+                <div className="grid grid-cols-1 gap-2 mt-4">
+                  {suggestedQuestions.map((q, i) => (
+                    <Button 
+                      key={i} 
+                      variant="outline" 
+                      className="text-left justify-start text-sm h-auto py-2"
+                      onClick={() => handleSuggestedQuestion(q)}
+                    >
+                      {q}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Conversation messages */}
+            {conversation.map((msg, i) => (
+              <div 
+                key={i} 
+                className={`mb-3 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
+              >
+                <div 
+                  className={`inline-block rounded-lg p-3 max-w-[85%] ${
+                    msg.role === 'user' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'bg-neutral-100 text-neutral-900'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="text-left mb-3">
+                <div className="inline-block rounded-lg p-3 bg-neutral-100 text-neutral-900">
+                  <div className="flex items-center">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span>Money Mind is thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <CardFooter className="p-3 border-t bg-white rounded-b-lg">
+            <div className="flex w-full gap-2">
+              <textarea
+                placeholder="Ask Money Mind..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
+                className="flex-1 p-2 h-10 min-h-[40px] max-h-20 border rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={isLoading || !message.trim()}
+                className="h-10 bg-blue-600 hover:bg-blue-700"
+                size="sm"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      )}
+    </div>
+  );
+}
