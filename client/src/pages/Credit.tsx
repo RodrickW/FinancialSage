@@ -46,36 +46,20 @@ interface CreditDetails {
 }
 
 export default function Credit() {
-  const [creditData, setCreditData] = useState<CreditDetails | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
+  
+  const { data: creditData, isLoading, refetch } = useQuery({
+    queryKey: ['/api/ai/credit-score-analysis'],
+    retry: false
+  });
 
-  const fetchCreditData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiRequest({
-        url: '/api/credit/score',
-        method: 'GET'
-      });
-      
-      if (response) {
-        setCreditData(response as CreditDetails);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not load credit score data. Please try again.",
-        variant: "destructive"
-      });
-      console.error('Failed to fetch credit data:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRefreshCredit = () => {
+    toast({
+      title: "Refreshing Credit Data",
+      description: "Connecting to credit bureaus to get your latest score..."
+    });
+    refetch();
   };
-
-  useEffect(() => {
-    fetchCreditData();
-  }, []);
 
   // Fallback data for demonstration purposes
   const fallbackUser = {
@@ -121,7 +105,7 @@ export default function Credit() {
       <main className="container mx-auto px-4 py-6">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary-600 mb-4" />
             <p className="text-neutral-600">Loading your credit information...</p>
           </div>
         ) : !creditData ? (
@@ -132,7 +116,7 @@ export default function Credit() {
               <p className="text-neutral-600 mb-6 max-w-md mx-auto">
                 We need your permission to access your credit score information.
               </p>
-              <Button onClick={fetchCreditData} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+              <Button onClick={() => refetch()} className="bg-gradient-to-r from-blue-600 to-indigo-600">
                 Connect Credit Account
               </Button>
             </div>
