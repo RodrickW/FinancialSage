@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
-import { PlaidBankOptions } from '@/components/PlaidLink';
 import { UserProfile, ConnectedAccount } from '@/types';
 
 // Import mock data for development
@@ -14,7 +12,6 @@ import { mockUserProfile, mockConnectedAccounts } from '@/lib/utils/mockData';
 
 export default function Accounts() {
   const { toast } = useToast();
-  const [addAccountOpen, setAddAccountOpen] = useState(false);
   
   // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -51,8 +48,12 @@ export default function Accounts() {
     }).format(amount);
   };
   
-  const handleConnectPlaid = () => {
-    setAddAccountOpen(true);
+  // Function to refresh account data
+  const handleRefreshAccount = () => {
+    toast({
+      title: "Account refreshed",
+      description: "Account information has been refreshed."
+    });
   };
   
   return (
@@ -64,15 +65,10 @@ export default function Accounts() {
         
         <div className="p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <h1 className="text-2xl font-bold">Connected Accounts</h1>
-            
-            <Button 
-              className="mt-4 md:mt-0 flex items-center bg-primary-500 hover:bg-primary-600 text-white"
-              onClick={() => setAddAccountOpen(true)}
-            >
-              <span className="material-icons text-sm mr-1">add</span>
-              Connect New Account
-            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Connected Accounts</h1>
+              <p className="text-neutral-500">Manage your linked financial accounts</p>
+            </div>
           </div>
           
           {accountsLoading ? (
@@ -121,7 +117,7 @@ export default function Accounts() {
                         </span>
                       </div>
                       <div className="mt-4 flex">
-                        <Button variant="outline" size="sm" className="text-xs mr-2">
+                        <Button variant="outline" size="sm" className="text-xs mr-2" onClick={handleRefreshAccount}>
                           <span className="material-icons text-sm mr-1">sync</span>
                           Refresh
                         </Button>
@@ -135,21 +131,7 @@ export default function Accounts() {
                 );
               })}
               
-              {/* Add Account Card */}
-              <Card 
-                className="bg-white rounded-xl shadow-sm border-2 border-dashed border-neutral-200 flex items-center justify-center cursor-pointer hover:bg-neutral-50 transition-colors"
-                onClick={() => setAddAccountOpen(true)}
-              >
-                <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 bg-primary-50 text-primary-500 rounded-full flex items-center justify-center mb-3">
-                    <span className="material-icons">add</span>
-                  </div>
-                  <h3 className="font-semibold mb-1">Connect New Account</h3>
-                  <p className="text-sm text-neutral-500">
-                    Link your bank, credit card, or investment accounts
-                  </p>
-                </CardContent>
-              </Card>
+
             </div>
           )}
         </div>
