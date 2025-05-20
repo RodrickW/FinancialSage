@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,21 +14,16 @@ export default function Accounts() {
   const { toast } = useToast();
   
   // Get the user data
-  const { data: userData, isLoading: userLoading } = useQuery({
+  const { data: userData } = useQuery({
     queryKey: ['/api/users/profile'],
-    onError: () => {
-      console.error('Failed to load user profile, using mock data instead');
-    }
   });
   
   // Get accounts data
   const { data: accountsData, isLoading: accountsLoading } = useQuery({
     queryKey: ['/api/accounts'],
-    onError: () => {
-      console.error('Failed to load accounts, using mock data instead');
-    }
   });
   
+  // Use mock data if API data is not available
   const user = userData || mockUserProfile;
   const accounts = accountsData || mockConnectedAccounts;
   
@@ -39,6 +34,7 @@ export default function Accounts() {
     investment: { icon: 'trending_up', color: 'bg-accent-50 text-accent-500' },
   };
   
+  // Format currency for display
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -48,11 +44,19 @@ export default function Accounts() {
     }).format(amount);
   };
   
-  // Function to refresh account data
+  // Handle refresh account action
   const handleRefreshAccount = () => {
     toast({
       title: "Account refreshed",
       description: "Account information has been refreshed."
+    });
+  };
+  
+  // Show account details
+  const handleViewDetails = (accountId: number) => {
+    toast({
+      title: "View account details",
+      description: `Viewing details for account #${accountId}`
     });
   };
   
@@ -93,7 +97,7 @@ export default function Accounts() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {accounts.map((account) => {
+              {accounts.map((account: ConnectedAccount) => {
                 const accountType = accountTypes[account.accountType as keyof typeof accountTypes] || accountTypes.checking;
                 
                 return (
@@ -121,7 +125,7 @@ export default function Accounts() {
                           <span className="material-icons text-sm mr-1">sync</span>
                           Refresh
                         </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
+                        <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewDetails(account.id)}>
                           <span className="material-icons text-sm mr-1">more_horiz</span>
                           Details
                         </Button>
@@ -130,37 +134,10 @@ export default function Accounts() {
                   </Card>
                 );
               })}
-              
-
             </div>
           )}
         </div>
       </main>
-      
-      {/* Add Account Dialog */}
-      <Dialog open={addAccountOpen} onOpenChange={setAddAccountOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Connect a new account</DialogTitle>
-            <DialogDescription>
-              Link your bank, credit card, or investment accounts securely through Plaid.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <PlaidBankOptions 
-              onSuccess={() => setAddAccountOpen(false)} 
-              onClose={() => setAddAccountOpen(false)}
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddAccountOpen(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
