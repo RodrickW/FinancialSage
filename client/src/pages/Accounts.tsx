@@ -1,6 +1,7 @@
 import React from 'react';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
+import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -64,7 +65,8 @@ export default function Accounts() {
     <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
       <Sidebar user={user} />
       
-      <main className="flex-1 overflow-x-hidden">
+      <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
+        <BottomNavigation user={user} />
         <TopNav title="Accounts" />
         
         <div className="p-6">
