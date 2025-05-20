@@ -1,6 +1,7 @@
 import React from 'react';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
+import BottomNavigation from '@/components/BottomNavigation';
 import { useQuery } from '@tanstack/react-query';
 import { UserProfile } from '@/types';
 
@@ -65,7 +66,8 @@ export default function SimpleGoals() {
     <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
       <Sidebar user={user || fallbackUser} />
       
-      <main className="flex-1 overflow-x-hidden">
+      <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
+        <BottomNavigation user={user || fallbackUser} />
         <TopNav title="Savings Goals" />
         
         <div className="p-6">
