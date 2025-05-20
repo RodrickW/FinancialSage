@@ -34,6 +34,8 @@ export interface IStorage {
   // Credit score operations
   getCreditScore(userId: number): Promise<CreditScore | undefined>;
   createCreditScore(creditScore: InsertCreditScore): Promise<CreditScore>;
+  updateCreditScore(id: number, data: Partial<InsertCreditScore>): Promise<CreditScore>;
+  getCreditHistory(userId: number): Promise<any[]>;
   
   // Savings goal operations
   getSavingsGoals(userId: number): Promise<SavingsGoal[]>;
@@ -188,6 +190,36 @@ export class DatabaseStorage implements IStorage {
       .values(creditScore)
       .returning();
     return newCreditScore;
+  }
+  
+  async updateCreditScore(id: number, data: Partial<InsertCreditScore>): Promise<CreditScore> {
+    const [updatedCreditScore] = await db
+      .update(creditScores)
+      .set({
+        ...data,
+        reportDate: new Date() // Always update report date when updating score
+      })
+      .where(eq(creditScores.id, id))
+      .returning();
+    
+    if (!updatedCreditScore) {
+      throw new Error(`Credit score with id ${id} not found`);
+    }
+    
+    return updatedCreditScore;
+  }
+  
+  async getCreditHistory(userId: number): Promise<any[]> {
+    // Query credit score history for the user
+    // For now we'll get the most recent entries and sort by date
+    const history = await db
+      .select()
+      .from(creditScores)
+      .where(eq(creditScores.userId, userId))
+      .orderBy(desc(creditScores.reportDate))
+      .limit(12); // Last 12 reports
+      
+    return history;
   }
   
   // Savings goal operations
