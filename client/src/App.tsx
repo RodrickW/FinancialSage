@@ -14,6 +14,7 @@ import Accounts from "@/pages/Accounts";
 import FinancialCoach from "@/pages/Coach";
 import SimpleGoals from "@/pages/SimpleGoals";
 import Goals from "@/pages/Goals";
+import Credit from "@/pages/Credit";
 import NotFound from "@/pages/not-found";
 
 // Protected route component
