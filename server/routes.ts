@@ -7,10 +7,12 @@ import { User } from "@shared/schema";
 import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore } from "./openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
+import { createSubscriptionSession, handleStripeWebhook } from "./stripe";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import Stripe from "stripe";
 
 // Mock transaction data for the dashboard
 const mockFinancialData = {

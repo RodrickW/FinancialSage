@@ -8,6 +8,8 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, data: Partial<User>): Promise<User | undefined>;
+  updateStripeInfo(id: number, stripeId: string, subscriptionId: string): Promise<User | undefined>;
   
   // Account operations
   getAccounts(userId: number): Promise<Account[]>;
@@ -59,6 +61,34 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .insert(users)
       .values(insertUser)
+      .returning();
+    return user;
+  }
+  
+  async updateUser(id: number, data: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...data,
+        // If updating the premium status, make sure we record when it was updated
+        ...(data.isPremium !== undefined ? { updatedAt: new Date() } : {})
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+  
+  async updateStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        stripeCustomerId,
+        stripeSubscriptionId,
+        isPremium: true,
+        subscriptionStatus: 'active',
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }

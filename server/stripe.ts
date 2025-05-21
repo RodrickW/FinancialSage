@@ -9,7 +9,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 // Initialize Stripe client
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-04-30.basil',
 });
 
 /**
@@ -88,12 +88,17 @@ export async function handleStripeWebhook(event: Stripe.Event) {
           .where(eq(users.stripeCustomerId, session.customer as string));
         
         if (user) {
+          // Set trial end date
+          const trialEndsAt = subscription.trial_end 
+            ? new Date(subscription.trial_end * 1000) 
+            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+            
           await db.update(users)
             .set({ 
               stripeSubscriptionId: session.subscription as string,
               isPremium: true,
               premiumTier: 'premium', // Default tier
-              trialEndsAt: new Date(subscription.trial_end * 1000)
+              trialEndsAt
             })
             .where(eq(users.id, user.id));
         }
