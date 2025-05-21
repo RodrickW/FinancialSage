@@ -5,6 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import FloatingCoach from "@/components/FloatingCoach";
+import { SubscriptionBanner } from "@/components/ui/subscription-banner";
 
 // Import pages
 import Dashboard from "@/pages/Dashboard";
@@ -16,6 +17,9 @@ import SimpleGoals from "@/pages/SimpleGoals";
 import Goals from "@/pages/Goals";
 import Credit from "@/pages/Credit";
 import Budget from "@/pages/Budget";
+import Subscribe from "@/pages/Subscribe";
+import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
+import SubscriptionCancel from "@/pages/SubscriptionCancel";
 import NotFound from "@/pages/not-found";
 
 // Protected route component
@@ -81,6 +85,15 @@ function Router() {
       <Route path="/budget">
         {(params) => <ProtectedRoute component={Budget} params={params} />}
       </Route>
+      <Route path="/subscribe">
+        {(params) => <ProtectedRoute component={Subscribe} params={params} />}
+      </Route>
+      <Route path="/subscription/success">
+        {(params) => <ProtectedRoute component={SubscriptionSuccess} params={params} />}
+      </Route>
+      <Route path="/subscription/cancel">
+        {(params) => <ProtectedRoute component={SubscriptionCancel} params={params} />}
+      </Route>
       <Route path="/">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}
       </Route>
@@ -120,6 +133,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        {isLoggedIn && <SubscriptionBanner />}
         <Router />
         {isLoggedIn && <FloatingCoach />}
       </TooltipProvider>

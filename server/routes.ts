@@ -7,7 +7,7 @@ import { User } from "@shared/schema";
 import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore } from "./openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
-import { createSubscriptionSession, handleStripeWebhook } from "./stripe";
+import { registerSubscriptionRoutes } from "./routes-subscription";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
@@ -83,6 +83,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auth middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ message: 'Unauthorized' });
+  };
+
   // Create demo user if it doesn't exist
   try {
     const existingUser = await storage.getUserByUsername('demo');
@@ -99,14 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   } catch (error) {
     console.error('Error creating demo user:', error);
   }
-
-  // Auth middleware
-  const requireAuth = (req: any, res: any, next: any) => {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ message: 'Unauthorized' });
-  };
+  
+  // Register the subscription routes
+  registerSubscriptionRoutes(app, requireAuth);
 
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
