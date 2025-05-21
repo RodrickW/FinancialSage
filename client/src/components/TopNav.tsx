@@ -35,9 +35,6 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
           <button className="p-2 rounded-full hover:bg-white/10">
             <span className="material-icons text-white">notifications</span>
           </button>
-          <button className="p-2 rounded-full hover:bg-white/10">
-            <span className="material-icons text-white">help_outline</span>
-          </button>
           <div className="hidden md:block relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <span className="material-icons text-white/70 text-sm">search</span>
