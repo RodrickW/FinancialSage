@@ -22,7 +22,10 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
           >
             <span className="material-icons">{menuOpen ? 'close' : 'menu'}</span>
           </button>
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <div className="flex items-center">
+            <ChessKingLogo className="w-7 h-7 mr-2" />
+            <h2 className="text-lg font-semibold">{title}</h2>
+          </div>
           {isPremium && (
             <span className="ml-2 text-sm bg-white/20 text-white py-1 px-2 rounded-full border border-white/30">Premium</span>
           )}
