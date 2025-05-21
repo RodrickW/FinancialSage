@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
+import { UserProfile, FinancialOverviewData } from '@/types';
 
 // Import mock data for development
 import { 
@@ -88,21 +89,21 @@ export default function Dashboard() {
         
         <div className="p-6">
           {/* Welcome and Date Section */}
-          <div className="rounded-xl bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 p-6 mb-8 shadow-sm border border-green-100">
+          <div className="rounded-xl bg-app-gradient text-white p-6 mb-8 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="mb-4 md:mb-0">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold text-white">
                   Welcome back, {user.firstName}!
                 </h1>
-                <p className="text-neutral-600 flex items-center mt-1">
-                  <span className="material-icons text-emerald-400 text-sm mr-1">today</span>
+                <p className="text-white/90 flex items-center mt-1">
+                  <span className="material-icons text-white/80 text-sm mr-1">today</span>
                   {currentDate}
                 </p>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <PlaidLinkButton 
-                  className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md transition-all duration-200 hover:shadow-lg"
+                  className="flex items-center bg-white text-teal-700 border border-teal-200 hover:bg-white/90 shadow-md transition-all duration-200 hover:shadow-lg"
                   onSuccess={() => {
                     toast({
                       title: "Account connected",

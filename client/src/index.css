@@ -13,27 +13,27 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    /* Primary colors - updated to green scheme */
-    --primary: 142 76% 36%; /* Teal green */
+    /* Primary colors - rich emerald green */
+    --primary: 161 76% 30%; /* Emerald green */
     --primary-foreground: 210 40% 98%;
  
-    /* Secondary colors - complementary to primary */
-    --secondary: 142 65% 45%;
+    /* Secondary colors - blue-green teal */
+    --secondary: 174 72% 38%;
     --secondary-foreground: 210 40% 98%;
  
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
  
-    /* Accent colors - lighter green */
-    --accent: 142 55% 92%;
-    --accent-foreground: 142 76% 26%;
+    /* Accent colors - lighter teal */
+    --accent: 165 55% 92%;
+    --accent-foreground: 161 76% 26%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
  
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+    --ring: 161 76% 30%;
  
     --radius: 0.5rem;
   }
@@ -80,21 +80,25 @@
   }
 }
 
-/* Color utility classes for the green scheme */
+/* Color utility classes for the teal gradient scheme */
 .bg-primary-gradient {
-  @apply bg-gradient-to-r from-green-600 to-emerald-600;
+  @apply bg-gradient-to-r from-emerald-600 to-teal-500;
+}
+
+.bg-app-gradient {
+  @apply bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600;
 }
 
 .text-primary-gradient {
-  @apply bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent;
 }
 
 .border-primary-gradient {
-  @apply border-green-500;
+  @apply border-teal-500;
 }
 
 .hover-primary-gradient:hover {
-  @apply bg-gradient-to-r from-green-700 to-emerald-700;
+  @apply bg-gradient-to-r from-emerald-700 to-teal-600;
 }
 
 /* Custom styles for Money Mind app */

@@ -98,7 +98,7 @@ export default function FloatingCoach() {
         <div className="relative group">
           <Button 
             onClick={() => setIsOpen(true)}
-            className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white p-0 flex items-center justify-center"
+            className="h-14 w-14 rounded-full shadow-lg bg-app-gradient text-white p-0 flex items-center justify-center"
           >
             <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded py-1 px-2 w-max opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               Ask Money Mind Coach
@@ -138,9 +138,9 @@ export default function FloatingCoach() {
       {/* Chat Window */}
       {isOpen && (
         <Card className="w-80 md:w-96 shadow-lg max-h-[500px] flex flex-col">
-          <CardHeader className="p-3 flex flex-row items-center justify-between bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg">
+          <CardHeader className="p-3 flex flex-row items-center justify-between bg-app-gradient text-white rounded-t-lg">
             <CardTitle className="text-base flex items-center">
-              <div className="bg-white text-green-600 h-6 w-6 rounded-full flex items-center justify-center mr-2">
+              <div className="bg-white text-teal-600 h-6 w-6 rounded-full flex items-center justify-center mr-2">
                 <span className="text-xs font-bold">MM</span>
               </div>
               Money Mind Coach

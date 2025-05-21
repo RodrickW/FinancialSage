@@ -20,7 +20,7 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
   ];
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-teal-100 z-50">
       <div className="flex justify-around items-center">
         {navItems.map((item) => (
           <Link 
