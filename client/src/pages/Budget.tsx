@@ -8,6 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   CircleDollarSign, 
   ArrowUpRight, 
@@ -37,6 +40,9 @@ interface BudgetCategory {
 export default function Budget() {
   const [currentMonth, setCurrentMonth] = useState('');
   const { toast } = useToast();
+  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
+  const [newBudgetAmount, setNewBudgetAmount] = useState('');
   
   // Format the current month
   useEffect(() => {
@@ -168,11 +174,55 @@ export default function Budget() {
   }, [budgetCategories]);
   
   // Handle adjusting a budget category
-  const handleAdjustBudget = (categoryId: number) => {
-    toast({
-      title: "Budget Adjustment",
-      description: "This feature will allow you to adjust your budget allocation.",
+  const handleAdjustBudget = (category: BudgetCategory) => {
+    setSelectedCategory(category);
+    setNewBudgetAmount(category.allocated.toString());
+    setAdjustDialogOpen(true);
+  };
+  
+  // Save budget adjustment
+  const saveBudgetAdjustment = () => {
+    if (!selectedCategory) return;
+    
+    const amount = parseFloat(newBudgetAmount);
+    if (isNaN(amount) || amount < 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid positive amount.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update the budget category
+    const updatedCategories = budgetCategories.map(cat => {
+      if (cat.id === selectedCategory.id) {
+        const newRemaining = amount - cat.spent;
+        const newPercentUsed = cat.spent > 0 ? (cat.spent / amount) * 100 : 0;
+        
+        return {
+          ...cat,
+          allocated: amount,
+          remaining: newRemaining,
+          percentUsed: newPercentUsed
+        };
+      }
+      return cat;
     });
+    
+    setBudgetCategories(updatedCategories);
+    setAdjustDialogOpen(false);
+    
+    toast({
+      title: "Budget Updated",
+      description: `${selectedCategory.name} budget updated to $${amount.toLocaleString()}`,
+    });
+    
+    // Here we would also save to the backend
+    // apiRequest(`/api/budget/${selectedCategory.id}`, {
+    //   method: 'PATCH',
+    //   data: { allocated: amount }
+    // });
   };
   
   // Function to determine progress bar color
@@ -311,7 +361,7 @@ export default function Budget() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => handleAdjustBudget(category.id)}
+                      onClick={() => handleAdjustBudget(category)}
                       className="h-8 px-2"
                     >
                       Adjust
@@ -359,6 +409,75 @@ export default function Budget() {
           </div>
         </div>
       </main>
+
+      {/* Budget Adjustment Dialog */}
+      <Dialog open={adjustDialogOpen} onOpenChange={setAdjustDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <span className="material-icons mr-2 text-blue-500">edit</span>
+              Adjust Budget
+            </DialogTitle>
+            <DialogDescription>
+              Update your monthly budget allocation for {selectedCategory?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Current Allocation:</span>
+                <span className="text-lg">${selectedCategory?.allocated.toLocaleString()}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Current Spending:</span>
+                <span className="text-lg text-red-500">${selectedCategory?.spent.toLocaleString()}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Remaining:</span>
+                <span className={`text-lg ${(selectedCategory?.remaining || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  ${selectedCategory?.remaining.toLocaleString()}
+                </span>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="budgetAmount">New Budget Amount ($)</Label>
+                <Input
+                  id="budgetAmount"
+                  type="number"
+                  value={newBudgetAmount}
+                  onChange={(e) => setNewBudgetAmount(e.target.value)}
+                  placeholder="Enter amount"
+                  min="0"
+                  step="10"
+                  className="w-full"
+                />
+              </div>
+              
+              {parseFloat(newBudgetAmount) < (selectedCategory?.spent || 0) && (
+                <div className="p-3 bg-yellow-50 text-yellow-800 rounded-md text-sm">
+                  <span className="material-icons align-bottom mr-1 text-sm">warning</span>
+                  The new budget amount is less than your current spending. You may need to reduce spending in this category.
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdjustDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={saveBudgetAdjustment}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600"
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
