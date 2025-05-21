@@ -114,14 +114,6 @@ export default function Dashboard() {
                   <span className="material-icons text-sm mr-1">add</span>
                   Connect Account
                 </PlaidLinkButton>
-                <Button 
-                  variant="outline"
-                  className="flex items-center bg-white border border-green-200 hover:bg-green-50 transition-all duration-200"
-                  onClick={handleExportData}
-                >
-                  <span className="material-icons text-sm mr-1">file_download</span>
-                  Export
-                </Button>
               </div>
             </div>
           </div>
