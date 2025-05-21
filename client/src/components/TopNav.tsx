@@ -17,37 +17,37 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
         <div className="flex items-center">
           <button 
             onClick={() => setMenuOpen(!menuOpen)} 
-            className="mr-3 text-neutral-700"
+            className="mr-3 text-white"
           >
             <span className="material-icons">{menuOpen ? 'close' : 'menu'}</span>
           </button>
           <h2 className="text-lg font-semibold">{title}</h2>
           {isPremium && (
-            <span className="ml-2 text-sm bg-green-50 text-green-600 py-1 px-2 rounded-full">Premium</span>
+            <span className="ml-2 text-sm bg-white/20 text-white py-1 px-2 rounded-full border border-white/30">Premium</span>
           )}
         </div>
       
         <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-full hover:bg-neutral-50">
-            <span className="material-icons">notifications</span>
+          <button className="p-2 rounded-full hover:bg-white/10">
+            <span className="material-icons text-white">notifications</span>
           </button>
-          <button className="p-2 rounded-full hover:bg-neutral-50">
-            <span className="material-icons">help_outline</span>
+          <button className="p-2 rounded-full hover:bg-white/10">
+            <span className="material-icons text-white">help_outline</span>
           </button>
           <div className="hidden md:block relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <span className="material-icons text-neutral-400 text-sm">search</span>
+              <span className="material-icons text-white/70 text-sm">search</span>
             </span>
             <Input
               type="text"
               placeholder="Search transactions..."
-              className="pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 bg-white/20 border border-white/30 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent placeholder:text-white/70"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button 
-            className="flex items-center px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+            className="flex items-center px-3 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors border border-white/30"
             onClick={async () => {
               const success = await logout();
               if (success) {
@@ -63,25 +63,25 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
       
       {/* Expandable menu */}
       {menuOpen && (
-        <div className="mt-4 py-4 border-t border-neutral-100">
+        <div className="mt-4 py-4 border-t border-white/20">
           <nav className="space-y-1">
-            <a href="/" className="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 rounded-md">
+            <a href="/" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
               <span className="material-icons mr-3">dashboard</span>
               Dashboard
             </a>
-            <a href="/accounts" className="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 rounded-md">
+            <a href="/accounts" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
               <span className="material-icons mr-3">account_balance_wallet</span>
               Accounts
             </a>
-            <a href="/credit" className="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 rounded-md">
+            <a href="/credit" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
               <span className="material-icons mr-3">credit_score</span>
               Credit
             </a>
-            <a href="/goals" className="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 rounded-md">
+            <a href="/goals" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
               <span className="material-icons mr-3">savings</span>
               Goals
             </a>
-            <a href="/coach" className="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 rounded-md">
+            <a href="/coach" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
               <span className="material-icons mr-3">psychology</span>
               Coach
             </a>

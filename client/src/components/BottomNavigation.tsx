@@ -28,7 +28,7 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
             href={item.path}
             className={cn(
               "flex flex-col items-center justify-center py-2 px-4",
-              isActive(item.path) ? "text-green-600" : "text-neutral-400 hover:text-neutral-600"
+              isActive(item.path) ? "text-teal-600" : "text-neutral-400 hover:text-teal-600"
             )}
           >
             <span className="material-icons text-lg mb-1">{item.icon}</span>
