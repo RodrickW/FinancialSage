@@ -85,12 +85,11 @@ export default function Dashboard() {
   const financialOverview = financialData || mockFinancialOverview;
   
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
-      <Sidebar user={user} />
+    <div className="flex flex-col min-h-screen bg-neutral-50">
+      <TopNav title="Mind My Money" />
       
-      <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
+      <main className="flex-1 overflow-x-hidden pb-16">
         <BottomNavigation user={user} />
-        <TopNav title="Dashboard" isPremium />
         
         <div className="p-6">
           {/* Welcome and Date Section */}
