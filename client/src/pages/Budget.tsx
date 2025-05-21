@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   CircleDollarSign, 
   ArrowUpRight, 
@@ -22,7 +23,8 @@ import {
   Gift, 
   PiggyBank, 
   Wrench, 
-  Wifi 
+  Wifi,
+  Check
 } from 'lucide-react';
 
 // Budget category interface
@@ -40,9 +42,17 @@ interface BudgetCategory {
 export default function Budget() {
   const [currentMonth, setCurrentMonth] = useState('');
   const { toast } = useToast();
-  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
-  const [newBudgetAmount, setNewBudgetAmount] = useState('');
+  
+  // Add category dialog state
+  const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
+  const [aiRecommendationsDialogOpen, setAiRecommendationsDialogOpen] = useState(false);
+
+  // Form state for adding a new category
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('shopping');
+  const [newCategoryColor, setNewCategoryColor] = useState('blue');
+  const [newCategoryBudget, setNewCategoryBudget] = useState('');
+  const [newCategorySpent, setNewCategorySpent] = useState('0');
   
   // Format the current month
   useEffect(() => {
@@ -79,11 +89,34 @@ export default function Budget() {
   const [totalSpent, setTotalSpent] = useState(0);
   const [totalRemaining, setTotalRemaining] = useState(0);
   
+  // Available icons and colors for selection
+  const iconOptions = [
+    { value: 'shopping', label: 'Shopping', icon: <ShoppingCart className="h-4 w-4" /> },
+    { value: 'home', label: 'Housing', icon: <Home className="h-4 w-4" /> },
+    { value: 'food', label: 'Food', icon: <Utensils className="h-4 w-4" /> },
+    { value: 'car', label: 'Transportation', icon: <Car className="h-4 w-4" /> },
+    { value: 'entertainment', label: 'Entertainment', icon: <Gift className="h-4 w-4" /> },
+    { value: 'savings', label: 'Savings', icon: <PiggyBank className="h-4 w-4" /> },
+    { value: 'utilities', label: 'Utilities', icon: <Wifi className="h-4 w-4" /> },
+    { value: 'maintenance', label: 'Maintenance', icon: <Wrench className="h-4 w-4" /> },
+  ];
+  
+  const colorOptions = [
+    { value: 'blue', label: 'Blue', class: 'bg-blue-500' },
+    { value: 'green', label: 'Green', class: 'bg-green-500' },
+    { value: 'purple', label: 'Purple', class: 'bg-purple-500' },
+    { value: 'red', label: 'Red', class: 'bg-red-500' },
+    { value: 'yellow', label: 'Yellow', class: 'bg-yellow-500' },
+    { value: 'indigo', label: 'Indigo', class: 'bg-indigo-500' },
+    { value: 'pink', label: 'Pink', class: 'bg-pink-500' },
+    { value: 'teal', label: 'Teal', class: 'bg-teal-500' },
+  ];
+  
   // Set up sample budget categories (these will be replaced by AI recommendations)
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([
     {
       id: 1,
-      name: 'Housing',
+      name: "Housing",
       icon: <Home className="h-5 w-5" />,
       color: 'bg-blue-500',
       allocated: 1500,
@@ -93,7 +126,7 @@ export default function Budget() {
     },
     {
       id: 2,
-      name: 'Food & Dining',
+      name: "Food & Dining",
       icon: <Utensils className="h-5 w-5" />,
       color: 'bg-green-500',
       allocated: 600,
@@ -103,7 +136,7 @@ export default function Budget() {
     },
     {
       id: 3,
-      name: 'Transportation',
+      name: "Transportation",
       icon: <Car className="h-5 w-5" />,
       color: 'bg-yellow-500',
       allocated: 350,
@@ -113,7 +146,7 @@ export default function Budget() {
     },
     {
       id: 4,
-      name: 'Shopping',
+      name: "Shopping",
       icon: <ShoppingCart className="h-5 w-5" />,
       color: 'bg-purple-500',
       allocated: 200,
@@ -123,7 +156,7 @@ export default function Budget() {
     },
     {
       id: 5,
-      name: 'Entertainment',
+      name: "Entertainment",
       icon: <Gift className="h-5 w-5" />,
       color: 'bg-pink-500',
       allocated: 150,
@@ -133,7 +166,7 @@ export default function Budget() {
     },
     {
       id: 6,
-      name: 'Savings',
+      name: "Savings",
       icon: <PiggyBank className="h-5 w-5" />,
       color: 'bg-indigo-500',
       allocated: 500,
@@ -143,7 +176,7 @@ export default function Budget() {
     },
     {
       id: 7,
-      name: 'Utilities',
+      name: "Utilities",
       icon: <Wifi className="h-5 w-5" />,
       color: 'bg-red-500',
       allocated: 200,
@@ -153,7 +186,7 @@ export default function Budget() {
     },
     {
       id: 8,
-      name: 'Home Maintenance',
+      name: "Home Maintenance",
       icon: <Wrench className="h-5 w-5" />,
       color: 'bg-teal-500',
       allocated: 100,
@@ -180,25 +213,152 @@ export default function Budget() {
     setAdjustDialogOpen(true);
   };
   
-  // Save budget adjustment
-  const saveBudgetAdjustment = () => {
-    if (!selectedCategory) return;
-    
-    const amount = parseFloat(newBudgetAmount);
-    if (isNaN(amount) || amount < 0) {
+  // Handle adding a new budget category
+  const handleAddCategory = () => {
+    if (!newCategoryName || !newCategoryBudget) {
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid positive amount.",
+        title: "Missing Information",
+        description: "Please provide a category name and budget amount",
         variant: "destructive"
       });
       return;
     }
+    
+    const budget = parseFloat(newCategoryBudget);
+    const spent = parseFloat(newCategorySpent || '0');
+    
+    if (isNaN(budget) || budget <= 0) {
+      toast({
+        title: "Invalid Budget",
+        description: "Please enter a valid budget amount",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (isNaN(spent) || spent < 0) {
+      toast({
+        title: "Invalid Spent Amount",
+        description: "Please enter a valid spent amount",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Calculate the remaining and percent used
+    const remaining = budget - spent;
+    const percentUsed = spent > 0 ? Math.round((spent / budget) * 100) : 0;
+    
+    // Find the selected icon
+    const selectedIconOption = iconOptions.find(option => option.value === newCategoryIcon);
+    
+    // Find the selected color
+    const selectedColorOption = colorOptions.find(option => option.value === newCategoryColor);
+    
+    // Create new category
+    const newCategory: BudgetCategory = {
+      id: Date.now(), // Use timestamp as a simple unique ID
+      name: newCategoryName,
+      icon: selectedIconOption?.icon || <ShoppingCart className="h-5 w-5" />,
+      color: `bg-${selectedColorOption?.value || 'blue'}-500`,
+      allocated: budget,
+      spent: spent,
+      remaining: remaining,
+      percentUsed: percentUsed
+    };
+    
+    // Add new category to the list
+    setBudgetCategories([...budgetCategories, newCategory]);
+    
+    // Close the dialog and reset form
+    setAddCategoryDialogOpen(false);
+    setNewCategoryName('');
+    setNewCategoryIcon('shopping');
+    setNewCategoryColor('blue');
+    setNewCategoryBudget('');
+    setNewCategorySpent('0');
+    
+    toast({
+      title: "Category Added",
+      description: `${newCategoryName} has been added to your budget`,
+    });
+  };
+  
+  // Handle getting AI recommendations
+  const handleGetAiRecommendations = () => {
+    setAiRecommendationsDialogOpen(true);
+    
+    // Here we would normally fetch recommendations from the API
+    // For now, we'll simulate it with a timeout
+    setTimeout(() => {
+      // Add some sample recommendations to demonstrate
+      const recommendedCategories = [
+        {
+          id: Date.now(),
+          name: "Subscriptions",
+          icon: <Wifi className="h-5 w-5" />,
+          color: 'bg-purple-500',
+          allocated: 80,
+          spent: 65.99,
+          remaining: 14.01,
+          percentUsed: 82
+        },
+        {
+          id: Date.now() + 1,
+          name: "Personal Care",
+          icon: <ShoppingCart className="h-5 w-5" />,
+          color: 'bg-pink-500',
+          allocated: 120,
+          spent: 85.75,
+          remaining: 34.25,
+          percentUsed: 71
+        }
+      ];
+      
+      // Add the recommended categories
+      setBudgetCategories([...budgetCategories, ...recommendedCategories]);
+      
+      // Close the dialog
+      setAiRecommendationsDialogOpen(false);
+      
+      toast({
+        title: "AI Recommendations Added",
+        description: "We've analyzed your spending and added 2 new budget categories",
+      });
+    }, 2000);
+  };
 
+  // Function to determine progress bar color
+  const getProgressColor = (percentUsed: number): string => {
+    if (percentUsed >= 100) return '[&>div]:bg-red-500';
+    if (percentUsed >= 85) return '[&>div]:bg-yellow-500';
+    return '[&>div]:bg-blue-500';
+  };
+
+  // State for adjust dialog
+  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
+  const [newBudgetAmount, setNewBudgetAmount] = useState('');
+  
+  // Function to save budget adjustment
+  const saveBudgetAdjustment = () => {
+    if (!selectedCategory) return;
+    
+    const amount = parseFloat(newBudgetAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid Budget",
+        description: "Please enter a valid budget amount",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Update the budget category
     const updatedCategories = budgetCategories.map(cat => {
       if (cat.id === selectedCategory.id) {
         const newRemaining = amount - cat.spent;
-        const newPercentUsed = cat.spent > 0 ? (cat.spent / amount) * 100 : 0;
+        const newPercentUsed = cat.spent > 0 ? Math.round((cat.spent / amount) * 100) : 0;
         
         return {
           ...cat,
@@ -215,44 +375,16 @@ export default function Budget() {
     
     toast({
       title: "Budget Updated",
-      description: `${selectedCategory.name} budget updated to $${amount.toLocaleString()}`,
+      description: `The budget for ${selectedCategory.name} has been updated.`,
     });
-    
-    // Here we would also save to the backend
-    // apiRequest(`/api/budget/${selectedCategory.id}`, {
-    //   method: 'PATCH',
-    //   data: { allocated: amount }
-    // });
   };
   
-  // Function to determine progress bar color
-  const getProgressColor = (percentUsed: number): string => {
-    if (percentUsed >= 100) return '[&>div]:bg-red-500';
-    if (percentUsed >= 85) return '[&>div]:bg-yellow-500';
-    return '[&>div]:bg-blue-500';
-  };
-  
-  // Function to load AI budget recommendations
+  // Load AI budget recommendations (mock implementation for now)
   useEffect(() => {
     if (budgetRecommendations) {
       try {
-        // This is where we would update budgetCategories with AI recommendations
-        // For now, we'll just use the sample data
         console.log("Budget recommendations received:", budgetRecommendations);
-        
-        // Here we would map the AI recommendations to our budget categories
-        // Example:
-        // const recommendedBudgets = budgetRecommendations.categories.map(cat => ({
-        //   id: cat.id,
-        //   name: cat.name,
-        //   icon: getCategoryIcon(cat.name),
-        //   color: getCategoryColor(cat.name),
-        //   allocated: cat.recommended,
-        //   spent: cat.spent || 0,
-        //   remaining: cat.recommended - (cat.spent || 0),
-        //   percentUsed: cat.spent ? (cat.spent / cat.recommended) * 100 : 0,
-        // }));
-        // setBudgetCategories(recommendedBudgets);
+        // Here we would implement the real mapping from API data
       } catch (error) {
         console.error("Error processing budget recommendations:", error);
       }
@@ -269,25 +401,25 @@ export default function Budget() {
         <div className="p-6">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold">Budget</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Budget</h1>
             <p className="text-neutral-500">Manage your spending for {currentMonth}</p>
           </div>
           
           {/* Overall Budget Summary */}
-          <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-md hover:shadow-lg transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold flex items-center">
+                  <h2 className="text-lg font-semibold flex items-center text-blue-700">
                     <CircleDollarSign className="mr-2 h-5 w-5 text-blue-500" />
                     Total Budget
                   </h2>
-                  <p className="text-3xl font-bold mt-1">${totalBudget.toLocaleString()}</p>
+                  <p className="text-3xl font-bold mt-1 text-blue-900">${totalBudget.toLocaleString()}</p>
                 </div>
                 
                 <div className="flex space-x-6">
                   <div>
-                    <p className="text-sm text-neutral-500">Spent</p>
+                    <p className="text-sm text-blue-700">Spent</p>
                     <p className="text-lg font-medium flex items-center text-red-500">
                       <ArrowUpRight className="h-4 w-4 mr-1" />
                       ${totalSpent.toLocaleString()}
@@ -295,7 +427,7 @@ export default function Budget() {
                   </div>
                   
                   <div>
-                    <p className="text-sm text-neutral-500">Remaining</p>
+                    <p className="text-sm text-blue-700">Remaining</p>
                     <p className="text-lg font-medium flex items-center text-green-500">
                       <ArrowDownRight className="h-4 w-4 mr-1" />
                       ${totalRemaining.toLocaleString()}
@@ -309,7 +441,7 @@ export default function Budget() {
                 className="h-2 bg-blue-100"
               />
               
-              <div className="flex justify-between mt-1 text-xs text-neutral-500">
+              <div className="flex justify-between mt-1 text-xs text-blue-700">
                 <span>0%</span>
                 <span>50%</span>
                 <span>100%</span>
@@ -318,9 +450,9 @@ export default function Budget() {
           </Card>
           
           {/* AI Budget Message */}
-          <div className="bg-gradient-to-r from-indigo-500 to-blue-600 p-4 rounded-lg mb-6 text-white">
+          <div className="bg-gradient-to-r from-indigo-500 to-blue-600 p-6 rounded-xl mb-6 text-white shadow-md">
             <div className="flex">
-              <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4 shadow-inner">
                 <span className="material-icons text-2xl">psychology</span>
               </div>
               <div>
@@ -337,7 +469,7 @@ export default function Budget() {
           </div>
           
           {/* Budget Categories */}
-          <h2 className="text-xl font-semibold mb-4">Budget Categories</h2>
+          <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">Budget Categories</h2>
           
           {budgetLoading ? (
             <div className="flex justify-center items-center h-40">
@@ -346,10 +478,10 @@ export default function Budget() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {budgetCategories.map((category) => (
-                <Card key={category.id} className="overflow-hidden">
+                <Card key={category.id} className="overflow-hidden bg-white shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
                   <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
                     <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${category.color} text-white`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${category.color} text-white shadow-sm`}>
                         {category.icon}
                       </div>
                       <div>
@@ -362,7 +494,7 @@ export default function Budget() {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleAdjustBudget(category)}
-                      className="h-8 px-2"
+                      className="h-8 px-2 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                     >
                       Adjust
                     </Button>
@@ -397,46 +529,154 @@ export default function Budget() {
           )}
           
           {/* Action Buttons */}
-          <div className="flex justify-center mt-8">
-            <Button className="mx-2 bg-gradient-to-r from-blue-600 to-indigo-600">
+          <div className="flex flex-col sm:flex-row justify-center mt-8 gap-4">
+            <Button 
+              onClick={() => setAddCategoryDialogOpen(true)}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200"
+            >
               <span className="material-icons mr-2 text-sm">add</span>
               Add Category
             </Button>
-            <Button variant="outline" className="mx-2">
+            <Button 
+              variant="outline" 
+              onClick={handleGetAiRecommendations}
+              className="border-blue-200 hover:bg-blue-50 transition-all duration-200"
+            >
               <span className="material-icons mr-2 text-sm">auto_awesome</span>
               Get AI Recommendations
             </Button>
           </div>
         </div>
       </main>
-
+      
+      {/* Add Category Dialog */}
+      <Dialog open={addCategoryDialogOpen} onOpenChange={setAddCategoryDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-blue-700">
+              <span className="material-icons mr-2 text-blue-500">add</span>
+              Add Budget Category
+            </DialogTitle>
+            <DialogDescription>
+              Create a new budget category to track your spending.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="category-name">Category Name</Label>
+              <Input
+                id="category-name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="e.g., Entertainment, Subscriptions"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Category Icon</Label>
+              <Select value={newCategoryIcon} onValueChange={setNewCategoryIcon}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an icon" />
+                </SelectTrigger>
+                <SelectContent>
+                  {iconOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center">
+                        <span className="mr-2">{option.icon}</span>
+                        <span>{option.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Category Color</Label>
+              <Select value={newCategoryColor} onValueChange={setNewCategoryColor}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a color" />
+                </SelectTrigger>
+                <SelectContent>
+                  {colorOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center">
+                        <span className={`w-4 h-4 rounded-full mr-2 ${option.class}`}></span>
+                        <span>{option.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="budget-amount">Budget Amount ($)</Label>
+              <Input
+                id="budget-amount"
+                type="number"
+                value={newCategoryBudget}
+                onChange={(e) => setNewCategoryBudget(e.target.value)}
+                placeholder="e.g., 200"
+                min="0"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="spent-amount">Current Spent Amount ($)</Label>
+              <Input
+                id="spent-amount"
+                type="number"
+                value={newCategorySpent}
+                onChange={(e) => setNewCategorySpent(e.target.value)}
+                placeholder="e.g., 50"
+                min="0"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddCategoryDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddCategory}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600"
+            >
+              Add Category
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Budget Adjustment Dialog */}
       <Dialog open={adjustDialogOpen} onOpenChange={setAdjustDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center">
+            <DialogTitle className="flex items-center text-blue-700">
               <span className="material-icons mr-2 text-blue-500">edit</span>
               Adjust Budget
             </DialogTitle>
             <DialogDescription>
-              Update your monthly budget allocation for {selectedCategory?.name}
+              Update the budget allocation for {selectedCategory?.name}
             </DialogDescription>
           </DialogHeader>
           
           <div className="py-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-medium">Current Allocation:</span>
+                <span className="font-medium text-blue-700">Current Allocation:</span>
                 <span className="text-lg">${selectedCategory?.allocated.toLocaleString()}</span>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="font-medium">Current Spending:</span>
+                <span className="font-medium text-blue-700">Current Spending:</span>
                 <span className="text-lg text-red-500">${selectedCategory?.spent.toLocaleString()}</span>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="font-medium">Remaining:</span>
+                <span className="font-medium text-blue-700">Remaining:</span>
                 <span className={`text-lg ${(selectedCategory?.remaining || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   ${selectedCategory?.remaining.toLocaleString()}
                 </span>
@@ -456,7 +696,7 @@ export default function Budget() {
                 />
               </div>
               
-              {parseFloat(newBudgetAmount) < (selectedCategory?.spent || 0) && (
+              {selectedCategory && parseFloat(newBudgetAmount) < selectedCategory.spent && (
                 <div className="p-3 bg-yellow-50 text-yellow-800 rounded-md text-sm">
                   <span className="material-icons align-bottom mr-1 text-sm">warning</span>
                   The new budget amount is less than your current spending. You may need to reduce spending in this category.
@@ -476,6 +716,47 @@ export default function Budget() {
               Save Changes
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* AI Recommendations Dialog */}
+      <Dialog open={aiRecommendationsDialogOpen} onOpenChange={setAiRecommendationsDialogOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-blue-700">
+              <span className="material-icons mr-2 text-blue-500">psychology</span>
+              AI Budget Recommendations
+            </DialogTitle>
+            <DialogDescription>
+              Money Mind is analyzing your spending patterns to create personalized budget recommendations.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-8 flex flex-col items-center justify-center">
+            <div className="relative w-20 h-20 mb-4">
+              <div className="absolute inset-0 rounded-full border-t-4 border-b-4 border-blue-500 animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="material-icons text-3xl text-blue-500">psychology</span>
+              </div>
+            </div>
+            <p className="text-center text-blue-700">
+              Analyzing your financial data and spending habits...
+            </p>
+            <div className="mt-6 space-y-2 w-full">
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2" />
+                <p className="text-sm text-green-700">Analyzing transaction history</p>
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2" />
+                <p className="text-sm text-green-700">Identifying spending patterns</p>
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-4 border-t border-r border-blue-500 rounded-full animate-spin mr-2"></div>
+                <p className="text-sm text-blue-700">Creating optimized budget categories</p>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
