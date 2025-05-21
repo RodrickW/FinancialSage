@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { logout, redirectToLogin } from '@/lib/auth';
-import ChessKingLogo from '@/components/Logo';
+import { ChessCrownLogo } from '@/components/Logo';
 
 interface TopNavProps {
   title: string;
@@ -23,7 +23,7 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
             <span className="material-icons">{menuOpen ? 'close' : 'menu'}</span>
           </button>
           <div className="flex items-center">
-            <ChessKingLogo className="w-7 h-7 mr-2" />
+            <ChessCrownLogo className="w-7 h-7 mr-2" />
             <h2 className="text-lg font-semibold">{title}</h2>
           </div>
           {isPremium && (

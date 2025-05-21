@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { ChessCrownLogo } from '@/components/Logo';
 
 const loginSchema = z.object({
   username: z.string().min(1, {
@@ -83,14 +84,14 @@ export default function Login() {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-app-gradient p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3">
-              <span className="material-icons text-white">account_balance</span>
+            <div className="w-12 h-12 bg-white/20 border border-white/30 rounded-full flex items-center justify-center mr-3">
+              <ChessCrownLogo className="w-7 h-7" color="text-white" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Mind My Money</h1>
+            <h1 className="text-2xl font-bold text-white">Mind My Money</h1>
           </div>
           <CardTitle className="text-xl text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
@@ -126,7 +127,7 @@ export default function Login() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <span className="material-icons animate-spin mr-2">refresh</span>

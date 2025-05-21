@@ -16,9 +16,8 @@ export function ChessCrownLogo({ className = "w-6 h-6", color = "text-white" }: 
   return (
     <div className={`${className} ${color}`}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 1L8 5H3l2 7h14l2-7h-5l-4-4z" />
-        <path d="M5 16v3h14v-3H5z" />
-        <path d="M5 21v1h14v-1H5z" />
+        <path d="M3 10l3 3v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-7l3-3-1-3H4l-1 3z" />
+        <path d="M12 2L8 7M12 2l4 5M12 2v7" />
       </svg>
     </div>
   );
