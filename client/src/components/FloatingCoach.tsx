@@ -98,7 +98,7 @@ export default function FloatingCoach() {
         <div className="relative group">
           <Button 
             onClick={() => setIsOpen(true)}
-            className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-0 flex items-center justify-center"
+            className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white p-0 flex items-center justify-center"
           >
             <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded py-1 px-2 w-max opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               Ask Money Mind Coach
@@ -111,7 +111,7 @@ export default function FloatingCoach() {
           
           {/* First-time intro notification */}
           {showIntroMessage && (
-            <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 bg-white text-black text-sm shadow-lg rounded-lg py-3 px-4 w-72 border border-blue-100">
+            <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 bg-white text-black text-sm shadow-lg rounded-lg py-3 px-4 w-72 border border-green-100">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -122,11 +122,11 @@ export default function FloatingCoach() {
                 <X size={14} />
               </button>
               <div className="flex items-start">
-                <Info className="text-blue-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
+                <Info className="text-green-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
                 <div>
-                  <p className="font-medium text-blue-700 mb-1">Money Mind Coach Available</p>
+                  <p className="font-medium text-green-700 mb-1">Money Mind Coach Available</p>
                   <p className="text-xs text-neutral-600 mb-2">Your AI financial advisor is here to answer any questions about budgeting, investing, or financial planning.</p>
-                  <p className="text-xs text-blue-600 font-medium">Click the button to get started!</p>
+                  <p className="text-xs text-green-600 font-medium">Click the button to get started!</p>
                 </div>
               </div>
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-blue-100"></div>

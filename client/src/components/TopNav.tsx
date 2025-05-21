@@ -23,7 +23,7 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
           </button>
           <h2 className="text-lg font-semibold">{title}</h2>
           {isPremium && (
-            <span className="ml-2 text-sm bg-primary-50 text-primary-500 py-1 px-2 rounded-full">Premium</span>
+            <span className="ml-2 text-sm bg-green-50 text-green-600 py-1 px-2 rounded-full">Premium</span>
           )}
         </div>
       
