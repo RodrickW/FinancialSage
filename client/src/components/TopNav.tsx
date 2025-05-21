@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { logout, redirectToLogin } from '@/lib/auth';
 import { ChessCrownLogo } from '@/components/Logo';
+import { NotificationDrawer } from '@/components/ui/notification-drawer';
 
 interface TopNavProps {
   title: string;
@@ -32,9 +33,7 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
         </div>
       
         <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-full hover:bg-white/10">
-            <span className="material-icons text-white">notifications</span>
-          </button>
+          <NotificationDrawer />
           <div className="hidden md:block relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <span className="material-icons text-white/70 text-sm">search</span>
