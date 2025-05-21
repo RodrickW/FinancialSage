@@ -11,6 +11,14 @@ export const users = pgTable("users", {
   lastName: text("last_name").notNull(),
   email: text("email").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  
+  // Subscription fields
+  isPremium: boolean("is_premium").default(false),
+  premiumTier: text("premium_tier"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: text("subscription_status").default("inactive"),
+  trialEndsAt: timestamp("trial_ends_at"),
 });
 
 // Connected account schema (bank accounts via Plaid)
