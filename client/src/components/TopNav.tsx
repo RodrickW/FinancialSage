@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { logout, redirectToLogin } from '@/lib/auth';
+import ChessKingLogo from '@/components/Logo';
 
 interface TopNavProps {
   title: string;
