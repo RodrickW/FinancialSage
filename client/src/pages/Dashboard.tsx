@@ -93,33 +93,40 @@ export default function Dashboard() {
         
         <div className="p-6">
           {/* Welcome and Date Section */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">Welcome back, {user.firstName}!</h1>
-              <p className="text-neutral-500">{currentDate}</p>
-            </div>
-            
-            <div className="mt-4 md:mt-0 flex space-x-2">
-              <PlaidLinkButton 
-                className="flex items-center bg-primary-500 hover:bg-primary-600 text-white"
-                onSuccess={() => {
-                  toast({
-                    title: "Account connected",
-                    description: "Your account has been successfully connected.",
-                  });
-                }}
-              >
-                <span className="material-icons text-sm mr-1">add</span>
-                Connect Account
-              </PlaidLinkButton>
-              <Button 
-                variant="outline"
-                className="flex items-center bg-white border border-neutral-200 hover:bg-neutral-50"
-                onClick={handleExportData}
-              >
-                <span className="material-icons text-sm mr-1">file_download</span>
-                Export
-              </Button>
+          <div className="rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-6 mb-8 shadow-sm border border-blue-100">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div className="mb-4 md:mb-0">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Welcome back, {user.firstName}!
+                </h1>
+                <p className="text-neutral-600 flex items-center mt-1">
+                  <span className="material-icons text-indigo-400 text-sm mr-1">today</span>
+                  {currentDate}
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <PlaidLinkButton 
+                  className="flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md transition-all duration-200 hover:shadow-lg"
+                  onSuccess={() => {
+                    toast({
+                      title: "Account connected",
+                      description: "Your account has been successfully connected.",
+                    });
+                  }}
+                >
+                  <span className="material-icons text-sm mr-1">add</span>
+                  Connect Account
+                </PlaidLinkButton>
+                <Button 
+                  variant="outline"
+                  className="flex items-center bg-white border border-blue-200 hover:bg-blue-50 transition-all duration-200"
+                  onClick={handleExportData}
+                >
+                  <span className="material-icons text-sm mr-1">file_download</span>
+                  Export
+                </Button>
+              </div>
             </div>
           </div>
           
