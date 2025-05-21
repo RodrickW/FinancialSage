@@ -17,7 +17,6 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
     { name: 'Budget', path: '/budget', icon: 'pie_chart' },
     { name: 'Credit', path: '/credit', icon: 'credit_score' },
     { name: 'Goals', path: '/goals', icon: 'savings' },
-    { name: 'Coach', path: '/coach', icon: 'psychology' },
   ];
   
   return (
