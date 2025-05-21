@@ -90,13 +90,38 @@ function Router() {
   );
 }
 
+// Modified App component to only show FloatingCoach when logged in
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Check if the user is logged in
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const response = await fetch('/api/users/profile', {
+          credentials: 'include',
+        });
+        setIsLoggedIn(response.ok);
+      } catch (error) {
+        console.error('Login check failed:', error);
+        setIsLoggedIn(false);
+      }
+    };
+    
+    checkLoginStatus();
+    
+    // Set up an interval to periodically check login status
+    const interval = setInterval(checkLoginStatus, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Router />
-        <FloatingCoach />
+        {isLoggedIn && <FloatingCoach />}
       </TooltipProvider>
     </QueryClientProvider>
   );
