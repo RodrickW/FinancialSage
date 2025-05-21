@@ -46,21 +46,13 @@ export default function Dashboard() {
   }, []);
   
   // Get the user data from the backend
-  const { data: userData, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['/api/users/profile'],
-    onError: () => {
-      // Fallback to mock data
-      console.error('Failed to load user profile, using mock data instead');
-    }
+  const { data: userData, isLoading: userLoading, error: userError } = useQuery<any>({
+    queryKey: ['/api/users/profile']
   });
   
   // Get the financial overview data
-  const { data: financialData, isLoading: financialLoading, error: financialError } = useQuery({
-    queryKey: ['/api/financial-overview'],
-    onError: () => {
-      // Fallback to mock data
-      console.error('Failed to load financial overview, using mock data instead');
-    }
+  const { data: financialData, isLoading: financialLoading, error: financialError } = useQuery<any>({
+    queryKey: ['/api/financial-overview']
   });
   
   // Handle connect account
@@ -81,8 +73,11 @@ export default function Dashboard() {
     });
   };
   
-  const user = userData || mockUserProfile;
-  const financialOverview = financialData || mockFinancialOverview;
+  // Use user data from API or fallback to mock data
+  const user: UserProfile = userData || mockUserProfile;
+  
+  // Use financial overview from API or fallback to mock data
+  const financialOverview: FinancialOverviewData = financialData || mockFinancialOverview;
   
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">

@@ -129,7 +129,7 @@ export default function FloatingCoach() {
                   <p className="text-xs text-green-600 font-medium">Click the button to get started!</p>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-blue-100"></div>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-green-100"></div>
             </div>
           )}
         </div>
@@ -138,9 +138,9 @@ export default function FloatingCoach() {
       {/* Chat Window */}
       {isOpen && (
         <Card className="w-80 md:w-96 shadow-lg max-h-[500px] flex flex-col">
-          <CardHeader className="p-3 flex flex-row items-center justify-between bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
+          <CardHeader className="p-3 flex flex-row items-center justify-between bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg">
             <CardTitle className="text-base flex items-center">
-              <div className="bg-white text-blue-600 h-6 w-6 rounded-full flex items-center justify-center mr-2">
+              <div className="bg-white text-green-600 h-6 w-6 rounded-full flex items-center justify-center mr-2">
                 <span className="text-xs font-bold">MM</span>
               </div>
               Money Mind Coach
@@ -148,7 +148,7 @@ export default function FloatingCoach() {
             <Button 
               variant="ghost" 
               onClick={() => setIsOpen(false)}
-              className="h-8 w-8 p-0 text-white hover:bg-blue-600/20"
+              className="h-8 w-8 p-0 text-white hover:bg-green-600/20"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -185,7 +185,7 @@ export default function FloatingCoach() {
                 <div 
                   className={`inline-block rounded-lg p-3 max-w-[85%] ${
                     msg.role === 'user' 
-                      ? 'bg-blue-100 text-blue-900' 
+                      ? 'bg-green-100 text-green-900' 
                       : 'bg-neutral-100 text-neutral-900'
                   }`}
                 >
@@ -214,12 +214,12 @@ export default function FloatingCoach() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="flex-1 p-2 h-10 min-h-[40px] max-h-20 border rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 p-2 h-10 min-h-[40px] max-h-20 border rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
               />
               <Button 
                 onClick={handleSendMessage}
                 disabled={isLoading || !message.trim()}
-                className="h-10 bg-blue-600 hover:bg-blue-700"
+                className="h-10 bg-green-600 hover:bg-green-700"
                 size="sm"
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
