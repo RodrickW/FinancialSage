@@ -15,6 +15,7 @@ import FinancialCoach from "@/pages/Coach";
 import SimpleGoals from "@/pages/SimpleGoals";
 import Goals from "@/pages/Goals";
 import Credit from "@/pages/Credit";
+import Budget from "@/pages/Budget";
 import NotFound from "@/pages/not-found";
 
 // Protected route component
@@ -76,6 +77,9 @@ function Router() {
       </Route>
       <Route path="/credit">
         {(params) => <ProtectedRoute component={Credit} params={params} />}
+      </Route>
+      <Route path="/budget">
+        {(params) => <ProtectedRoute component={Budget} params={params} />}
       </Route>
       <Route path="/">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}
