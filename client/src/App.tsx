@@ -9,6 +9,7 @@ import { SubscriptionBanner } from "@/components/ui/subscription-banner";
 
 // Import pages
 import Landing from "@/pages/Landing";
+import Privacy from "@/pages/Privacy";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -70,6 +71,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/landing" component={Landing} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />

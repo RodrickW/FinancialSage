@@ -423,7 +423,7 @@ export default function Landing() {
               <ul className="space-y-2">
                 <li><a href="#" className="hover:text-teal-400 transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-teal-400 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-teal-400 transition-colors">Privacy</a></li>
+                <li><a href="/privacy" className="hover:text-teal-400 transition-colors">Privacy Policy</a></li>
               </ul>
             </div>
           </div>
