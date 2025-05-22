@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -10,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { UserProfile } from '@/types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageCircle, Target, TrendingUp } from 'lucide-react';
 import { mockUserProfile } from '@/lib/utils/mockData';
 
 export default function FinancialCoach() {
@@ -18,6 +19,7 @@ export default function FinancialCoach() {
   const [aiQuestion, setAiQuestion] = useState('');
   const [isAsking, setIsAsking] = useState(false);
   const [answer, setAnswer] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
 
   // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -381,6 +383,44 @@ export default function FinancialCoach() {
   const renderAskTab = () => {
     return (
       <div className="space-y-6">
+        {/* Interview Starter Card */}
+        <Card className="bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200">
+          <CardContent className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-4">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">Get Your Personalized Financial Plan</h3>
+                <p className="text-sm text-gray-600">Let Money Mind understand your unique goals</p>
+              </div>
+            </div>
+            <p className="text-gray-700 mb-4">
+              Ready to transform your financial future? Take our quick 5-minute interview to get personalized recommendations tailored just for you.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="flex items-center text-sm text-gray-600">
+                <Target className="w-4 h-4 mr-2 text-teal-500" />
+                Personalized goal setting
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <TrendingUp className="w-4 h-4 mr-2 text-teal-500" />
+                Custom budget recommendations
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <MessageCircle className="w-4 h-4 mr-2 text-teal-500" />
+                AI-powered insights
+              </div>
+            </div>
+            <Button 
+              onClick={() => setLocation('/coach/interview')}
+              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
+            >
+              Start Financial Interview
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
           <CardContent className="p-6">
             <div className="flex items-center mb-4">
@@ -388,12 +428,12 @@ export default function FinancialCoach() {
                 <span className="text-white text-lg font-bold">MM</span>
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind</h3>
-                <p className="text-sm text-neutral-600">Your personal AI financial coach</p>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Ask Money Mind</h3>
+                <p className="text-sm text-neutral-600">Get instant answers to your financial questions</p>
               </div>
             </div>
             <p className="text-neutral-600 mb-4">
-              Hi there! I'm Money Mind, your personal financial coach. I analyze your spending habits, account balances, and financial goals to provide personalized advice. What financial questions can I help you with today?
+              Have a specific financial question? I'm here to help with personalized advice based on your unique situation.
             </p>
             <div className="flex items-start">
               <textarea
