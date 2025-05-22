@@ -267,8 +267,7 @@ export default function Privacy() {
                 We're committed to transparency about how we handle your data. If you have any questions about this privacy policy or your data, please don't hesitate to contact us.
               </p>
               <div className="space-y-2">
-                <p className="text-gray-700"><strong>Email:</strong> privacy@mindmymoney.com</p>
-                <p className="text-gray-700"><strong>Address:</strong> Mind My Money, Privacy Team, 123 Financial St, San Francisco, CA 94105</p>
+                <p className="text-gray-700"><strong>Email:</strong> waddleinnovations@gmail.com</p>
               </div>
               <div className="mt-6">
                 <Button 
