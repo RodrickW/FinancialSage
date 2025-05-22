@@ -15,6 +15,7 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Accounts from "@/pages/Accounts";
 import FinancialCoach from "@/pages/Coach";
+import CoachInterview from "@/pages/CoachInterview";
 import SimpleGoals from "@/pages/SimpleGoals";
 import Goals from "@/pages/Goals";
 import Credit from "@/pages/Credit";
@@ -79,6 +80,9 @@ function Router() {
       </Route>
       <Route path="/coach">
         {(params) => <ProtectedRoute component={FinancialCoach} params={params} />}
+      </Route>
+      <Route path="/coach/interview">
+        {(params) => <ProtectedRoute component={CoachInterview} params={params} />}
       </Route>
       <Route path="/goals">
         {(params) => <ProtectedRoute component={Goals} params={params} />}

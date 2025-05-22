@@ -683,6 +683,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Money Mind Interview endpoint - Save user responses
+  app.post('/api/ai/interview', requireAuth, async (req, res) => {
+    try {
+      const { responses, completedAt } = req.body;
+      const user = req.user as User;
+      
+      if (!responses) {
+        return res.status(400).json({ message: 'Interview responses are required' });
+      }
+      
+      // For now, we'll store the interview in the insights table
+      // In a real application, you might want a dedicated interview_responses table
+      const interviewInsight = await storage.createInsight({
+        userId: user.id,
+        type: 'interview',
+        title: 'Financial Goals Interview',
+        description: `Interview completed on ${new Date().toLocaleDateString()}`,
+        content: JSON.stringify({
+          responses,
+          completedAt,
+          summary: {
+            goals: responses['financial-goals'] || [],
+            situation: responses['current-situation'] || '',
+            income: responses['monthly-income'] || 0,
+            challenge: responses['biggest-challenge'] || '',
+            riskTolerance: responses['risk-tolerance'] || ''
+          }
+        }),
+        severity: 'info'
+      });
+      
+      res.json({ 
+        success: true, 
+        message: 'Interview responses saved successfully',
+        interviewId: interviewInsight.id 
+      });
+    } catch (error) {
+      console.error('Error saving interview responses:', error);
+      res.status(500).json({ message: 'Failed to save interview responses' });
+    }
+  });
+
   // Money Mind AI coaching endpoint
   app.post('/api/ai/coaching', requireAuth, async (req, res) => {
     try {
