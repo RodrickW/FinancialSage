@@ -187,15 +187,15 @@ export default function Landing() {
           <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              No credit card required
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
               7-day free trial
             </div>
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
               Cancel anytime
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+              Secure payment
             </div>
           </div>
         </div>
@@ -430,7 +430,7 @@ export default function Landing() {
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 Mind My Money. All rights reserved.
+              © 2024 Waddle Innovations. All rights reserved.
             </p>
           </div>
         </div>
