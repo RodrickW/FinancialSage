@@ -157,12 +157,11 @@ export default function Landing() {
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
-            Transform Your Financial Future with AI
+            Your AI Financial Coach
           </h1>
           
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Meet Money Mind, your intelligent financial coach. Get personalized insights, 
-            smart budgeting recommendations, and achieve your financial goals faster than ever.
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Get personalized financial insights, smart budgets, and achieve your money goals with Money Mind AI.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -206,10 +205,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Powerful Features for Smart Money Management
+              Smart Financial Management
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Everything you need to take control of your finances and build lasting wealth
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Everything you need to master your money
             </p>
           </div>
           
@@ -234,10 +233,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              How Mind My Money Works
+              How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Get started in minutes and transform your financial life
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Get started in minutes
             </p>
           </div>
           
@@ -370,17 +369,17 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-teal-600 to-emerald-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Transform Your Financial Future?
+            Ready to Master Your Money?
           </h2>
           <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are already achieving their financial goals with Mind My Money
+            Start your 7-day free trial today
           </p>
           <Button 
             size="lg"
             onClick={() => setLocation('/register')}
             className="bg-white text-teal-600 hover:bg-gray-50 text-lg px-8 py-4"
           >
-            Start Your Free Trial Today
+            Start Free Trial
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>
