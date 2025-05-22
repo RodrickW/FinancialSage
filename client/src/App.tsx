@@ -8,6 +8,7 @@ import FloatingCoach from "@/components/FloatingCoach";
 import { SubscriptionBanner } from "@/components/ui/subscription-banner";
 
 // Import pages
+import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -68,6 +69,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
 function Router() {
   return (
     <Switch>
+      <Route path="/landing" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
@@ -102,9 +104,7 @@ function Router() {
       <Route path="/subscription/cancel">
         {(params) => <ProtectedRoute component={SubscriptionCancel} params={params} />}
       </Route>
-      <Route path="/">
-        {(params) => <ProtectedRoute component={Dashboard} params={params} />}
-      </Route>
+      <Route path="/" component={Landing} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
