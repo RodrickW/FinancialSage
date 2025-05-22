@@ -81,32 +81,34 @@ export default function Landing() {
 
   const pricingPlans = [
     {
-      name: "Basic",
-      price: "Free",
-      period: "forever",
-      description: "Perfect for getting started with financial tracking",
+      name: "Standard",
+      price: "$9.99",
+      period: "month",
+      description: "Essential financial management with AI coaching",
       features: [
-        "Connect up to 2 bank accounts",
+        "Unlimited bank connections",
+        "Money Mind AI coaching",
         "Basic spending analytics",
-        "Monthly budget tracking",
+        "Budget tracking & planning",
+        "Goal setting & tracking",
         "Email support"
       ],
-      cta: "Get Started",
+      cta: "Start 7-Day Free Trial",
       popular: false
     },
     {
       name: "Premium",
-      price: "$9.99",
+      price: "$14.99",
       period: "month",
-      description: "Advanced features for serious financial planning",
+      description: "Advanced features with credit monitoring & insights",
       features: [
-        "Unlimited bank connections",
-        "AI-powered coaching & insights",
+        "Everything in Standard",
+        "Advanced AI coaching & insights",
         "Credit score monitoring",
+        "Credit improvement recommendations",
         "Advanced analytics & reports",
-        "Goal tracking & planning",
-        "Priority support",
-        "Investment recommendations"
+        "Investment recommendations",
+        "Priority support"
       ],
       cta: "Start 7-Day Free Trial",
       popular: true
