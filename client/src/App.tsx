@@ -11,6 +11,8 @@ import { SubscriptionBanner } from "@/components/ui/subscription-banner";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Accounts from "@/pages/Accounts";
 import FinancialCoach from "@/pages/Coach";
 import SimpleGoals from "@/pages/SimpleGoals";
@@ -67,6 +69,8 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/dashboard">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}
       </Route>

@@ -8,6 +8,7 @@ import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommen
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
 import { registerSubscriptionRoutes } from "./routes-subscription";
+import { generatePasswordResetToken, verifyResetToken, resetPassword } from "./passwordReset";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
@@ -157,6 +158,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: 'Logged out successfully' });
     });
+  });
+  
+  // Password reset routes
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+      
+      const token = await generatePasswordResetToken(email);
+      
+      if (!token) {
+        // Don't reveal if the user exists for security reasons
+        return res.status(200).json({ 
+          message: 'If an account with that email exists, a password reset link has been sent' 
+        });
+      }
+      
+      // In a real app, we would send an email with the reset link
+      // For this demo, we're just logging it to the console
+      
+      return res.status(200).json({ 
+        message: 'If an account with that email exists, a password reset link has been sent',
+        // For demo purposes only, we'll return the token
+        token: token 
+      });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  app.post('/api/auth/verify-reset-token', (req, res) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ message: 'Token is required' });
+      }
+      
+      const userId = verifyResetToken(token);
+      
+      if (!userId) {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+      }
+      
+      return res.status(200).json({ message: 'Token is valid' });
+    } catch (error) {
+      console.error('Verify token error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      
+      if (!token || !password) {
+        return res.status(400).json({ message: 'Token and password are required' });
+      }
+      
+      const success = await resetPassword(token, password);
+      
+      if (!success) {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+      }
+      
+      return res.status(200).json({ message: 'Password reset successful' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
   });
 
   // User profile
