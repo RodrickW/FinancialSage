@@ -139,7 +139,7 @@ export default function Login() {
                     Logging in...
                   </>
                 ) : (
-                  'Log in with demo account'
+                  'Login'
                 )}
               </Button>
             </form>
