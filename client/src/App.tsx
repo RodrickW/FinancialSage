@@ -27,6 +27,42 @@ import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import SubscriptionCancel from "@/pages/SubscriptionCancel";
 import NotFound from "@/pages/not-found";
 
+// Home route component that shows Dashboard for logged-in users, Landing for visitors
+function HomeRoute() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/users/profile', {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <Dashboard /> : <Landing />;
+}
+
 // Protected route component
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +142,7 @@ function Router() {
       <Route path="/subscription/cancel">
         {(params) => <ProtectedRoute component={SubscriptionCancel} params={params} />}
       </Route>
-      <Route path="/" component={Landing} />
+      <Route path="/" component={HomeRoute} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
