@@ -40,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       checkPeriod: 86400000 // Prune expired entries every 24h
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Allow cookies over HTTP for Replit deployment
       httpOnly: true,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
