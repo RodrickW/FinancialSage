@@ -61,7 +61,7 @@ export default function Login() {
         
         // Navigate to dashboard after successful login
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          setLocation('/dashboard');
         }, 500);
       } else {
         const errorData = await response.json();
