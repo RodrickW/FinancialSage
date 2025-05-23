@@ -5,7 +5,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import FinancialOverview from '@/components/Dashboard/FinancialOverview';
 import SpendingTrends from '@/components/Dashboard/SpendingTrends';
 import RecentTransactions from '@/components/Dashboard/RecentTransactions';
-import AIInsights from '@/components/Dashboard/AIInsights';
+
 import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
 import CreditScore from '@/components/Dashboard/CreditScore';
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
@@ -135,14 +135,8 @@ export default function Dashboard() {
               <RecentTransactions transactions={mockTransactions} />
             </div>
             
-            {/* Right Column - AI Insights & Accounts */}
+            {/* Right Column - Accounts & Financial Info */}
             <div className="space-y-6">
-              {/* AI Financial Insights */}
-              <AIInsights 
-                insights={mockAIInsights}
-                healthScore={{ score: 78, maxScore: 100, rating: 'Good' }}
-              />
-              
               {/* Savings Goals */}
               <SavingsGoalCard />
               
