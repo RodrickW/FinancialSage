@@ -16,15 +16,17 @@ export default function Sidebar({ user }: SidebarProps) {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: 'dashboard' },
     { name: 'Accounts', path: '/accounts', icon: 'account_balance_wallet' },
-    { name: 'Budgets', path: '/budgets', icon: 'pie_chart' },
+    { name: 'Budget', path: '/budget', icon: 'pie_chart' },
+    { name: 'Goals', path: '/goals', icon: 'flag' },
+    { name: 'Credit', path: '/credit', icon: 'credit_score' },
   ];
   
   const aiItems = [
     { name: 'Financial Coach', path: '/coach', icon: 'psychology' },
-    { name: 'Analysis', path: '/analysis', icon: 'auto_graph' },
   ];
   
   const profileItems = [
+    { name: 'Feedback', path: '/feedback', icon: 'feedback' },
     { name: 'Settings', path: '/settings', icon: 'settings' },
     { name: 'Help', path: '/help', icon: 'help_outline' },
   ];
