@@ -43,6 +43,11 @@ export interface IStorage {
   getSavingsGoals(userId: number): Promise<SavingsGoal[]>;
   createSavingsGoal(savingsGoal: InsertSavingsGoal): Promise<SavingsGoal>;
   updateSavingsGoal(id: number, data: Partial<InsertSavingsGoal>): Promise<SavingsGoal | undefined>;
+  
+  // Feedback operations
+  getFeedback(): Promise<Feedback[]>;
+  createFeedback(feedback: InsertFeedback): Promise<Feedback>;
+  updateFeedbackStatus(id: number, status: string): Promise<Feedback | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -272,6 +277,28 @@ export class DatabaseStorage implements IStorage {
       .where(eq(savingsGoals.id, id))
       .returning();
     return updatedSavingsGoal;
+  }
+
+  // Feedback operations
+  async getFeedback(): Promise<Feedback[]> {
+    return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+  }
+
+  async createFeedback(feedbackData: InsertFeedback): Promise<Feedback> {
+    const [newFeedback] = await db
+      .insert(feedback)
+      .values(feedbackData)
+      .returning();
+    return newFeedback;
+  }
+
+  async updateFeedbackStatus(id: number, status: string): Promise<Feedback | undefined> {
+    const [updatedFeedback] = await db
+      .update(feedback)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(feedback.id, id))
+      .returning();
+    return updatedFeedback;
   }
 }
 
