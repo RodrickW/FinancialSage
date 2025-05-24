@@ -173,8 +173,12 @@ export default function Register() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-primary-500 hover:bg-primary-600" disabled={isLoading}>
-                {isLoading ? 'Creating account...' : 'Create account'}
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white mt-6" 
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
           </Form>
