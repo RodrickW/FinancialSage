@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, doublePrecision, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, doublePrecision, timestamp, jsonb, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -92,6 +92,19 @@ export const savingsGoals = pgTable("savings_goals", {
   icon: text("icon"),
 });
 
+// Feedback schema for user feedback collection
+export const feedback = pgTable("feedback", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: text("type").notNull(), // 'bug', 'feature', 'general'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  rating: integer("rating"), // 1-5 star rating
+  status: text("status").notNull().default("open"), // 'open', 'reviewed', 'implemented'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true });
@@ -100,6 +113,7 @@ export const insertBudgetSchema = createInsertSchema(budgets).omit({ id: true, s
 export const insertInsightSchema = createInsertSchema(insights).omit({ id: true, createdAt: true, isRead: true });
 export const insertCreditScoreSchema = createInsertSchema(creditScores).omit({ id: true, reportDate: true });
 export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({ id: true, currentAmount: true });
+export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 
 // Type definitions
 export type User = typeof users.$inferSelect;
@@ -122,3 +136,6 @@ export type InsertCreditScore = z.infer<typeof insertCreditScoreSchema>;
 
 export type SavingsGoal = typeof savingsGoals.$inferSelect;
 export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
+
+export type Feedback = typeof feedback.$inferSelect;
+export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
