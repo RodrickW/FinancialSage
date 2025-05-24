@@ -937,6 +937,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Start free trial endpoint
+  app.post("/api/start-free-trial", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { planType } = req.body;
+      
+      // Create Stripe checkout session for trial
+      const session = await stripe.checkout.sessions.create({
+        customer_email: user.email,
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Mind My Money ${planType === 'premium' ? 'Premium' : 'Standard'}`,
+                description: `${planType === 'premium' ? 'Advanced features with credit monitoring' : 'Essential financial management with AI coaching'}`,
+              },
+              unit_amount: planType === 'premium' ? 1499 : 999, // $14.99 or $9.99
+              recurring: {
+                interval: 'month',
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${req.protocol}://${req.get('host')}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/subscription/cancel`,
+        subscription_data: {
+          trial_period_days: 7,
+        },
+        metadata: {
+          userId: user.id.toString(),
+          planType: planType,
+        },
+      });
+
+      res.json({ checkoutUrl: session.url });
+    } catch (error) {
+      console.error("Error creating trial checkout session:", error);
+      res.status(500).json({ message: "Failed to start free trial" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
