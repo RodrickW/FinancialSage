@@ -25,6 +25,7 @@ import Budget from "@/pages/Budget";
 import Subscribe from "@/pages/Subscribe";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import SubscriptionCancel from "@/pages/SubscriptionCancel";
+import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -132,6 +133,9 @@ function Router() {
       </Route>
       <Route path="/budget">
         {(params) => <ProtectedRoute component={Budget} params={params} />}
+      </Route>
+      <Route path="/feedback">
+        {(params) => <ProtectedRoute component={Feedback} params={params} />}
       </Route>
       <Route path="/subscribe">
         {(params) => <ProtectedRoute component={Subscribe} params={params} />}

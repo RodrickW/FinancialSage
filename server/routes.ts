@@ -905,6 +905,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Feedback routes
+  app.post("/api/feedback", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const feedbackData = {
+        userId: user.id,
+        type: req.body.type,
+        title: req.body.title,
+        message: req.body.message,
+        rating: req.body.rating || null,
+      };
+      
+      const feedback = await storage.createFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
+  app.get("/api/feedback", requireAuth, async (req, res) => {
+    try {
+      // For now, allow all authenticated users to view feedback
+      // You can add admin checks later if needed
+      const allFeedback = await storage.getFeedback();
+      res.json(allFeedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
