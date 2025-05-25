@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChessCrownLogo } from '@/components/Logo';
+import { InstallPrompt } from '@/components/InstallPrompt';
 import { 
   Brain, 
   TrendingUp, 
@@ -434,6 +435,9 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+      
+      {/* Install prompt for mobile users */}
+      <InstallPrompt />
     </div>
   );
 }
