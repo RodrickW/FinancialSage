@@ -93,6 +93,10 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
               <span className="material-icons mr-3">feedback</span>
               Feedback
             </a>
+            <a href="/install" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+              <span className="material-icons mr-3">get_app</span>
+              Install App
+            </a>
           </nav>
         </div>
       )}
