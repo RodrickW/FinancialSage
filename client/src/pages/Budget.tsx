@@ -102,14 +102,10 @@ export default function Budget() {
   ];
   
   const colorOptions = [
-    { value: 'blue', label: 'Blue', class: 'bg-blue-500' },
-    { value: 'green', label: 'Green', class: 'bg-green-500' },
-    { value: 'purple', label: 'Purple', class: 'bg-purple-500' },
-    { value: 'red', label: 'Red', class: 'bg-red-500' },
-    { value: 'yellow', label: 'Yellow', class: 'bg-yellow-500' },
-    { value: 'indigo', label: 'Indigo', class: 'bg-indigo-500' },
-    { value: 'pink', label: 'Pink', class: 'bg-pink-500' },
-    { value: 'teal', label: 'Teal', class: 'bg-teal-500' },
+    { value: 'black', label: 'Black', class: 'bg-black' },
+    { value: 'gray', label: 'Gray', class: 'bg-gray-600' },
+    { value: 'dark-gray', label: 'Dark Gray', class: 'bg-gray-800' },
+    { value: 'light-gray', label: 'Light Gray', class: 'bg-gray-400' },
   ];
   
   // Set up sample budget categories (these will be replaced by AI recommendations)
@@ -392,7 +388,7 @@ export default function Budget() {
   }, [budgetRecommendations]);
   
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
@@ -401,34 +397,34 @@ export default function Budget() {
         <div className="p-6">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Budget</h1>
-            <p className="text-neutral-500">Manage your spending for {currentMonth}</p>
+            <h1 className="text-2xl font-bold text-black">Budget</h1>
+            <p className="text-gray-600">Manage your spending for {currentMonth}</p>
           </div>
           
           {/* Overall Budget Summary */}
-          <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-md hover:shadow-lg transition-all duration-300">
+          <Card className="mb-6 bg-white border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold flex items-center text-blue-700">
-                    <CircleDollarSign className="mr-2 h-5 w-5 text-blue-500" />
+                  <h2 className="text-lg font-semibold flex items-center text-black">
+                    <CircleDollarSign className="mr-2 h-5 w-5 text-gray-600" />
                     Total Budget
                   </h2>
-                  <p className="text-3xl font-bold mt-1 text-blue-900">${totalBudget.toLocaleString()}</p>
+                  <p className="text-3xl font-bold mt-1 text-black">${totalBudget.toLocaleString()}</p>
                 </div>
                 
                 <div className="flex space-x-6">
                   <div>
-                    <p className="text-sm text-blue-700">Spent</p>
-                    <p className="text-lg font-medium flex items-center text-red-500">
+                    <p className="text-sm text-gray-600">Spent</p>
+                    <p className="text-lg font-medium flex items-center text-black">
                       <ArrowUpRight className="h-4 w-4 mr-1" />
                       ${totalSpent.toLocaleString()}
                     </p>
                   </div>
                   
                   <div>
-                    <p className="text-sm text-blue-700">Remaining</p>
-                    <p className="text-lg font-medium flex items-center text-green-500">
+                    <p className="text-sm text-gray-600">Remaining</p>
+                    <p className="text-lg font-medium flex items-center text-black">
                       <ArrowDownRight className="h-4 w-4 mr-1" />
                       ${totalRemaining.toLocaleString()}
                     </p>
@@ -438,10 +434,10 @@ export default function Budget() {
               
               <Progress 
                 value={(totalSpent / totalBudget) * 100} 
-                className="h-2 bg-blue-100"
+                className="h-2 bg-gray-200"
               />
               
-              <div className="flex justify-between mt-1 text-xs text-blue-700">
+              <div className="flex justify-between mt-1 text-xs text-gray-600">
                 <span>0%</span>
                 <span>50%</span>
                 <span>100%</span>
@@ -450,18 +446,18 @@ export default function Budget() {
           </Card>
           
           {/* AI Budget Message */}
-          <div className="bg-gradient-to-r from-indigo-500 to-blue-600 p-6 rounded-xl mb-6 text-white shadow-md">
+          <div className="bg-black p-6 rounded-xl mb-6 text-white shadow-md">
             <div className="flex">
               <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4 shadow-inner">
                 <span className="material-icons text-2xl">psychology</span>
               </div>
               <div>
                 <h3 className="font-medium text-lg">Money Mind's Budget Recommendations</h3>
-                <p className="text-indigo-100 mt-1">
+                <p className="text-gray-200 mt-1">
                   Based on your spending patterns, I've created personalized budget categories for you.
                   These recommendations will help you reach your financial goals faster.
                 </p>
-                <p className="text-xs mt-2 text-indigo-200">
+                <p className="text-xs mt-2 text-gray-300">
                   Note: Connect your bank account to get more accurate recommendations.
                 </p>
               </div>
@@ -469,7 +465,7 @@ export default function Budget() {
           </div>
           
           {/* Budget Categories */}
-          <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">Budget Categories</h2>
+          <h2 className="text-xl font-semibold mb-4 text-black">Budget Categories</h2>
           
           {budgetLoading ? (
             <div className="flex justify-center items-center h-40">
