@@ -477,12 +477,12 @@ export default function Budget() {
                 <Card key={category.id} className="overflow-hidden bg-white shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
                   <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
                     <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${category.color} text-white shadow-sm`}>
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3 bg-white border border-gray-300 text-black shadow-sm">
                         {category.icon}
                       </div>
                       <div>
-                        <CardTitle className="text-base">{category.name}</CardTitle>
-                        <p className="text-sm text-neutral-500">${category.allocated.toLocaleString()} allocated</p>
+                        <CardTitle className="text-base text-black">{category.name}</CardTitle>
+                        <p className="text-sm text-gray-600">${category.allocated.toLocaleString()} allocated</p>
                       </div>
                     </div>
                     
@@ -490,7 +490,7 @@ export default function Budget() {
                       variant="outline" 
                       size="sm"
                       onClick={() => handleAdjustBudget(category)}
-                      className="h-8 px-2 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      className="h-8 px-2 hover:bg-gray-100 hover:text-black transition-colors border-gray-300"
                     >
                       Adjust
                     </Button>
@@ -499,17 +499,17 @@ export default function Budget() {
                   <CardContent className="p-4 pt-0">
                     <div className="mt-3">
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm">${category.spent.toFixed(2)} spent</span>
+                        <span className="text-sm text-black">${category.spent.toFixed(2)} spent</span>
                         <div className="flex items-center space-x-2">
                           <Badge 
                             variant={category.percentUsed >= 100 ? "destructive" : "outline"}
-                            className={category.percentUsed >= 100 ? "" : 
-                                      category.percentUsed >= 85 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" : 
-                                      "bg-blue-100 text-blue-800 hover:bg-blue-100"}
+                            className={category.percentUsed >= 100 ? "bg-black text-white" : 
+                                      category.percentUsed >= 85 ? "bg-gray-600 text-white" : 
+                                      "bg-gray-200 text-black"}
                           >
                             {category.percentUsed}%
                           </Badge>
-                          <span className="text-sm text-right">${category.remaining.toFixed(2)} left</span>
+                          <span className="text-sm text-right text-black">${category.remaining.toFixed(2)} left</span>
                         </div>
                       </div>
                       
