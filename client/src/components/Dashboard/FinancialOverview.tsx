@@ -28,50 +28,6 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {/* Total Balance Card */}
-      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-sm text-gray-600 font-medium flex items-center">
-              <span className="material-icons text-xs mr-1">account_balance_wallet</span>
-              Total Balance
-            </p>
-            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.totalBalance)}</h3>
-          </div>
-          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
-            <span className="material-icons text-white">account_balance_wallet</span>
-          </div>
-        </div>
-        <div className="flex items-center text-sm">
-          <span className={`inline-block ${balanceChange >= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
-            {balanceChange >= 0 ? '↑ +' : '↓ '}{balanceChange.toFixed(1)}%
-          </span>
-          <span className="text-gray-600 ml-2">from last month</span>
-        </div>
-      </Card>
-      
-      {/* Monthly Spending Card */}
-      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-sm text-gray-600 font-medium flex items-center">
-              <span className="material-icons text-xs mr-1">payments</span>
-              Monthly Spending
-            </p>
-            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.monthlySpending)}</h3>
-          </div>
-          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
-            <span className="material-icons text-white">trending_down</span>
-          </div>
-        </div>
-        <div className="flex items-center text-sm">
-          <span className={`inline-block ${spendingChange <= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
-            {spendingChange <= 0 ? '↓ ' : '↑ +'}{Math.abs(spendingChange).toFixed(1)}%
-          </span>
-          <span className="text-gray-600 ml-2">from last month</span>
-        </div>
-      </Card>
-      
       {/* Daily Spending Card */}
       <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-start justify-between mb-4">
@@ -113,6 +69,50 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
             This week
           </span>
           <span className="text-gray-600 ml-2">7 days</span>
+        </div>
+      </Card>
+      
+      {/* Monthly Spending Card */}
+      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-sm text-gray-600 font-medium flex items-center">
+              <span className="material-icons text-xs mr-1">payments</span>
+              Monthly Spending
+            </p>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.monthlySpending)}</h3>
+          </div>
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
+            <span className="material-icons text-white">trending_down</span>
+          </div>
+        </div>
+        <div className="flex items-center text-sm">
+          <span className={`inline-block ${spendingChange <= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
+            {spendingChange <= 0 ? '↓ ' : '↑ +'}{Math.abs(spendingChange).toFixed(1)}%
+          </span>
+          <span className="text-gray-600 ml-2">from last month</span>
+        </div>
+      </Card>
+      
+      {/* Total Balance Card */}
+      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-sm text-gray-600 font-medium flex items-center">
+              <span className="material-icons text-xs mr-1">account_balance_wallet</span>
+              Total Balance
+            </p>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.totalBalance)}</h3>
+          </div>
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
+            <span className="material-icons text-white">account_balance_wallet</span>
+          </div>
+        </div>
+        <div className="flex items-center text-sm">
+          <span className={`inline-block ${balanceChange >= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
+            {balanceChange >= 0 ? '↑ +' : '↓ '}{balanceChange.toFixed(1)}%
+          </span>
+          <span className="text-gray-600 ml-2">from last month</span>
         </div>
       </Card>
     </div>
