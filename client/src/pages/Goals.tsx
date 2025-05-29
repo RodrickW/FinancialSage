@@ -287,7 +287,7 @@ export default function Goals() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
@@ -297,12 +297,12 @@ export default function Goals() {
           {/* Page header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold">Your Savings Goals</h1>
-              <p className="text-neutral-500">Track your financial progress</p>
+              <h1 className="text-2xl font-bold text-black">Your Savings Goals</h1>
+              <p className="text-gray-600">Track your financial progress</p>
             </div>
             
             <Button 
-              className="mt-4 md:mt-0 bg-gradient-to-r from-blue-600 to-indigo-600"
+              className="mt-4 md:mt-0 bg-black text-white hover:bg-gray-800"
               onClick={openAddGoalDialog}
             >
               <span className="material-icons text-sm mr-1">add</span>
@@ -313,26 +313,26 @@ export default function Goals() {
           {/* Goals Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             {goals.map(goal => (
-              <div key={goal.id} className="bg-white p-5 rounded-lg shadow-sm">
+              <div key={goal.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-medium">{goal.name}</h3>
-                  <span className="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-sm font-medium">
+                  <h3 className="text-lg font-medium text-black">{goal.name}</h3>
+                  <span className="inline-block bg-black text-white px-2 py-0.5 rounded-full text-sm font-medium">
                     {goal.percent}%
                   </span>
                 </div>
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">Target</span>
-                    <span className="font-medium">${goal.targetAmount.toLocaleString()}</span>
+                    <span className="text-gray-600">Target</span>
+                    <span className="font-medium text-black">${goal.targetAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">Current</span>
-                    <span className="font-medium">${goal.currentAmount.toLocaleString()}</span>
+                    <span className="text-gray-600">Current</span>
+                    <span className="font-medium text-black">${goal.currentAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">Deadline</span>
-                    <span className="font-medium">{goal.deadline}</span>
+                    <span className="text-gray-600">Deadline</span>
+                    <span className="font-medium text-black">{goal.deadline}</span>
                   </div>
                 </div>
                 
