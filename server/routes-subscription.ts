@@ -90,7 +90,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
     }
   });
 
-  // Create a 7-day free trial through Stripe checkout
+  // Create a 30-day free trial through Stripe checkout
   app.post('/api/start-free-trial', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;

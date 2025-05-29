@@ -996,7 +996,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success_url: `${req.protocol}://${req.get('host')}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.protocol}://${req.get('host')}/subscription/cancel`,
         subscription_data: {
-          trial_period_days: 7,
+          trial_period_days: 30,
         },
         metadata: {
           userId: user.id.toString(),
