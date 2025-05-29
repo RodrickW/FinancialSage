@@ -29,67 +29,67 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Total Balance Card */}
-      <Card className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border-t border-l border-blue-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
+      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-sm text-blue-600 font-medium flex items-center">
+            <p className="text-sm text-gray-600 font-medium flex items-center">
               <span className="material-icons text-xs mr-1">account_balance_wallet</span>
               Total Balance
             </p>
-            <h3 className="text-2xl font-bold text-blue-900 tabular-nums mt-1">{formatCurrency(data.totalBalance)}</h3>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.totalBalance)}</h3>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-inner">
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
             <span className="material-icons text-white">account_balance_wallet</span>
           </div>
         </div>
         <div className="flex items-center text-sm">
-          <span className={`inline-block ${balanceChange >= 0 ? 'bg-gradient-to-r from-green-400 to-green-500 text-white' : 'bg-gradient-to-r from-red-400 to-red-500 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
+          <span className={`inline-block ${balanceChange >= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
             {balanceChange >= 0 ? '↑ +' : '↓ '}{balanceChange.toFixed(1)}%
           </span>
-          <span className="text-blue-700 ml-2">from last month</span>
+          <span className="text-gray-600 ml-2">from last month</span>
         </div>
       </Card>
       
       {/* Monthly Spending Card */}
-      <Card className="bg-gradient-to-b from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border-t border-l border-purple-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
+      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-sm text-purple-600 font-medium flex items-center">
+            <p className="text-sm text-gray-600 font-medium flex items-center">
               <span className="material-icons text-xs mr-1">payments</span>
               Monthly Spending
             </p>
-            <h3 className="text-2xl font-bold text-purple-900 tabular-nums mt-1">{formatCurrency(data.monthlySpending)}</h3>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.monthlySpending)}</h3>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-inner">
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
             <span className="material-icons text-white">trending_down</span>
           </div>
         </div>
         <div className="flex items-center text-sm">
-          <span className={`inline-block ${spendingChange <= 0 ? 'bg-gradient-to-r from-green-400 to-green-500 text-white' : 'bg-gradient-to-r from-red-400 to-red-500 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
+          <span className={`inline-block ${spendingChange <= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
             {spendingChange <= 0 ? '↓ ' : '↑ +'}{Math.abs(spendingChange).toFixed(1)}%
           </span>
-          <span className="text-purple-700 ml-2">from last month</span>
+          <span className="text-gray-600 ml-2">from last month</span>
         </div>
       </Card>
       
       {/* Credit Score Card */}
-      <Card className="bg-gradient-to-b from-teal-50 to-teal-100 rounded-xl p-6 shadow-md border-t border-l border-teal-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
+      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-sm text-teal-600 font-medium flex items-center">
+            <p className="text-sm text-gray-600 font-medium flex items-center">
               <span className="material-icons text-xs mr-1">credit_score</span>
               Credit Score
             </p>
-            <h3 className="text-2xl font-bold text-teal-900 tabular-nums mt-1">{data.creditScore}</h3>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{data.creditScore}</h3>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-green-600 rounded-full flex items-center justify-center shadow-inner">
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
             <span className="material-icons text-white">credit_score</span>
           </div>
         </div>
-        <div className="w-full bg-teal-200 bg-opacity-40 rounded-full h-3 mt-2 overflow-hidden shadow-inner">
-          <div className="bg-gradient-to-r from-teal-400 to-green-500 h-3 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${(data.creditScore / 850) * 100}%` }}></div>
+        <div className="w-full bg-gray-200 rounded-full h-3 mt-2 overflow-hidden shadow-inner">
+          <div className="bg-black h-3 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${(data.creditScore / 850) * 100}%` }}></div>
         </div>
-        <div className="flex justify-between text-xs text-teal-700 mt-2 font-medium">
+        <div className="flex justify-between text-xs text-gray-600 mt-2 font-medium">
           <span>Poor</span>
           <span>Fair</span>
           <span>Good</span>
