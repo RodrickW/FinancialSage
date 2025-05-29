@@ -254,14 +254,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get previous month balance (mock for now)
       const previousMonthBalance = totalBalance * 0.95; // Mock 5% growth
       
-      // Get monthly spending
+      // Get spending data
       const userTransactions = await storage.getTransactions(user.id);
+      const now = new Date();
+      
+      // Calculate monthly spending (current month)
       const monthlySpending = userTransactions
-        .filter(t => t.amount < 0 && new Date(t.date).getMonth() === new Date().getMonth())
+        .filter(t => t.amount < 0 && new Date(t.date).getMonth() === now.getMonth())
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
       
-      // Previous month spending (mock for now)
-      const previousMonthSpending = monthlySpending * 0.9; // Mock 10% increase
+      // Calculate weekly spending (last 7 days)
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const weeklySpending = userTransactions
+        .filter(t => t.amount < 0 && new Date(t.date) >= weekAgo)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      // Calculate daily spending (today)
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dailySpending = userTransactions
+        .filter(t => {
+          const transactionDate = new Date(t.date);
+          return t.amount < 0 && 
+                 transactionDate.getFullYear() === today.getFullYear() &&
+                 transactionDate.getMonth() === today.getMonth() &&
+                 transactionDate.getDate() === today.getDate();
+        })
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      // Previous month spending
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const previousMonthSpending = userTransactions
+        .filter(t => {
+          const transactionDate = new Date(t.date);
+          return t.amount < 0 && 
+                 transactionDate.getMonth() === lastMonth.getMonth() &&
+                 transactionDate.getFullYear() === lastMonth.getFullYear();
+        })
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
       
       // Get credit score
       const creditScoreData = await storage.getCreditScore(user.id);
@@ -280,6 +309,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         previousMonthBalance,
         monthlySpending,
         previousMonthSpending,
+        weeklySpending,
+        dailySpending,
         creditScore,
         savingsProgress: {
           current: mainSavingsGoal.currentAmount,

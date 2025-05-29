@@ -13,6 +13,8 @@ export interface FinancialOverviewData {
   previousMonthBalance?: number;
   monthlySpending: number;
   previousMonthSpending?: number;
+  weeklySpending?: number;
+  dailySpending?: number;
   creditScore: number;
   savingsProgress: {
     current: number;

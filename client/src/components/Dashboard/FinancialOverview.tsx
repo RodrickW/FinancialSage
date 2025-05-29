@@ -72,53 +72,47 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
         </div>
       </Card>
       
-      {/* Credit Score Card */}
+      {/* Daily Spending Card */}
       <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-sm text-gray-600 font-medium flex items-center">
-              <span className="material-icons text-xs mr-1">credit_score</span>
-              Credit Score
+              <span className="material-icons text-xs mr-1">today</span>
+              Daily Spending
             </p>
-            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{data.creditScore}</h3>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.dailySpending || data.monthlySpending / 30)}</h3>
           </div>
           <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
-            <span className="material-icons text-white">credit_score</span>
+            <span className="material-icons text-white">today</span>
           </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 mt-2 overflow-hidden shadow-inner">
-          <div className="bg-black h-3 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${(data.creditScore / 850) * 100}%` }}></div>
-        </div>
-        <div className="flex justify-between text-xs text-gray-600 mt-2 font-medium">
-          <span>Poor</span>
-          <span>Fair</span>
-          <span>Good</span>
-          <span>Excellent</span>
+        <div className="flex items-center text-sm">
+          <span className={`inline-block bg-black text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
+            Today
+          </span>
+          <span className="text-gray-600 ml-2">average daily spend</span>
         </div>
       </Card>
       
-      {/* Savings Goal Card */}
-      <Card className="bg-gradient-to-b from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border-t border-l border-amber-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-start justify-between mb-3">
+      {/* Weekly Spending Card */}
+      <Card className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-sm text-amber-600 font-medium flex items-center">
-              <span className="material-icons text-xs mr-1">savings</span>
-              Savings Goal
+            <p className="text-sm text-gray-600 font-medium flex items-center">
+              <span className="material-icons text-xs mr-1">date_range</span>
+              Weekly Spending
             </p>
-            <h3 className="text-xl font-bold text-amber-900 tabular-nums mt-1">
-              {formatCurrency(data.savingsProgress.current)} <span className="text-sm opacity-70">of</span> {formatCurrency(data.savingsProgress.target)}
-            </h3>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.weeklySpending || data.monthlySpending * 0.25)}</h3>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-inner">
-            <span className="material-icons text-white">savings</span>
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
+            <span className="material-icons text-white">date_range</span>
           </div>
         </div>
-        <div className="w-full bg-amber-200 bg-opacity-40 rounded-full h-3 mt-2 overflow-hidden shadow-inner">
-          <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-3 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${savingsPercentage}%` }}></div>
-        </div>
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-xs text-amber-700">{data.savingsProgress.name}</span>
-          <span className="text-sm font-medium bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">{savingsPercentage}% complete</span>
+        <div className="flex items-center text-sm">
+          <span className={`inline-block bg-black text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
+            This week
+          </span>
+          <span className="text-gray-600 ml-2">7 days</span>
         </div>
       </Card>
     </div>

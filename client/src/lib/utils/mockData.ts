@@ -25,6 +25,8 @@ export const mockFinancialOverview: FinancialOverviewData = {
   previousMonthBalance: 23963.98,
   monthlySpending: 3261.50,
   previousMonthSpending: 3018.92,
+  weeklySpending: 815.38,
+  dailySpending: 108.72,
   creditScore: 752,
   savingsProgress: {
     current: 5420,
