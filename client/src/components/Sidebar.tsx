@@ -32,14 +32,14 @@ export default function Sidebar({ user }: SidebarProps) {
   ];
   
   return (
-    <aside className="w-full md:w-auto bg-white border-r border-neutral-100 md:min-h-screen flex-shrink-0">
-      <div className="flex items-center justify-between p-4 border-b border-neutral-100">
+    <aside className="w-full md:w-auto bg-black border-r border-gray-800 md:min-h-screen flex-shrink-0">
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
         <div className="flex items-center">
-          <span className="material-icons text-primary-500 mr-2">account_balance</span>
-          <h1 className="text-xl font-bold text-primary-700">Mind My Money</h1>
+          <span className="material-icons text-white mr-2">account_balance</span>
+          <h1 className="text-xl font-bold text-white">Mind My Money</h1>
         </div>
         <button 
-          className="text-neutral-700"
+          className="text-white"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <span className="material-icons">{mobileMenuOpen ? 'close' : 'menu'}</span>
@@ -47,15 +47,15 @@ export default function Sidebar({ user }: SidebarProps) {
       </div>
       
       <nav className={cn("py-4", mobileMenuOpen ? "block" : "hidden")}>
-        <div className="px-4 mb-2 text-sm text-neutral-300 uppercase font-semibold">Main</div>
+        <div className="px-4 mb-2 text-sm text-gray-400 uppercase font-semibold">Main</div>
         {navItems.map((item) => (
           <Link 
             key={item.path}
             href={item.path}
             className={cn(
-              "flex items-center py-2 px-4 text-neutral-700 hover:bg-neutral-50",
+              "flex items-center py-2 px-4 text-gray-300 hover:bg-gray-900",
               isActive(item.path) 
-                ? "border-l-3 border-primary-500 bg-neutral-50 text-primary-500 pl-6" 
+                ? "border-l-3 border-white bg-gray-900 text-white pl-6" 
                 : "pl-4"
             )}
           >
@@ -64,15 +64,15 @@ export default function Sidebar({ user }: SidebarProps) {
           </Link>
         ))}
         
-        <div className="px-4 mt-6 mb-2 text-sm text-neutral-300 uppercase font-semibold">AI Insights</div>
+        <div className="px-4 mt-6 mb-2 text-sm text-gray-400 uppercase font-semibold">AI Insights</div>
         {aiItems.map((item) => (
           <Link 
             key={item.path}
             href={item.path}
             className={cn(
-              "flex items-center py-2 px-4 text-neutral-700 hover:bg-neutral-50",
+              "flex items-center py-2 px-4 text-gray-300 hover:bg-gray-900",
               isActive(item.path) 
-                ? "border-l-3 border-primary-500 bg-neutral-50 text-primary-500 pl-6" 
+                ? "border-l-3 border-white bg-gray-900 text-white pl-6" 
                 : "pl-4"
             )}
           >
@@ -81,15 +81,15 @@ export default function Sidebar({ user }: SidebarProps) {
           </Link>
         ))}
         
-        <div className="px-4 mt-6 mb-2 text-sm text-neutral-300 uppercase font-semibold">Profile</div>
+        <div className="px-4 mt-6 mb-2 text-sm text-gray-400 uppercase font-semibold">Profile</div>
         {profileItems.map((item) => (
           <Link 
             key={item.path}
             href={item.path}
             className={cn(
-              "flex items-center py-2 px-4 text-neutral-700 hover:bg-neutral-50",
+              "flex items-center py-2 px-4 text-gray-300 hover:bg-gray-900",
               isActive(item.path) 
-                ? "border-l-3 border-primary-500 bg-neutral-50 text-primary-500 pl-6" 
+                ? "border-l-3 border-white bg-gray-900 text-white pl-6" 
                 : "pl-4"
             )}
           >

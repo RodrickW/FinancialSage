@@ -14,7 +14,7 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   
   return (
-    <header className="bg-app-gradient text-white py-4 px-6">
+    <header className="bg-black border-b border-gray-800 text-white py-4 px-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <button 

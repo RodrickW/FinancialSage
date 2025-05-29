@@ -81,7 +81,7 @@ export default function Dashboard() {
   const financialOverview: FinancialOverviewData = financialData || mockFinancialOverview;
   
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50">
+    <div className="flex flex-col min-h-screen bg-black">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
