@@ -79,10 +79,10 @@ export function NotificationDrawer() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="p-2 rounded-full hover:bg-white/10 relative">
-          <span className="material-icons text-white">notifications</span>
+        <button className="p-2 rounded-full hover:bg-gray-100 relative border border-gray-300">
+          <span className="material-icons text-black">notifications</span>
           {unreadCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 bg-red-500 text-white border-none h-5 min-w-5 flex items-center justify-center p-0">
+            <Badge className="absolute -top-1 -right-1 bg-black text-white border-none h-5 min-w-5 flex items-center justify-center p-0">
               {unreadCount}
             </Badge>
           )}

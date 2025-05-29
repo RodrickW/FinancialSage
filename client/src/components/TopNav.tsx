@@ -28,7 +28,7 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
             <h2 className="text-lg font-semibold">{title}</h2>
           </div>
           {isPremium && (
-            <span className="ml-2 text-sm bg-white/20 text-white py-1 px-2 rounded-full border border-white/30">Premium</span>
+            <span className="ml-2 text-sm bg-black text-white py-1 px-2 rounded-full border border-gray-300">Premium</span>
           )}
         </div>
       
@@ -36,18 +36,18 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
           <NotificationDrawer />
           <div className="hidden md:block relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <span className="material-icons text-white/70 text-sm">search</span>
+              <span className="material-icons text-gray-500 text-sm">search</span>
             </span>
             <Input
               type="text"
               placeholder="Search transactions..."
-              className="pl-10 pr-4 py-2 bg-white/20 border border-white/30 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent placeholder:text-white/70"
+              className="pl-10 pr-4 py-2 bg-white border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent placeholder:text-gray-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button 
-            className="flex items-center px-3 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors border border-white/30"
+            className="flex items-center px-3 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors border border-gray-300"
             onClick={async () => {
               const success = await logout();
               if (success) {
