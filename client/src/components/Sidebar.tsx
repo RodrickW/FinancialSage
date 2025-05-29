@@ -27,7 +27,6 @@ export default function Sidebar({ user }: SidebarProps) {
   
   const profileItems = [
     { name: 'Feedback', path: '/feedback', icon: 'feedback' },
-    { name: 'Settings', path: '/settings', icon: 'settings' },
     { name: 'Help', path: '/help', icon: 'help_outline' },
   ];
   
