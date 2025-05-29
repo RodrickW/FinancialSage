@@ -62,7 +62,7 @@ export default function Accounts() {
   };
   
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-black">
       <Sidebar user={user} />
       
       <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">

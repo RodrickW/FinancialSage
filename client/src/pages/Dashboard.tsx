@@ -89,7 +89,7 @@ export default function Dashboard() {
         
         <div className="p-6">
           {/* Welcome and Date Section */}
-          <div className="rounded-xl bg-app-gradient text-white p-6 mb-8 shadow-sm">
+          <div className="rounded-xl bg-gray-900 border border-gray-800 text-white p-6 mb-8 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="mb-4 md:mb-0">
                 <h1 className="text-3xl font-bold text-white">
