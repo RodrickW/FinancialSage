@@ -148,7 +148,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         }
       });
       
-      // Create checkout session with 7-day trial
+      // Create checkout session with 30-day trial
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
@@ -158,7 +158,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         }],
         mode: 'subscription',
         subscription_data: {
-          trial_period_days: 7,
+          trial_period_days: 30,
           metadata: {
             userId: user.id.toString(),
             planType: planType

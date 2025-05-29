@@ -164,7 +164,7 @@ export default function Subscribe() {
                           Starting Trial...
                         </>
                       ) : (
-                        'Start 7-Day Free Trial'
+                        'Start 30-Day Free Trial'
                       )}
                     </Button>
                   </CardFooter>
@@ -176,7 +176,7 @@ export default function Subscribe() {
               <div className="flex items-center justify-center gap-8 text-sm text-gray-500 mb-6">
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-500 mr-2" />
-                  7-day free trial
+                  30-day free trial
                 </div>
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-500 mr-2" />
@@ -189,7 +189,7 @@ export default function Subscribe() {
               </div>
               
               <p className="text-gray-500">
-                Your trial will begin immediately. You'll be charged after 7 days unless you cancel.
+                Your trial will begin immediately. You'll be charged after 30 days unless you cancel.
               </p>
             </div>
           </main>

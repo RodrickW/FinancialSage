@@ -49,7 +49,7 @@ export function SubscriptionBanner() {
         
         toast({
           title: "Free trial started!",
-          description: "You now have access to all premium features for 7 days.",
+          description: "You now have access to all premium features for 30 days.",
         });
       } else {
         toast({
@@ -82,7 +82,7 @@ export function SubscriptionBanner() {
           <p className="font-medium">
             {subscriptionStatus?.isOnFreeTrial 
               ? `Your free trial ends in ${subscriptionStatus.trialDaysLeft} days` 
-              : "Unlock all premium features with a 7-day free trial!"}
+              : "Unlock all premium features with a 30-day free trial!"}
           </p>
           <p className="text-sm text-white/80">
             {subscriptionStatus?.isOnFreeTrial 
