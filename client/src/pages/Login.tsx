@@ -156,6 +156,13 @@ export default function Login() {
               Register here
             </Link>
           </div>
+          <Button 
+            variant="outline" 
+            className="w-full mt-2 border-gray-300 text-gray-600 hover:bg-gray-50"
+            onClick={() => navigate('/')}
+          >
+            Back to Home
+          </Button>
         </CardFooter>
       </Card>
     </div>
