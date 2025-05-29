@@ -94,7 +94,7 @@ export default function Landing() {
         "Goal setting & tracking",
         "Email support"
       ],
-      cta: "Start 7-Day Free Trial",
+      cta: "Start 30-Day Free Trial",
       popular: false
     },
     {
@@ -111,7 +111,7 @@ export default function Landing() {
         "Investment recommendations",
         "Priority support"
       ],
-      cta: "Start 7-Day Free Trial",
+      cta: "Start 30-Day Free Trial",
       popular: true
     }
   ];
@@ -171,7 +171,7 @@ export default function Landing() {
               onClick={() => setLocation('/register')}
               className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4"
             >
-              Start Your 7-Day Free Trial
+              Start Your 30-Day Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button 
@@ -373,7 +373,7 @@ export default function Landing() {
             Ready to Master Your Money?
           </h2>
           <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-            Start your 7-day free trial today
+            Start your 30-day free trial today
           </p>
           <Button 
             size="lg"

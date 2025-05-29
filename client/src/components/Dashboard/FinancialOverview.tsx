@@ -68,7 +68,7 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
           <span className={`inline-block bg-black text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
             This week
           </span>
-          <span className="text-gray-600 ml-2">7 days</span>
+          <span className="text-gray-600 ml-2">30 days</span>
         </div>
       </Card>
       

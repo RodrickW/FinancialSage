@@ -114,7 +114,7 @@ export default function Subscribe() {
                 Unlock Your Financial Potential
               </h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Choose the plan that's right for you and start your 7-day free trial today
+                Choose the plan that's right for you and start your 30-day free trial today
               </p>
             </div>
 
