@@ -63,37 +63,37 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
       
       {/* Expandable menu */}
       {menuOpen && (
-        <div className="mt-4 py-4 border-t border-white/20">
+        <div className="mt-4 py-4 border-t border-gray-200 bg-white">
           <nav className="space-y-1">
-            <a href="/" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">dashboard</span>
               Dashboard
             </a>
-            <a href="/accounts" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/accounts" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">account_balance_wallet</span>
               Accounts
             </a>
-            <a href="/credit" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/budget" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
+              <span className="material-icons mr-3">pie_chart</span>
+              Budget
+            </a>
+            <a href="/credit" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">credit_score</span>
               Credit
             </a>
-            <a href="/goals" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/goals" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">savings</span>
               Goals
             </a>
-            <a href="/coach" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/coach" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">psychology</span>
               Coach
             </a>
-            <a href="/coach/interview" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
-              <span className="material-icons mr-3">quiz</span>
-              Money Mind Interview
-            </a>
-            <a href="/feedback" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/feedback" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">feedback</span>
               Feedback
             </a>
-            <a href="/install" className="flex items-center px-4 py-2 text-white hover:bg-white/10 rounded-md">
+            <a href="/install" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">get_app</span>
               Install App
             </a>
