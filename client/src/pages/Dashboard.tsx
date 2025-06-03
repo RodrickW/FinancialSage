@@ -5,6 +5,12 @@ import BottomNavigation from '@/components/BottomNavigation';
 import FinancialOverview from '@/components/Dashboard/FinancialOverview';
 import SpendingTrends from '@/components/Dashboard/SpendingTrends';
 import RecentTransactions from '@/components/Dashboard/RecentTransactions';
+import { 
+  FinancialOverviewSkeleton, 
+  TransactionsSkeleton, 
+  CreditScoreSkeleton,
+  BudgetProgressSkeleton
+} from '@/components/LoadingStates';
 
 import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
 import CreditScore from '@/components/Dashboard/CreditScore';
@@ -84,10 +90,10 @@ export default function Dashboard() {
     <div className="flex flex-col min-h-screen bg-white">
       <TopNav title="Mind My Money" />
       
-      <main className="flex-1 overflow-x-hidden pb-16">
+      <main className="flex-1 overflow-x-hidden pb-16 page-transition">
         <BottomNavigation user={user} />
         
-        <div className="p-6">
+        <div className="p-6 fade-in">
           {/* Welcome and Date Section */}
           <div className="rounded-xl bg-white border border-gray-200 text-black p-6 mb-8 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -103,7 +109,7 @@ export default function Dashboard() {
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <PlaidLinkButton 
-                  className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md transition-all duration-200 hover:shadow-lg"
+                  className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
                   onSuccess={() => {
                     toast({
                       title: "Account connected",
@@ -119,32 +125,46 @@ export default function Dashboard() {
           </div>
           
           {/* Financial Overview Cards */}
-          <FinancialOverview data={financialOverview} />
+          {financialLoading ? (
+            <FinancialOverviewSkeleton />
+          ) : (
+            <FinancialOverview data={financialOverview} />
+          )}
           
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up">
             {/* Left Column - Spending Breakdown */}
             <div className="lg:col-span-2 space-y-6">
               {/* Monthly Spending Trends */}
-              <SpendingTrends 
-                spendingData={mockMonthlySpending}
-                categories={mockSpendingCategories}
-              />
+              <div className="stagger-item">
+                <SpendingTrends 
+                  spendingData={mockMonthlySpending}
+                  categories={mockSpendingCategories}
+                />
+              </div>
               
               {/* Recent Transactions */}
-              <RecentTransactions transactions={mockTransactions} />
+              <div className="stagger-item">
+                <RecentTransactions transactions={mockTransactions} />
+              </div>
             </div>
             
             {/* Right Column - Accounts & Financial Info */}
             <div className="space-y-6">
               {/* Savings Goals */}
-              <SavingsGoalCard />
+              <div className="stagger-item">
+                <SavingsGoalCard />
+              </div>
               
               {/* Connected Accounts */}
-              <ConnectedAccounts accounts={mockConnectedAccounts} />
+              <div className="stagger-item">
+                <ConnectedAccounts accounts={mockConnectedAccounts} />
+              </div>
               
               {/* Credit Score Overview */}
-              <CreditScore data={mockCreditScore} />
+              <div className="stagger-item">
+                <CreditScore data={mockCreditScore} />
+              </div>
             </div>
           </div>
           
