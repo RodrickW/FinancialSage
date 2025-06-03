@@ -11,6 +11,7 @@ import {
   CreditScoreSkeleton,
   BudgetProgressSkeleton
 } from '@/components/LoadingStates';
+import OnboardingTour from '@/components/OnboardingTour';
 
 import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
 import CreditScore from '@/components/Dashboard/CreditScore';
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState('');
   const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   // Format the current date
   useEffect(() => {
@@ -56,6 +58,16 @@ export default function Dashboard() {
   const { data: userData, isLoading: userLoading, error: userError } = useQuery<any>({
     queryKey: ['/api/users/profile']
   });
+
+  // Check if user is new and should see onboarding
+  useEffect(() => {
+    if (userData && !userLoading) {
+      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+      if (!hasSeenOnboarding) {
+        setTimeout(() => setShowOnboarding(true), 1000);
+      }
+    }
+  }, [userData, userLoading]);
   
   // Get the financial overview data
   const { data: financialData, isLoading: financialLoading, error: financialError } = useQuery<any>({
@@ -78,6 +90,21 @@ export default function Dashboard() {
       description: "Your financial data export will be ready shortly.",
       variant: "default",
     });
+  };
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
+    toast({
+      title: "Welcome aboard!",
+      description: "You're all set to start managing your finances.",
+    });
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
   };
   
   // Use user data from API or fallback to mock data
@@ -110,6 +137,7 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <PlaidLinkButton 
                   className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
+                  data-tour="connect-account"
                   onSuccess={() => {
                     toast({
                       title: "Account connected",

@@ -184,6 +184,32 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Tour and onboarding styles */
+.tour-active {
+  overflow: hidden;
+}
+
+.tour-overlay {
+  backdrop-filter: blur(2px);
+}
+
+.tour-spotlight {
+  position: relative;
+  z-index: 45;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
+  animation: spotlight 0.5s ease-out;
+}
+
+@keyframes spotlight {
+  from {
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.8), 0 0 0px rgba(0, 0, 0, 0.5);
+  }
+  to {
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+}
+
 /* Color utility classes for the teal gradient scheme */
 .bg-primary-gradient {
   @apply bg-gradient-to-r from-emerald-600 to-teal-500;
