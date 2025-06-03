@@ -153,18 +153,20 @@ export default function Dashboard() {
           </div>
           
           {/* Financial Overview Cards */}
-          {financialLoading ? (
-            <FinancialOverviewSkeleton />
-          ) : (
-            <FinancialOverview data={financialOverview} />
-          )}
+          <div data-tour="financial-overview">
+            {financialLoading ? (
+              <FinancialOverviewSkeleton />
+            ) : (
+              <FinancialOverview data={financialOverview} />
+            )}
+          </div>
           
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up">
             {/* Left Column - Spending Breakdown */}
             <div className="lg:col-span-2 space-y-6">
               {/* Monthly Spending Trends */}
-              <div className="stagger-item">
+              <div className="stagger-item" data-tour="spending-trends">
                 <SpendingTrends 
                   spendingData={mockMonthlySpending}
                   categories={mockSpendingCategories}
@@ -172,7 +174,7 @@ export default function Dashboard() {
               </div>
               
               {/* Recent Transactions */}
-              <div className="stagger-item">
+              <div className="stagger-item" data-tour="transactions">
                 <RecentTransactions transactions={mockTransactions} />
               </div>
             </div>
@@ -190,7 +192,7 @@ export default function Dashboard() {
               </div>
               
               {/* Credit Score Overview */}
-              <div className="stagger-item">
+              <div className="stagger-item" data-tour="credit-score">
                 <CreditScore data={mockCreditScore} />
               </div>
             </div>
@@ -200,6 +202,13 @@ export default function Dashboard() {
           <BudgetProgress budgets={mockBudgets} />
         </div>
       </main>
+
+      {/* Onboarding Tour */}
+      <OnboardingTour
+        isOpen={showOnboarding}
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
     </div>
   );
 }

@@ -92,7 +92,7 @@ export default function FloatingCoach() {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 z-50 md:bottom-8">
+    <div className="fixed bottom-20 right-4 z-50 md:bottom-8" data-tour="ai-coach">
       {/* Chat Icon Button with tooltip */}
       {!isOpen && (
         <div className="relative group">
