@@ -595,12 +595,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as User;
       
-      // Get credit score data
-      const creditScoreData = await storage.getCreditScore(user.id);
+      // Fetch fresh credit score data from Experian
+      const { fetchCreditScore } = await import('./credit');
+      const experianData = await fetchCreditScore(user.id);
       
-      if (!creditScoreData) {
+      if (!experianData) {
         return res.status(404).json({ message: 'Credit score data not found' });
       }
+      
+      // Store the credit score data for future reference
+      try {
+        await storage.createCreditScore({
+          userId: user.id,
+          score: experianData.score,
+          rating: experianData.rating,
+          factors: experianData.factors
+        });
+      } catch (error) {
+        console.log('Could not store credit score, continuing with analysis');
+      }
+      
+      const creditScoreData = experianData;
       
       // Prepare data for the AI
       const creditData = {
