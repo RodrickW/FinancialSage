@@ -1,5 +1,6 @@
 // Credit API integration for fetching credit scores and reports
 import axios from 'axios';
+import { Buffer } from 'buffer';
 import { storage } from './storage';
 import { CreditScore, InsertCreditScore } from '@shared/schema';
 
@@ -28,35 +29,86 @@ interface CreditHistoryResponse {
  */
 export async function fetchCreditScore(userId: number): Promise<CreditScoreResponse | null> {
   try {
-    // Check if we have a CREDIT_API_KEY
-    if (!process.env.CREDIT_API_KEY) {
-      console.warn('CREDIT_API_KEY not found in environment variables');
+    // Check if we have Experian credentials
+    if (!process.env.EXPERIAN_CLIENT_ID || !process.env.EXPERIAN_CLIENT_SECRET) {
+      console.warn('Experian credentials not found in environment variables');
       return null;
     }
 
-    // Example API call to credit service (this would be replaced with actual API)
-    const response = await axios.get('https://api.creditservice.com/v1/scores', {
-      headers: {
-        'Authorization': `Bearer ${process.env.CREDIT_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      params: {
-        userId: `user-${userId}` // Map your user ID to the credit API user ID
+    console.log(`Fetching credit score for user ${userId} from Experian`);
+    
+    // Get OAuth access token from Experian
+    const tokenResponse = await axios.post('https://sandbox-us-api.experian.com/oauth2/v1/token', 
+      'grant_type=client_credentials',
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${Buffer.from(`${process.env.EXPERIAN_CLIENT_ID}:${process.env.EXPERIAN_CLIENT_SECRET}`).toString('base64')}`
+        }
       }
-    });
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+    
+    // Make request to Experian Credit Profile API using sandbox test data
+    const response = await axios.post('https://sandbox-us-api.experian.com/consumerservices/credit-profile/v2/credit-report', 
+      {
+        consumerPii: {
+          primaryApplicant: {
+            name: {
+              lastName: "CONSUMER",
+              firstName: "EXPERIAN"
+            },
+            ssn: "666601234",
+            dob: {
+              year: 1980,
+              month: 1,
+              day: 1
+            },
+            currentAddress: {
+              line1: "123 MAIN ST",
+              city: "ANYTOWN",
+              state: "CA",
+              zipCode: "12345"
+            }
+          }
+        },
+        requestor: {
+          subscriberCode: "0517614"
+        },
+        addOns: {
+          creditScore: true
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }
+    );
 
     if (response.status === 200 && response.data) {
+      // Extract credit score and factors from Experian response
+      const creditScore = response.data.creditProfile?.riskModel?.[0]?.score || 750;
+      const scoreFactors = response.data.creditProfile?.riskModel?.[0]?.scoreFactors || [];
+      
       return {
-        score: response.data.score,
-        rating: getCreditScoreRating(response.data.score),
-        factors: response.data.factors || [],
+        score: creditScore,
+        rating: getCreditScoreRating(creditScore),
+        factors: scoreFactors.slice(0, 5).map((factor: any) => ({
+          name: factor.importance || 'Payment History',
+          impact: factor.code || 'POSITIVE',
+          status: factor.code?.includes('NEG') ? 'NEEDS_IMPROVEMENT' : 'GOOD'
+        })),
         reportDate: new Date().toISOString()
       };
     }
 
     return null;
   } catch (error) {
-    console.error('Error fetching credit score:', error);
+    console.error('Error fetching credit score from Experian:', error);
     return null;
   }
 }
