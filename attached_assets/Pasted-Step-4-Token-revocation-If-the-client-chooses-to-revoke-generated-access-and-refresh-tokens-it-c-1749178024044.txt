@@ -1,0 +1,165 @@
+Step 4:
+Token revocation
+If the client chooses to revoke generated access and refresh tokens, it can be done by calling the revoke token endpoint. To revoke a token, a client application would make a request to the revocation endpoint as shown in the below sample in the sandbox environment:
+
+curl -X POST https://sandbox-us-api.experian.com/oauth2/v1/revokeToken \
+  -H 'client_id: GfiivuSKYI8oU5X6QQmAdGrXlNGkp8Ex' \
+  -H 'client_secret: XM2qQ4XapHjPEbZ6' \
+  -H 'token: eyJraWQiOiJBSmpTMXJQQjdJODBHWjgybmNsSlZPQkF3V3B3ZTVYblNKZUdSZH' \
+ 
+
+Parameter
+
+Description
+
+client_id
+
+(Required)
+
+client_id associated with the developer app
+
+client_secret
+
+(Required)
+
+client_secret associated with the developer app
+
+token
+
+(Required)
+
+Refresh token or Access Token to be revoked
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Response
+
+Status code 200
+
+ 
+
+ERRORS
+
+Scenario
+
+Http Code
+
+Error Type
+
+Message
+
+Expired Access Token
+
+401
+
+Unauthorized
+
+Access token is Invalid
+
+Client ID/Client Secret are missing
+
+400
+
+Bad Request
+
+The 'client_id' and 'client_secret' attributes are required
+
+Access token request with HTTP method other than POST
+
+405
+
+Method Not Allowed
+
+The requested method is not allowed
+
+Content-Type is missing or is not Application/Json
+
+415
+
+Unsupported Media Type
+
+Content-Type header is unsupported
+
+Username/password is missing or blank
+
+400
+
+Bad Request
+
+The 'username' and 'password' attributes are required
+
+Username/password mismatch
+
+401
+
+Unauthorized
+
+Access is denied due to invalid username or password
+
+Incorrect Client ID/Client Secret
+
+401
+
+Unauthorized
+
+Access is denied due to invalid client id or client secret
+
+Authorization fails as account is not in active status
+
+401
+
+Unauthorized
+
+Your account is in invalid state. For further assistance, please contact 
+
+apisupport@experian.com
+
+Regular expression attack, JSON threat and Spike arrest failure
+
+401
+
+Unauthorized
+
+Access to the requested resource is not allowed
+
+Default Authentication failure message
+
+401
+
+Unauthorized
+
+Access to the requested resource is not allowed
+
+IP range or Time of Day validation fails
+
+403
+
+Forbidden
+
+Access to the requested resource is Forbidden
+
+Internal Server Error
+
+500
+
+Internal Server Error
+
+Internal Server Error. If problems persist, please contact 
+
+apisupport@experian.com
