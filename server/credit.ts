@@ -37,21 +37,17 @@ export async function fetchCreditScore(userId: number): Promise<CreditScoreRespo
 
     console.log(`Fetching credit score for user ${userId} from Experian`);
     
-    // Get OAuth access token from Experian using password grant type
-    console.log('Attempting Experian OAuth with password grant...');
+    // Get OAuth access token from Experian using their header format
+    console.log('Attempting Experian OAuth with header-based auth...');
     const tokenResponse = await axios.post('https://sandbox-us-api.experian.com/oauth2/v1/token', 
-      new URLSearchParams({
-        'grant_type': 'password',
-        'client_id': process.env.EXPERIAN_CLIENT_ID!,
-        'client_secret': process.env.EXPERIAN_CLIENT_SECRET!,
-        'username': process.env.EXPERIAN_CLIENT_ID!, // Using client_id as username
-        'password': process.env.EXPERIAN_CLIENT_SECRET!, // Using client_secret as password
-        'scope': 'openid'
-      }).toString(),
+      {},
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'client_id': process.env.EXPERIAN_CLIENT_ID!,
+          'client_secret': process.env.EXPERIAN_CLIENT_SECRET!,
+          'grant_type': 'client_credentials'
         }
       }
     );
