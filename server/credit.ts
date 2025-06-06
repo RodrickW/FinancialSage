@@ -37,14 +37,20 @@ export async function fetchCreditScore(userId: number): Promise<CreditScoreRespo
 
     console.log(`Fetching credit score for user ${userId} from Experian`);
     
-    // Get OAuth access token from Experian - try different auth method
-    console.log('Attempting Experian OAuth with credentials...');
-    const tokenResponse = await axios.post('https://sandbox-us-api.experian.com/oauth2/v1/token', 
-      'grant_type=client_credentials',
+    // Get OAuth access token from Experian using password grant type
+    console.log('Attempting Experian OAuth with password grant...');
+    const tokenResponse = await axios.post('https://us-api.experian.com/oauth2/v1/token', 
+      new URLSearchParams({
+        'grant_type': 'password',
+        'client_id': process.env.EXPERIAN_CLIENT_ID!,
+        'client_secret': process.env.EXPERIAN_CLIENT_SECRET!,
+        'username': process.env.EXPERIAN_CLIENT_ID!, // Using client_id as username
+        'password': process.env.EXPERIAN_CLIENT_SECRET!, // Using client_secret as password
+        'scope': 'openid'
+      }).toString(),
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${Buffer.from(`${process.env.EXPERIAN_CLIENT_ID}:${process.env.EXPERIAN_CLIENT_SECRET}`).toString('base64')}`,
           'Accept': 'application/json'
         }
       }
@@ -52,8 +58,8 @@ export async function fetchCreditScore(userId: number): Promise<CreditScoreRespo
 
     const accessToken = tokenResponse.data.access_token;
     
-    // Make request to Experian Credit Profile API using sandbox test data
-    const response = await axios.post('https://sandbox-us-api.experian.com/consumerservices/credit-profile/v2/credit-report', 
+    // Make request to Experian Credit Profile API
+    const response = await axios.post('https://us-api.experian.com/consumerservices/credit-profile/v2/credit-report', 
       {
         consumerPii: {
           primaryApplicant: {
