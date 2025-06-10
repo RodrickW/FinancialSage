@@ -170,8 +170,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Complete onboarding
   app.post('/api/users/complete-onboarding', requireAuth, async (req, res) => {
     try {
-      const userId = req.session.userId!;
-      await storage.updateUser(userId, { 
+      const user = req.user as User;
+      await storage.updateUser(user.id, { 
         hasSeenTour: true, 
         hasCompletedOnboarding: true 
       });
@@ -1006,11 +1006,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start free trial endpoint
   app.post("/api/start-free-trial", requireAuth, async (req, res) => {
     try {
-      const userId = req.session.userId!;
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
+      const user = req.user as User;
       
       const { planType = 'premium' } = req.body;
       
