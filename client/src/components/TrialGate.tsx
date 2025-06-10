@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { UserProfile } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,7 @@ export default function TrialGate({ children, feature, description, demoContent 
   }
 
   // Allow access if user has started trial or is premium
-  if (user?.hasStartedTrial || user?.isPremium) {
+  if (user && (user as any)?.hasStartedTrial || (user as any)?.isPremium) {
     return <>{children}</>;
   }
 

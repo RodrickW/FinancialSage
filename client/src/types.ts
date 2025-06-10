@@ -6,6 +6,10 @@ export interface UserProfile {
   lastName: string;
   email: string;
   avatar?: string;
+  isPremium: boolean;
+  hasStartedTrial: boolean;
+  trialEndsAt?: string;
+  subscriptionStatus: string;
 }
 
 export interface FinancialOverviewData {
