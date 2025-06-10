@@ -15,6 +15,11 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import Stripe from "stripe";
 
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-04-30.basil',
+});
+
 // Mock transaction data for the dashboard
 const mockFinancialData = {
   totalBalance: 24563.98,
@@ -160,6 +165,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: 'Logged out successfully' });
     });
+  });
+
+  // Complete onboarding
+  app.post('/api/users/complete-onboarding', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      await storage.updateUser(userId, { 
+        hasSeenTour: true, 
+        hasCompletedOnboarding: true 
+      });
+      res.json({ message: 'Onboarding completed' });
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      res.status(500).json({ message: 'Failed to complete onboarding' });
+    }
   });
   
   // Password reset routes
@@ -986,18 +1006,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start free trial endpoint
   app.post("/api/start-free-trial", requireAuth, async (req, res) => {
     try {
-      const user = req.user as User;
-      const { planType } = req.body;
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      const { planType = 'premium' } = req.body;
+      
+      // Skip if user is already premium
+      if (user.isPremium) {
+        return res.json({ 
+          message: 'User is already on a premium plan',
+          isPremium: true 
+        });
+      }
+      
+      // Create or get Stripe customer
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+          metadata: {
+            userId: user.id.toString()
+          }
+        });
+        customerId = customer.id;
+        
+        // Update user with Stripe customer ID
+        await storage.updateUser(user.id, {
+          stripeCustomerId: customerId
+        });
+      }
       
       // Create Stripe checkout session for trial
       const session = await stripe.checkout.sessions.create({
-        customer_email: user.email,
+        customer: customerId,
+        payment_method_types: ['card'],
         line_items: [
           {
             price_data: {
               currency: 'usd',
               product_data: {
                 name: `Mind My Money ${planType === 'premium' ? 'Premium' : 'Standard'}`,
+                description: planType === 'premium' 
+                  ? 'Advanced AI coaching with credit score monitoring'
+                  : 'Essential AI coaching and financial management'
               },
               unit_amount: planType === 'premium' ? 1499 : 999, // $14.99 or $9.99
               recurring: {
@@ -1009,20 +1064,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         mode: 'subscription',
         success_url: `${req.protocol}://${req.get('host')}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.protocol}://${req.get('host')}/subscription/cancel`,
+        cancel_url: `${req.protocol}://${req.get('host')}/dashboard`,
         subscription_data: {
           trial_period_days: 30,
+          metadata: {
+            userId: user.id.toString(),
+            planType: planType
+          }
         },
-        metadata: {
-          userId: user.id.toString(),
-          planType: planType,
-        },
+        allow_promotion_codes: true,
       });
 
       res.json({ checkoutUrl: session.url });
     } catch (error) {
       console.error("Error creating trial checkout session:", error);
-      res.status(500).json({ message: "Failed to start free trial" });
+      res.status(500).json({ message: "Failed to create checkout session" });
     }
   });
 
