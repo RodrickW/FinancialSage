@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Bug, Lightbulb, Star } from "lucide-react";
+import { MessageSquare, Bug, Lightbulb, Star, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 
 const feedbackSchema = z.object({
   type: z.enum(["bug", "feature", "general"]),
@@ -82,9 +83,16 @@ export default function Feedback() {
               <p className="text-gray-600 mb-6">
                 Your feedback has been submitted successfully. We really appreciate you taking the time to help us improve Mind My Money.
               </p>
-              <Button onClick={() => setIsSubmitted(false)} className="bg-gradient-to-r from-emerald-600 to-teal-600">
-                Submit More Feedback
-              </Button>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => setIsSubmitted(false)} variant="outline">
+                  Submit More Feedback
+                </Button>
+                <Link href="/dashboard">
+                  <Button className="bg-gradient-to-r from-emerald-600 to-teal-600">
+                    Back to Dashboard
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -95,6 +103,14 @@ export default function Feedback() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
       <div className="max-w-2xl mx-auto pt-8">
+        <div className="mb-6">
+          <Link href="/dashboard">
+            <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Share Your Feedback</h1>
           <p className="text-gray-600">

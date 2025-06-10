@@ -1,7 +1,7 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -73,11 +73,7 @@ export class DatabaseStorage implements IStorage {
   async updateUser(id: number, data: Partial<User>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
-      .set({
-        ...data,
-        // If updating the premium status, make sure we record when it was updated
-        ...(data.isPremium !== undefined ? { updatedAt: new Date() } : {})
-      })
+      .set(data)
       .where(eq(users.id, id))
       .returning();
     return user;
