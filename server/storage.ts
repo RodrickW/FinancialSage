@@ -86,8 +86,7 @@ export class DatabaseStorage implements IStorage {
         stripeCustomerId,
         stripeSubscriptionId,
         isPremium: true,
-        subscriptionStatus: 'active',
-        updatedAt: new Date()
+        subscriptionStatus: 'active'
       })
       .where(eq(users.id, id))
       .returning();
@@ -291,7 +290,7 @@ export class DatabaseStorage implements IStorage {
   async updateFeedbackStatus(id: number, status: string): Promise<Feedback | undefined> {
     const [updatedFeedback] = await db
       .update(feedback)
-      .set({ status, updatedAt: new Date() })
+      .set({ status })
       .where(eq(feedback.id, id))
       .returning();
     return updatedFeedback;

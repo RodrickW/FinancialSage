@@ -42,9 +42,12 @@ export default function Feedback() {
 
   const submitFeedback = useMutation({
     mutationFn: async (data: FeedbackForm) => {
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
       const response = await apiRequest("POST", "/api/feedback", {
         ...data,
-        userId: user?.id,
+        userId: user.id,
       });
       return response.json();
     },
