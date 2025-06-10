@@ -19,6 +19,10 @@ export const users = pgTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: text("subscription_status").default("inactive"),
   trialEndsAt: timestamp("trial_ends_at"),
+  
+  // Onboarding tracking
+  hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
+  hasSeenTour: boolean("has_seen_tour").default(false),
 });
 
 // Connected account schema (bank accounts via Plaid)

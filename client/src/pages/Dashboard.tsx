@@ -62,8 +62,8 @@ export default function Dashboard() {
   // Check if user is new and should see onboarding
   useEffect(() => {
     if (userData && !userLoading) {
-      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-      if (!hasSeenOnboarding) {
+      // Check from database instead of localStorage
+      if (!userData.hasSeenTour) {
         setTimeout(() => setShowOnboarding(true), 1000);
       }
     }
@@ -93,18 +93,32 @@ export default function Dashboard() {
   };
 
   // Handle onboarding completion
-  const handleOnboardingComplete = () => {
-    localStorage.setItem('hasSeenOnboarding', 'true');
-    setShowOnboarding(false);
-    toast({
-      title: "Welcome aboard!",
-      description: "You're all set to start managing your finances.",
-    });
+  const handleOnboardingComplete = async () => {
+    try {
+      await fetch('/api/users/complete-onboarding', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setShowOnboarding(false);
+      toast({
+        title: "Welcome aboard!",
+        description: "You're all set to start managing your finances.",
+      });
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+    }
   };
 
-  const handleOnboardingSkip = () => {
-    localStorage.setItem('hasSeenOnboarding', 'true');
-    setShowOnboarding(false);
+  const handleOnboardingSkip = async () => {
+    try {
+      await fetch('/api/users/complete-onboarding', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Failed to skip onboarding:', error);
+    }
   };
   
   // Use user data from API or fallback to mock data
