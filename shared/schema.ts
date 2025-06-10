@@ -19,6 +19,7 @@ export const users = pgTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: text("subscription_status").default("inactive"),
   trialEndsAt: timestamp("trial_ends_at"),
+  hasStartedTrial: boolean("has_started_trial").default(false),
   
   // Onboarding tracking
   hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),

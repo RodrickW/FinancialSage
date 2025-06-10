@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useState } from 'react';
 import { PlaidBankOptions } from '@/components/PlaidLink';
 import { useQueryClient } from '@tanstack/react-query';
+import TrialGate from '@/components/TrialGate';
 
 interface ConnectedAccountsProps {
   accounts: ConnectedAccount[];

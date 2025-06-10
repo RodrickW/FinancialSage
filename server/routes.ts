@@ -1046,9 +1046,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               currency: 'usd',
               product_data: {
                 name: `Mind My Money ${planType === 'premium' ? 'Premium' : 'Standard'}`,
-                description: planType === 'premium' 
-                  ? 'Advanced AI coaching with credit score monitoring'
-                  : 'Essential AI coaching and financial management'
               },
               unit_amount: planType === 'premium' ? 1499 : 999, // $14.99 or $9.99
               recurring: {
@@ -1069,6 +1066,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         },
         allow_promotion_codes: true,
+      });
+
+      // Mark user as having started trial
+      await storage.updateUser(user.id, {
+        hasStartedTrial: true,
+        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
       });
 
       res.json({ checkoutUrl: session.url });
