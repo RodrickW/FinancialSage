@@ -314,14 +314,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get credit score
       const creditScoreData = await storage.getCreditScore(user.id);
-      const creditScore = creditScoreData?.score || 750; // Default to 750 if not available
+      const creditScore = creditScoreData?.score || 0; // Show 0 for new users
       
       // Get savings goal
       const savingsGoals = await storage.getSavingsGoals(user.id);
       const mainSavingsGoal = savingsGoals[0] || {
-        name: 'Vacation Fund',
-        targetAmount: 10000,
-        currentAmount: 5420
+        name: 'Set a savings goal',
+        targetAmount: 0,
+        currentAmount: 0
       };
       
       const financialOverview = {
@@ -342,8 +342,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(financialOverview);
     } catch (error) {
       console.error('Error getting financial overview:', error);
-      // Fallback to mock data if there's an error
-      res.json(mockFinancialData);
+      // Return empty state for new users instead of mock data
+      res.json({
+        totalBalance: 0,
+        previousMonthBalance: 0,
+        monthlySpending: 0,
+        previousMonthSpending: 0,
+        weeklySpending: 0,
+        dailySpending: 0,
+        creditScore: 0,
+        savingsProgress: {
+          current: 0,
+          target: 0,
+          name: 'Set a savings goal'
+        }
+      });
     }
   });
   
@@ -1066,12 +1079,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         },
         allow_promotion_codes: true,
-      });
-
-      // Mark user as having started trial
-      await storage.updateUser(user.id, {
-        hasStartedTrial: true,
-        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
       });
 
       res.json({ checkoutUrl: session.url });

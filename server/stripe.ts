@@ -88,17 +88,18 @@ export async function handleStripeWebhook(event: Stripe.Event) {
           .where(eq(users.stripeCustomerId, session.customer as string));
         
         if (user) {
-          // Set trial end date
+          // Set trial end date and mark as having started trial
           const trialEndsAt = subscription.trial_end 
             ? new Date(subscription.trial_end * 1000) 
-            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
             
           await db.update(users)
             .set({ 
               stripeSubscriptionId: session.subscription as string,
-              isPremium: true,
-              premiumTier: 'premium', // Default tier
-              trialEndsAt
+              hasStartedTrial: true,
+              isPremium: false, // Premium only after trial ends
+              trialEndsAt,
+              subscriptionStatus: 'trialing'
             })
             .where(eq(users.id, user.id));
         }
