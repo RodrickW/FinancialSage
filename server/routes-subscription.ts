@@ -28,11 +28,11 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
     try {
       const user = req.user as User;
       
-      // Check if the user is on a free trial
+      // Check if the user is on a free trial - only if they have started trial through Stripe
       let isOnFreeTrial = false;
       let trialDaysLeft = 0;
       
-      if (user.trialEndsAt) {
+      if (user.hasStartedTrial && user.trialEndsAt) {
         const now = new Date();
         const trialEnd = new Date(user.trialEndsAt);
         

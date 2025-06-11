@@ -1081,6 +1081,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allow_promotion_codes: true,
       });
 
+      console.log(`Created Stripe checkout session for user ${user.id}: ${session.url}`);
       res.json({ checkoutUrl: session.url });
     } catch (error) {
       console.error("Error creating trial checkout session:", error);

@@ -36,21 +36,21 @@ export function SubscriptionBanner() {
   const startFreeTrial = async () => {
     try {
       setIsLoading(true);
-      const response = await apiRequest("POST", "/api/start-free-trial");
+      const response = await apiRequest("POST", "/api/start-free-trial", { planType: 'standard' });
       
       if (response.ok) {
         const data = await response.json();
-        setSubscriptionStatus({
-          isPremium: data.isPremium,
-          isOnFreeTrial: true,
-          trialDaysLeft: data.trialDaysLeft,
-          trialEndsAt: data.trialEndsAt
-        });
         
-        toast({
-          title: "Free trial started!",
-          description: "You now have access to all premium features for 30 days.",
-        });
+        if (data.checkoutUrl) {
+          // Redirect to Stripe checkout
+          window.location.href = data.checkoutUrl;
+        } else {
+          toast({
+            title: "Error",
+            description: "Unable to start free trial. Please try again.",
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Error",
