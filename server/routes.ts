@@ -1089,6 +1089,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trial cancellation endpoint
+  app.post('/api/cancel-trial', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      if (!user.hasStartedTrial || !user.stripeSubscriptionId) {
+        return res.status(400).json({ message: 'No active trial to cancel' });
+      }
+      
+      // Cancel the Stripe subscription
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+      
+      // Update user status
+      await storage.updateUser(user.id, {
+        subscriptionStatus: 'cancel_at_period_end'
+      });
+      
+      res.json({ message: 'Trial cancelled successfully' });
+    } catch (error) {
+      console.error('Error cancelling trial:', error);
+      res.status(500).json({ message: 'Failed to cancel trial' });
+    }
+  });
+
+  // Manual trial notification endpoint (for testing)
+  app.post('/api/admin/send-trial-notification', requireAuth, async (req, res) => {
+    try {
+      const { userId, daysRemaining } = req.body;
+      const { sendTestTrialNotification } = await import('./notifications');
+      
+      await sendTestTrialNotification(userId, daysRemaining);
+      res.json({ message: 'Test notification sent' });
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      res.status(500).json({ message: 'Failed to send notification' });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 

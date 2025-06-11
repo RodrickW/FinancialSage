@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
+import TrialNotificationBanner from '@/components/TrialNotificationBanner';
 import { UserProfile, FinancialOverviewData } from '@/types';
 
 // Import mock data for development
@@ -165,6 +166,9 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+          
+          {/* Trial Notification Banner */}
+          <TrialNotificationBanner />
           
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
