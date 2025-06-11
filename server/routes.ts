@@ -1129,6 +1129,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trigger notification check manually (for testing)
+  app.post('/api/admin/check-trial-notifications', requireAuth, async (req, res) => {
+    try {
+      const { triggerTrialCheck } = await import('./scheduler');
+      await triggerTrialCheck();
+      res.json({ message: 'Trial notification check completed' });
+    } catch (error) {
+      console.error('Error triggering trial check:', error);
+      res.status(500).json({ message: 'Failed to trigger trial check' });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
