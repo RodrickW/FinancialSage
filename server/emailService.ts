@@ -43,8 +43,10 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
  * Send new user signup notification to admin
  */
 export async function sendNewUserNotification(user: any): Promise<boolean> {
-  const adminEmail = 'your-email@example.com'; // Update with your email
-  const fromEmail = 'noreply@example.com'; // Update with your verified sender email
+  // You need to update these with your actual email addresses
+  // The fromEmail MUST be verified in your SendGrid account
+  const adminEmail = process.env.ADMIN_EMAIL || 'your-email@example.com'; 
+  const fromEmail = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
   
   const subject = `New User Signup: ${user.username}`;
   
@@ -112,7 +114,7 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
  * Send welcome email to new user
  */
 export async function sendWelcomeEmail(user: any): Promise<boolean> {
-  const fromEmail = 'noreply@example.com'; // Update with your verified sender email
+  const fromEmail = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
   
   const subject = `Welcome to Waddle Innovations, ${user.firstName}!`;
   
