@@ -134,6 +134,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const user = await storage.createUser(result.data);
+      
+      // Send email notifications for new user signup
+      const { sendNewUserNotification, sendWelcomeEmail } = await import('./emailService');
+      
+      // Send admin notification (don't block registration if it fails)
+      sendNewUserNotification(user).catch(error => {
+        console.error('Failed to send admin notification:', error);
+      });
+      
+      // Send welcome email to user (don't block registration if it fails)
+      sendWelcomeEmail(user).catch(error => {
+        console.error('Failed to send welcome email:', error);
+      });
+      
       res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
       console.error('Registration error:', error);
@@ -1138,6 +1152,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error triggering trial check:', error);
       res.status(500).json({ message: 'Failed to trigger trial check' });
+    }
+  });
+
+  // Test email notifications (for testing)
+  app.post('/api/admin/test-email', requireAuth, async (req, res) => {
+    try {
+      const { sendNewUserNotification, sendWelcomeEmail } = await import('./emailService');
+      const user = req.user as User;
+      
+      const testUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email || 'test@example.com',
+        firstName: user.firstName || 'Test',
+        lastName: user.lastName || 'User',
+        isPremium: user.isPremium,
+        hasStartedTrial: user.hasStartedTrial,
+        subscriptionStatus: user.subscriptionStatus
+      };
+      
+      const adminResult = await sendNewUserNotification(testUser);
+      const welcomeResult = await sendWelcomeEmail(testUser);
+      
+      res.json({ 
+        message: 'Test emails sent',
+        adminEmailSent: adminResult,
+        welcomeEmailSent: welcomeResult
+      });
+    } catch (error) {
+      console.error('Error sending test emails:', error);
+      res.status(500).json({ message: 'Failed to send test emails' });
     }
   });
 

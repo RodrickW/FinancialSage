@@ -1,0 +1,189 @@
+import { MailService } from '@sendgrid/mail';
+
+if (!process.env.SENDGRID_API_KEY) {
+  console.warn("SENDGRID_API_KEY not found - email notifications will not work");
+}
+
+const mailService = new MailService();
+if (process.env.SENDGRID_API_KEY) {
+  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+interface EmailParams {
+  to: string;
+  from: string;
+  subject: string;
+  text: string;
+  html: string;
+}
+
+export async function sendEmail(params: EmailParams): Promise<boolean> {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('Email would be sent:', params.subject);
+    return false;
+  }
+
+  try {
+    await mailService.send({
+      to: params.to,
+      from: params.from,
+      subject: params.subject,
+      text: params.text || '',
+      html: params.html || '',
+    });
+    console.log(`Email sent successfully: ${params.subject}`);
+    return true;
+  } catch (error) {
+    console.error('SendGrid email error:', error);
+    return false;
+  }
+}
+
+/**
+ * Send new user signup notification to admin
+ */
+export async function sendNewUserNotification(user: any): Promise<boolean> {
+  const adminEmail = 'your-email@example.com'; // Update with your email
+  const fromEmail = 'noreply@example.com'; // Update with your verified sender email
+  
+  const subject = `New User Signup: ${user.username}`;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #059669; margin-bottom: 20px;">New User Signup Alert</h2>
+      
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; color: #333;">User Details</h3>
+        <p><strong>Username:</strong> ${user.username}</p>
+        <p><strong>Email:</strong> ${user.email || 'Not provided'}</p>
+        <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
+        <p><strong>Signup Time:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>User ID:</strong> ${user.id}</p>
+      </div>
+      
+      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0; color: #0277bd;">Account Status</h4>
+        <p><strong>Premium:</strong> ${user.isPremium ? 'Yes' : 'No'}</p>
+        <p><strong>Trial Started:</strong> ${user.hasStartedTrial ? 'Yes' : 'No'}</p>
+        <p><strong>Subscription Status:</strong> ${user.subscriptionStatus || 'Inactive'}</p>
+      </div>
+      
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="${process.env.APP_URL || 'https://your-app.replit.app'}/admin" 
+           style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+          View Admin Dashboard
+        </a>
+      </div>
+      
+      <p style="color: #666; font-size: 14px; margin-top: 30px;">
+        This is an automated notification from Waddle Innovations.
+      </p>
+    </div>
+  `;
+  
+  const text = `
+    New User Signup Alert
+    
+    User Details:
+    - Username: ${user.username}
+    - Email: ${user.email || 'Not provided'}
+    - Name: ${user.firstName} ${user.lastName}
+    - Signup Time: ${new Date().toLocaleString()}
+    - User ID: ${user.id}
+    
+    Account Status:
+    - Premium: ${user.isPremium ? 'Yes' : 'No'}
+    - Trial Started: ${user.hasStartedTrial ? 'Yes' : 'No'}
+    - Subscription Status: ${user.subscriptionStatus || 'Inactive'}
+    
+    This is an automated notification from Waddle Innovations.
+  `;
+  
+  return await sendEmail({
+    to: adminEmail,
+    from: fromEmail,
+    subject,
+    text,
+    html
+  });
+}
+
+/**
+ * Send welcome email to new user
+ */
+export async function sendWelcomeEmail(user: any): Promise<boolean> {
+  const fromEmail = 'noreply@example.com'; // Update with your verified sender email
+  
+  const subject = `Welcome to Waddle Innovations, ${user.firstName}!`;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #059669; margin-bottom: 10px;">Welcome to Waddle Innovations!</h1>
+        <p style="color: #666; font-size: 18px;">Your journey to better financial management starts here</p>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName},</h2>
+        <p>Thank you for joining Waddle Innovations! We're excited to help you take control of your finances with our AI-powered platform.</p>
+      </div>
+      
+      <div style="margin-bottom: 25px;">
+        <h3 style="color: #059669;">Get Started in 3 Easy Steps:</h3>
+        <ol style="color: #333; line-height: 1.6;">
+          <li><strong>Connect Your Accounts:</strong> Link your bank accounts securely to get real-time insights</li>
+          <li><strong>Explore AI Coaching:</strong> Chat with Money Mind for personalized financial advice</li>
+          <li><strong>Start Your Free Trial:</strong> Unlock all premium features for 30 days</li>
+        </ol>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${process.env.APP_URL || 'https://your-app.replit.app'}/dashboard" 
+           style="background: #059669; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-size: 16px;">
+          Go to Dashboard
+        </a>
+      </div>
+      
+      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0; color: #0277bd;">Need Help?</h4>
+        <p style="margin-bottom: 0;">Visit our <a href="${process.env.APP_URL}/feedback" style="color: #0277bd;">feedback page</a> or reply to this email if you have any questions.</p>
+      </div>
+      
+      <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
+        Welcome aboard!<br>
+        The Waddle Innovations Team
+      </p>
+    </div>
+  `;
+  
+  const text = `
+    Welcome to Waddle Innovations, ${user.firstName}!
+    
+    Thank you for joining Waddle Innovations! We're excited to help you take control of your finances with our AI-powered platform.
+    
+    Get Started in 3 Easy Steps:
+    1. Connect Your Accounts: Link your bank accounts securely to get real-time insights
+    2. Explore AI Coaching: Chat with Money Mind for personalized financial advice
+    3. Start Your Free Trial: Unlock all premium features for 30 days
+    
+    Visit your dashboard: ${process.env.APP_URL || 'https://your-app.replit.app'}/dashboard
+    
+    Need help? Visit our feedback page or reply to this email.
+    
+    Welcome aboard!
+    The Waddle Innovations Team
+  `;
+  
+  if (!user.email) {
+    console.log('User has no email address, skipping welcome email');
+    return false;
+  }
+  
+  return await sendEmail({
+    to: user.email,
+    from: fromEmail,
+    subject,
+    text,
+    html
+  });
+}
