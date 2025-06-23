@@ -298,10 +298,13 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
+            <Badge className="mb-4 bg-green-100 text-green-700 font-medium">
+              Trusted by 50,000+ Users
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Loved by Thousands of Users
+              Real Results from Real People
             </h2>
-            <p className="text-xl text-gray-600">See what our community is saying about Mind My Money</p>
+            <p className="text-xl text-gray-600">See how our users are saving thousands every year</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -352,8 +355,8 @@ export default function Landing() {
                 )}
                 {plan.popular && !plan.available && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gray-500 text-white">
-                      Coming Soon
+                    <Badge className="bg-orange-500 text-white">
+                      Coming Soon - Join Waitlist
                     </Badge>
                   </div>
                 )}
@@ -378,14 +381,13 @@ export default function Landing() {
                   
                   <Button 
                     className={`w-full ${plan.available 
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white' 
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200' 
+                      : 'bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-300'
                     }`}
-                    variant={plan.available ? 'default' : 'secondary'}
-                    onClick={() => plan.available && setLocation('/register')}
-                    disabled={!plan.available}
+                    variant={plan.available ? 'default' : 'outline'}
+                    onClick={() => plan.available ? setLocation('/register') : setLocation('/waitlist')}
                   >
-                    {plan.cta}
+                    {plan.available ? plan.cta : 'Join Waitlist'}
                   </Button>
                 </CardContent>
               </Card>
