@@ -404,7 +404,7 @@ export default function Landing() {
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <ChessCrownLogo className="w-8 h-8" color="text-teal-400" />
-                <span className="text-xl font-bold text-white">Mind My Money</span>
+                <span className="text-xl font-bold text-white">Waddle Innovations</span>
               </div>
               <p className="text-gray-400">
                 AI-powered financial coaching to help you achieve your money goals.

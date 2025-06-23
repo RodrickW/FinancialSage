@@ -1035,13 +1035,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as User;
       
-      const { planType = 'premium' } = req.body;
+      const { planType = 'standard' } = req.body;
       
-      // Skip if user is already premium
-      if (user.isPremium) {
+      // Skip if user already has a subscription
+      if (user.isPremium || user.hasStartedTrial) {
         return res.json({ 
-          message: 'User is already on a premium plan',
-          isPremium: true 
+          message: 'User already has an active subscription or trial',
+          isPremium: user.isPremium,
+          hasStartedTrial: user.hasStartedTrial
         });
       }
       
@@ -1072,9 +1073,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: `Mind My Money ${planType === 'premium' ? 'Premium' : 'Standard'}`,
+                name: `Mind My Money Standard`,
               },
-              unit_amount: planType === 'premium' ? 1499 : 999, // $14.99 or $9.99
+              unit_amount: 999, // $9.99 for Standard plan
               recurring: {
                 interval: 'month',
               },
