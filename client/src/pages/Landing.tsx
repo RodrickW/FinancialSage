@@ -30,32 +30,32 @@ export default function Landing() {
     {
       icon: Brain,
       title: "AI-Powered Coaching",
-      description: "Get personalized advice from Money Mind AI that adapts to your unique financial situation and helps you save an average of $3,247 per year."
+      description: "Get personalized financial advice from Money Mind, your intelligent AI coach that learns your spending habits and goals."
     },
     {
       icon: TrendingUp,
-      title: "Smart Spending Insights",
-      description: "Automatically categorize expenses and identify spending patterns that are costing you money. Find hidden savings opportunities instantly."
+      title: "Smart Analytics",
+      description: "Visualize your spending patterns, track trends, and discover insights to optimize your financial health."
     },
     {
       icon: Target,
-      title: "Goal Achievement System",
-      description: "Set financial goals and get step-by-step guidance to reach them 3x faster with AI-optimized savings strategies."
+      title: "Goal Tracking",
+      description: "Set and achieve financial goals with intelligent recommendations and progress tracking."
     },
     {
       icon: PiggyBank,
       title: "Automated Budgeting",
-      description: "Create budgets that work with your lifestyle. Track progress in real-time and get alerts before overspending."
+      description: "Create and manage budgets that adapt to your lifestyle with AI-powered recommendations."
     },
     {
-      icon: Zap,
-      title: "5-Minute Setup",
-      description: "Connect your accounts securely and start saving within minutes. No complicated setup or lengthy onboarding required."
+      icon: Smartphone,
+      title: "Easy Setup",
+      description: "Connect your bank accounts securely and start getting insights within minutes."
     },
     {
       icon: Shield,
       title: "Bank-Level Security",
-      description: "Your financial data is protected with 256-bit encryption and never stored on our servers. Trusted by 50,000+ users."
+      description: "Your financial data is protected with enterprise-grade encryption and security measures."
     }
   ];
 
@@ -64,22 +64,19 @@ export default function Landing() {
       name: "Sarah Johnson",
       role: "Marketing Manager",
       content: "Mind My Money helped me save $3,000 in just 6 months! The AI coaching is incredibly insightful.",
-      rating: 5,
-      savings: "$3,000 saved"
+      rating: 5
     },
     {
       name: "Michael Chen",
-      role: "Software Engineer", 
-      content: "Paid off $15,000 in debt 8 months faster than planned. The personalized recommendations are spot-on.",
-      rating: 5,
-      savings: "Debt-free 8 months early"
+      role: "Software Engineer",
+      content: "Finally, a financial app that actually understands my goals. The personalized recommendations are spot-on.",
+      rating: 5
     },
     {
       name: "Emily Rodriguez",
       role: "Teacher",
-      content: "Built my emergency fund to $5,000 in just 4 months. Money Mind made it automatic and stress-free.",
-      rating: 5,
-      savings: "$5,000 emergency fund"
+      content: "I've tried many budgeting apps, but Money Mind's AI coach makes financial planning actually enjoyable.",
+      rating: 5
     }
   ];
 
@@ -97,7 +94,7 @@ export default function Landing() {
         "Goal setting & tracking",
         "Email support"
       ],
-      cta: "Start FREE Trial - Save $3,000+",
+      cta: "Start 30-Day Free Trial",
       popular: false,
       available: true
     },
@@ -147,9 +144,9 @@ export default function Landing() {
               </Button>
               <Button 
                 onClick={() => setLocation('/register')}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
+                className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
               >
-                Start FREE Trial
+                Get Started
               </Button>
             </div>
           </div>
@@ -159,44 +156,35 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <Badge className="mb-6 bg-red-100 text-red-700 hover:bg-red-200 font-medium">
-            ⚡ Limited Time: Free 30-Day Trial + No Setup Fees
+          <Badge className="mb-6 bg-teal-100 text-teal-700 hover:bg-teal-200 font-medium">
+            🎉 Free 30-Day Trial Available
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
-            Save $3,000+ This Year with AI Financial Coaching
+            Take Control of Your Money with AI-Powered Financial Coaching
           </h1>
           
-          <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto leading-relaxed">
-            Join 50,000+ people who've transformed their finances. Get personalized budgets, spending insights, and achieve your money goals 3x faster.
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Get personalized financial insights, smart budgets, and AI coaching to help you achieve your money goals faster.
           </p>
           
-          <div className="flex items-center justify-center gap-6 mb-8 text-sm">
-            <div className="flex items-center text-green-700">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              <span className="font-medium">Average savings: $3,247/year</span>
-            </div>
-            <div className="flex items-center text-green-700">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              <span className="font-medium">Setup in under 5 minutes</span>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button 
               size="lg" 
               onClick={() => setLocation('/register')}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-lg px-10 py-4 shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
-              Start FREE Trial Now - Save $3,000+
+              Start Your 30-Day Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-          </div>
-          
-          <div className="text-center mb-8">
-            <p className="text-sm text-gray-500 mb-2">
-              <span className="font-semibold text-red-600">⏰ 247 people</span> started their trial today
-            </p>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setLocation('/login')}
+              className="border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
+            >
+              See Demo
+            </Button>
           </div>
           
           <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
@@ -221,10 +209,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Why People Save $3,000+ With Mind My Money
+              Everything You Need to Master Your Money
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Proven features that deliver real financial results
+              Powerful tools and AI insights to help you achieve your financial goals
             </p>
           </div>
           
@@ -249,10 +237,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Start Saving in 3 Simple Steps
+              How It Works
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Takes less than 5 minutes to see your first savings opportunities
+              Get started in minutes with these simple steps
             </p>
           </div>
           
@@ -261,20 +249,20 @@ export default function Landing() {
               {
                 step: 1,
                 icon: Smartphone,
-                title: "Connect in Under 5 Minutes",
-                description: "Securely link your accounts with bank-level encryption. No manual data entry required."
+                title: "Connect Your Accounts",
+                description: "Securely link your bank accounts, credit cards, and investments with bank-level encryption."
               },
               {
                 step: 2,
                 icon: MessageCircle,
-                title: "Get AI Analysis",
-                description: "Money Mind AI instantly analyzes your spending and identifies savings opportunities worth thousands."
+                title: "Meet Money Mind",
+                description: "Complete our AI interview to help Money Mind understand your financial goals and situation."
               },
               {
                 step: 3,
                 icon: BarChart3,
-                title: "Start Saving Immediately",
-                description: "Follow personalized recommendations and watch your savings grow automatically every month."
+                title: "Get Personalized Insights",
+                description: "Receive custom recommendations, budgets, and coaching to achieve your financial dreams."
               }
             ].map((step, index) => (
               <div key={index} className="text-center">
@@ -298,13 +286,10 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-green-100 text-green-700 font-medium">
-              Trusted by 50,000+ Users
-            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Real Results from Real People
+              What Our Users Say
             </h2>
-            <p className="text-xl text-gray-600">See how our users are saving thousands every year</p>
+            <p className="text-xl text-gray-600">See what our community is saying about Mind My Money</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -317,14 +302,9 @@ export default function Landing() {
                     ))}
                   </div>
                   <p className="text-gray-600 mb-4 italic">"{testimonial.content}"</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500">{testimonial.role}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-green-600">{testimonial.savings}</p>
-                    </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                    <p className="text-sm text-gray-500">{testimonial.role}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -338,9 +318,9 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Start Free, Save Thousands
+              Simple Pricing
             </h2>
-            <p className="text-xl text-gray-600">No setup fees, no contracts, cancel anytime</p>
+            <p className="text-xl text-gray-600">Start with our Standard plan, Premium features coming soon</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -355,8 +335,8 @@ export default function Landing() {
                 )}
                 {plan.popular && !plan.available && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-orange-500 text-white">
-                      Coming Soon - Join Waitlist
+                    <Badge className="bg-gray-500 text-white">
+                      Coming Soon
                     </Badge>
                   </div>
                 )}
@@ -381,13 +361,14 @@ export default function Landing() {
                   
                   <Button 
                     className={`w-full ${plan.available 
-                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200' 
-                      : 'bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-300'
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
-                    variant={plan.available ? 'default' : 'outline'}
-                    onClick={() => plan.available ? setLocation('/register') : setLocation('/waitlist')}
+                    variant={plan.available ? 'default' : 'secondary'}
+                    onClick={() => plan.available && setLocation('/register')}
+                    disabled={!plan.available}
                   >
-                    {plan.available ? plan.cta : 'Join Waitlist'}
+                    {plan.cta}
                   </Button>
                 </CardContent>
               </Card>
@@ -400,17 +381,17 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-teal-600 to-emerald-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Join 50,000+ People Saving $3,000+ Per Year
+            Ready to Master Your Money?
           </h2>
           <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-            Start your free trial now - no credit card required
+            Start your 30-day free trial today
           </p>
           <Button 
             size="lg"
             onClick={() => setLocation('/register')}
-            className="bg-white text-teal-600 hover:bg-gray-50 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all duration-200"
+            className="bg-white text-teal-600 hover:bg-gray-50 text-lg px-8 py-4"
           >
-            Start FREE Trial - Save $3,000+
+            Start Free Trial
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>
