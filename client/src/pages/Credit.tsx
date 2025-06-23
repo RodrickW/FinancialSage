@@ -161,13 +161,18 @@ export default function Credit() {
           <Card className="bg-white p-6 rounded-lg shadow-sm text-center">
             <div className="flex flex-col items-center justify-center py-8">
               <Lock className="h-12 w-12 text-neutral-400 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No Credit Data Available</h3>
+              <h3 className="text-xl font-semibold mb-2">Credit Monitoring Coming Soon</h3>
               <p className="text-neutral-600 mb-6 max-w-md mx-auto">
-                We need your permission to access your credit score information.
+                Credit score monitoring and analysis will be available with our Premium plan.
               </p>
-              <Button onClick={() => refetch()} className="bg-gradient-to-r from-blue-600 to-indigo-600">
-                Connect Credit Account
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed">
+                  Available with Premium
+                </Button>
+                <p className="text-sm text-neutral-500">
+                  Premium features launching soon
+                </p>
+              </div>
             </div>
           </Card>
         ) : (

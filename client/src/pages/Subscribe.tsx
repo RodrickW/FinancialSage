@@ -24,7 +24,6 @@ const plans = [
       "Advanced spending analytics",
       "Budget tracking & planning",
       "Goal setting & tracking",
-      "Credit score monitoring",
       "Email support"
     ],
     planType: "standard",
@@ -38,8 +37,9 @@ const plans = [
     description: "Enhanced features and priority support",
     features: [
       "Everything in Standard",
-      "Advanced AI coaching & insights",
+      "Credit score monitoring",
       "Credit improvement recommendations",
+      "Advanced AI coaching & insights", 
       "Investment recommendations",
       "Priority support",
       "Advanced analytics & reports",
