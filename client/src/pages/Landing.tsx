@@ -85,34 +85,37 @@ export default function Landing() {
       name: "Standard",
       price: "$9.99",
       period: "month",
-      description: "Essential financial management with AI coaching",
+      description: "Complete financial management with AI coaching",
       features: [
         "Unlimited bank connections",
         "Money Mind AI coaching",
-        "Basic spending analytics",
+        "Advanced spending analytics",
         "Budget tracking & planning",
         "Goal setting & tracking",
+        "Credit score monitoring",
         "Email support"
       ],
       cta: "Start 30-Day Free Trial",
-      popular: false
+      popular: false,
+      available: true
     },
     {
       name: "Premium",
-      price: "$14.99",
-      period: "month",
-      description: "Advanced features with credit monitoring & insights",
+      price: "Coming Soon",
+      period: "",
+      description: "Enhanced features and priority support",
       features: [
         "Everything in Standard",
         "Advanced AI coaching & insights",
-        "Credit score monitoring",
         "Credit improvement recommendations",
-        "Advanced analytics & reports",
         "Investment recommendations",
-        "Priority support"
+        "Priority support",
+        "Advanced analytics & reports",
+        "Custom financial planning"
       ],
-      cta: "Start 30-Day Free Trial",
-      popular: true
+      cta: "Coming Soon",
+      popular: true,
+      available: false
     }
   ];
 
@@ -315,18 +318,25 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Choose Your Plan
+              Simple Pricing
             </h2>
-            <p className="text-xl text-gray-600">Start free, upgrade when you're ready</p>
+            <p className="text-xl text-gray-600">Start with our Standard plan, Premium features coming soon</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? 'border-teal-200 shadow-lg scale-105' : 'border-gray-200'}`}>
-                {plan.popular && (
+              <Card key={index} className={`relative ${plan.popular && !plan.available ? 'border-gray-300 opacity-75' : plan.popular ? 'border-teal-200 shadow-lg scale-105' : 'border-gray-200'}`}>
+                {plan.popular && plan.available && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white">
-                      Most Popular
+                      Available Now
+                    </Badge>
+                  </div>
+                )}
+                {plan.popular && !plan.available && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-gray-500 text-white">
+                      Coming Soon
                     </Badge>
                   </div>
                 )}
@@ -335,7 +345,7 @@ export default function Landing() {
                     <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                     <div className="flex items-center justify-center mb-2">
                       <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.price !== "Free" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
+                      {plan.price !== "Free" && plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
                     </div>
                     <p className="text-gray-600">{plan.description}</p>
                   </div>
@@ -343,19 +353,20 @@ export default function Landing() {
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-center">
-                        <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                        <span className="text-gray-600">{feature}</span>
+                        <CheckCircle className={`w-5 h-5 mr-3 flex-shrink-0 ${plan.available ? 'text-green-500' : 'text-gray-400'}`} />
+                        <span className={`${plan.available ? 'text-gray-600' : 'text-gray-400'}`}>{feature}</span>
                       </li>
                     ))}
                   </ul>
                   
                   <Button 
-                    className={`w-full ${plan.popular 
+                    className={`w-full ${plan.available 
                       ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white' 
-                      : 'border-teal-200 text-teal-600 hover:bg-teal-50'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
-                    variant={plan.popular ? 'default' : 'outline'}
-                    onClick={() => setLocation('/register')}
+                    variant={plan.available ? 'default' : 'secondary'}
+                    onClick={() => plan.available && setLocation('/register')}
+                    disabled={!plan.available}
                   >
                     {plan.cta}
                   </Button>
