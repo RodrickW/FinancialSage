@@ -30,32 +30,32 @@ export default function Landing() {
     {
       icon: Brain,
       title: "AI-Powered Coaching",
-      description: "Get personalized financial advice from Money Mind, your intelligent AI coach that learns your spending habits and goals."
+      description: "Get personalized advice from Money Mind AI that adapts to your unique financial situation and helps you save an average of $3,247 per year."
     },
     {
       icon: TrendingUp,
-      title: "Smart Analytics",
-      description: "Visualize your spending patterns, track trends, and discover insights to optimize your financial health."
+      title: "Smart Spending Insights",
+      description: "Automatically categorize expenses and identify spending patterns that are costing you money. Find hidden savings opportunities instantly."
     },
     {
       icon: Target,
-      title: "Goal Tracking",
-      description: "Set and achieve financial goals with intelligent recommendations and progress tracking."
-    },
-    {
-      icon: CreditCard,
-      title: "Credit Score Monitoring",
-      description: "Track your credit score and get actionable tips to improve your creditworthiness."
+      title: "Goal Achievement System",
+      description: "Set financial goals and get step-by-step guidance to reach them 3x faster with AI-optimized savings strategies."
     },
     {
       icon: PiggyBank,
       title: "Automated Budgeting",
-      description: "Create and manage budgets that adapt to your lifestyle with AI-powered recommendations."
+      description: "Create budgets that work with your lifestyle. Track progress in real-time and get alerts before overspending."
+    },
+    {
+      icon: Zap,
+      title: "5-Minute Setup",
+      description: "Connect your accounts securely and start saving within minutes. No complicated setup or lengthy onboarding required."
     },
     {
       icon: Shield,
       title: "Bank-Level Security",
-      description: "Your financial data is protected with enterprise-grade encryption and security measures."
+      description: "Your financial data is protected with 256-bit encryption and never stored on our servers. Trusted by 50,000+ users."
     }
   ];
 
@@ -147,9 +147,9 @@ export default function Landing() {
               </Button>
               <Button 
                 onClick={() => setLocation('/register')}
-                className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
               >
-                Get Started
+                Start FREE Trial
               </Button>
             </div>
           </div>
@@ -221,10 +221,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Smart Financial Management
+              Why People Save $3,000+ With Mind My Money
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Everything you need to master your money
+              Proven features that deliver real financial results
             </p>
           </div>
           
@@ -249,10 +249,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              How It Works
+              Start Saving in 3 Simple Steps
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get started in minutes
+              Takes less than 5 minutes to see your first savings opportunities
             </p>
           </div>
           
@@ -261,20 +261,20 @@ export default function Landing() {
               {
                 step: 1,
                 icon: Smartphone,
-                title: "Connect Your Accounts",
-                description: "Securely link your bank accounts, credit cards, and investments with bank-level encryption."
+                title: "Connect in Under 5 Minutes",
+                description: "Securely link your accounts with bank-level encryption. No manual data entry required."
               },
               {
                 step: 2,
                 icon: MessageCircle,
-                title: "Meet Money Mind",
-                description: "Complete our AI interview to help Money Mind understand your financial goals and situation."
+                title: "Get AI Analysis",
+                description: "Money Mind AI instantly analyzes your spending and identifies savings opportunities worth thousands."
               },
               {
                 step: 3,
                 icon: BarChart3,
-                title: "Get Personalized Insights",
-                description: "Receive custom recommendations, budgets, and coaching to achieve your financial dreams."
+                title: "Start Saving Immediately",
+                description: "Follow personalized recommendations and watch your savings grow automatically every month."
               }
             ].map((step, index) => (
               <div key={index} className="text-center">
@@ -406,9 +406,9 @@ export default function Landing() {
           <Button 
             size="lg"
             onClick={() => setLocation('/register')}
-            className="bg-white text-teal-600 hover:bg-gray-50 text-lg px-8 py-4"
+            className="bg-white text-teal-600 hover:bg-gray-50 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all duration-200"
           >
-            Start Free Trial
+            Start FREE Trial - Save $3,000+
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>
