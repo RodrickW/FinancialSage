@@ -279,6 +279,21 @@ export default function Landing() {
               </div>
             ))}
           </div>
+          
+          {/* Add CTA in How It Works */}
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              onClick={() => setLocation('/register')}
+              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4"
+            >
+              Start Your Free Trial
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+            <p className="text-sm text-gray-500 mt-3">
+              No credit card required • 30-day free trial • Cancel anytime
+            </p>
+          </div>
         </div>
       </section>
 
