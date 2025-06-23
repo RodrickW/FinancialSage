@@ -29,33 +29,33 @@ export default function Landing() {
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Coaching",
-      description: "Get personalized financial advice from Money Mind, your intelligent AI coach that learns your spending habits and goals."
+      title: "AI Coaching",
+      description: "Personalized advice from Money Mind AI that learns your habits and goals."
     },
     {
       icon: TrendingUp,
       title: "Smart Analytics",
-      description: "Visualize your spending patterns, track trends, and discover insights to optimize your financial health."
+      description: "Track spending patterns and discover insights to optimize your finances."
     },
     {
       icon: Target,
       title: "Goal Tracking",
-      description: "Set and achieve financial goals with intelligent recommendations and progress tracking."
+      description: "Set financial goals and get recommendations to achieve them faster."
     },
     {
       icon: PiggyBank,
-      title: "Automated Budgeting",
-      description: "Create and manage budgets that adapt to your lifestyle with AI-powered recommendations."
+      title: "Auto Budgeting",
+      description: "AI-powered budgets that adapt to your lifestyle automatically."
     },
     {
       icon: Smartphone,
-      title: "Easy Setup",
-      description: "Connect your bank accounts securely and start getting insights within minutes."
+      title: "Quick Setup",
+      description: "Connect accounts securely and get insights in minutes."
     },
     {
       icon: Shield,
-      title: "Bank-Level Security",
-      description: "Your financial data is protected with enterprise-grade encryption and security measures."
+      title: "Secure",
+      description: "Bank-level encryption protects your financial data."
     }
   ];
 
@@ -85,13 +85,13 @@ export default function Landing() {
       name: "Standard",
       price: "$9.99",
       period: "month",
-      description: "Complete financial management with AI coaching",
+      description: "AI financial coaching and management",
       features: [
-        "Unlimited bank connections",
-        "Money Mind AI coaching",
-        "Advanced spending analytics",
-        "Budget tracking & planning",
-        "Goal setting & tracking",
+        "Bank connections",
+        "AI coaching",
+        "Spending analytics",
+        "Budget tracking",
+        "Goal tracking",
         "Email support"
       ],
       cta: "Start 30-Day Free Trial",
@@ -102,16 +102,16 @@ export default function Landing() {
       name: "Premium",
       price: "Coming Soon",
       period: "",
-      description: "Enhanced features and priority support",
+      description: "Advanced features and priority support",
       features: [
         "Everything in Standard",
-        "Credit score monitoring",
-        "Credit improvement recommendations", 
-        "Advanced AI coaching & insights",
-        "Investment recommendations",
+        "Credit monitoring",
+        "Credit improvement tips", 
+        "Advanced AI insights",
+        "Investment guidance",
         "Priority support",
-        "Advanced analytics & reports",
-        "Custom financial planning"
+        "Advanced reports",
+        "Custom planning"
       ],
       cta: "Coming Soon",
       popular: true,
@@ -161,11 +161,11 @@ export default function Landing() {
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
-            Take Control of Your Money with AI-Powered Financial Coaching
+            Your AI Financial Coach
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Get personalized financial insights, smart budgets, and AI coaching to help you achieve your money goals faster.
+            Smart budgets, spending insights, and personalized coaching to reach your money goals.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -209,10 +209,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Everything You Need to Master Your Money
+              Master Your Money
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Powerful tools and AI insights to help you achieve your financial goals
+              AI-powered tools to achieve your financial goals
             </p>
           </div>
           
@@ -240,7 +240,7 @@ export default function Landing() {
               How It Works
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get started in minutes with these simple steps
+              Get started in minutes
             </p>
           </div>
           
@@ -249,20 +249,20 @@ export default function Landing() {
               {
                 step: 1,
                 icon: Smartphone,
-                title: "Connect Your Accounts",
-                description: "Securely link your bank accounts, credit cards, and investments with bank-level encryption."
+                title: "Connect Accounts",
+                description: "Securely link your banks and cards."
               },
               {
                 step: 2,
                 icon: MessageCircle,
                 title: "Meet Money Mind",
-                description: "Complete our AI interview to help Money Mind understand your financial goals and situation."
+                description: "AI learns your goals and habits."
               },
               {
                 step: 3,
                 icon: BarChart3,
-                title: "Get Personalized Insights",
-                description: "Receive custom recommendations, budgets, and coaching to achieve your financial dreams."
+                title: "Get Insights",
+                description: "Receive personalized recommendations."
               }
             ].map((step, index) => (
               <div key={index} className="text-center">
@@ -291,7 +291,7 @@ export default function Landing() {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <p className="text-sm text-gray-500 mt-3">
-              No credit card required • 30-day free trial • Cancel anytime
+              No credit card • 30-day trial • Cancel anytime
             </p>
           </div>
         </div>
@@ -302,9 +302,8 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              What Our Users Say
+              User Reviews
             </h2>
-            <p className="text-xl text-gray-600">See what our community is saying about Mind My Money</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -335,7 +334,7 @@ export default function Landing() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               Simple Pricing
             </h2>
-            <p className="text-xl text-gray-600">Start with our Standard plan, Premium features coming soon</p>
+            <p className="text-xl text-gray-600">Standard plan available, Premium coming soon</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
