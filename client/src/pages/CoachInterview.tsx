@@ -472,12 +472,12 @@ export default function CoachInterview() {
             </Card>
 
             {/* Navigation */}
-            <div className="flex justify-between">
+            <div className="flex justify-between mb-20 lg:mb-6">
               <Button
                 variant="outline"
                 onClick={handlePrevious}
                 disabled={currentQuestion === 0}
-                className="flex items-center"
+                className="flex items-center z-10 relative"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
@@ -486,7 +486,7 @@ export default function CoachInterview() {
               <Button
                 onClick={handleNext}
                 disabled={saveInterviewMutation.isPending}
-                className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white flex items-center"
+                className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white flex items-center z-10 relative"
               >
                 {saveInterviewMutation.isPending ? (
                   <>

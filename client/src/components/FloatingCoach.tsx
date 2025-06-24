@@ -10,7 +10,13 @@ export default function FloatingCoach() {
   const [conversation, setConversation] = useState<{role: 'user' | 'assistant'; content: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showIntroMessage, setShowIntroMessage] = useState(true);
+  const [location] = useLocation();
   const { toast } = useToast();
+
+  // Hide the floating coach on interview page to prevent button conflicts
+  if (location === '/coach/interview') {
+    return null;
+  }
   
   // Hide intro message after 8 seconds
   useEffect(() => {
