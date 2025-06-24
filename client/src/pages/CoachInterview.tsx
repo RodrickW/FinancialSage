@@ -251,6 +251,9 @@ export default function CoachInterview() {
   };
 
   const handleFinish = () => {
+    // Store flag to show personalized plan
+    localStorage.setItem('showPersonalizedPlan', 'true');
+    localStorage.setItem('interviewResponses', JSON.stringify(responses));
     setLocation('/coach');
   };
 

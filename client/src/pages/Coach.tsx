@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
@@ -20,6 +20,8 @@ export default function FinancialCoach() {
   const [isAsking, setIsAsking] = useState(false);
   const [answer, setAnswer] = useState<string | null>(null);
   const [, setLocation] = useLocation();
+  const [showPersonalizedPlan, setShowPersonalizedPlan] = useState(false);
+  const [interviewResponses, setInterviewResponses] = useState<any>(null);
 
   // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -45,6 +47,20 @@ export default function FinancialCoach() {
   });
 
   const user = userData || mockUserProfile;
+
+  // Check if we should show personalized plan from interview
+  useEffect(() => {
+    const shouldShowPlan = localStorage.getItem('showPersonalizedPlan') === 'true';
+    const storedResponses = localStorage.getItem('interviewResponses');
+    
+    if (shouldShowPlan && storedResponses) {
+      setShowPersonalizedPlan(true);
+      setInterviewResponses(JSON.parse(storedResponses));
+      // Clear the flags after showing
+      localStorage.removeItem('showPersonalizedPlan');
+      localStorage.removeItem('interviewResponses');
+    }
+  }, []);
 
   const handleAskQuestion = async () => {
     if (!aiQuestion.trim()) return;
