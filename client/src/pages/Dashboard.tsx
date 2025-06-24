@@ -14,7 +14,6 @@ import {
 import OnboardingTour from '@/components/OnboardingTour';
 
 import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
-import CreditScore from '@/components/Dashboard/CreditScore';
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
 import SavingsGoalCard from '@/components/Dashboard/SavingsGoalCard';
 import IncomeSpendingReport from '@/components/Dashboard/IncomeSpendingReport';
@@ -35,7 +34,6 @@ import {
   mockTransactions, 
   mockAIInsights, 
   mockConnectedAccounts, 
-  mockCreditScore, 
   mockBudgets 
 } from '@/lib/utils/mockData';
 
@@ -213,11 +211,6 @@ export default function Dashboard() {
               {/* Connected Accounts */}
               <div className="stagger-item">
                 <ConnectedAccounts accounts={mockConnectedAccounts} />
-              </div>
-              
-              {/* Credit Score Overview */}
-              <div className="stagger-item" data-tour="credit-score">
-                <CreditScore data={mockCreditScore} />
               </div>
             </div>
           </div>
