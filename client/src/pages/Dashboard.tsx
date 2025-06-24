@@ -17,6 +17,7 @@ import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
 import CreditScore from '@/components/Dashboard/CreditScore';
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
 import SavingsGoalCard from '@/components/Dashboard/SavingsGoalCard';
+import IncomeSpendingReport from '@/components/Dashboard/IncomeSpendingReport';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -179,6 +180,11 @@ export default function Dashboard() {
             )}
           </div>
           
+          {/* Income vs Spending Report */}
+          <div className="mb-6">
+            <IncomeSpendingReport />
+          </div>
+
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up">
             {/* Left Column - Spending Breakdown */}

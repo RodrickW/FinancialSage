@@ -1,7 +1,7 @@
 import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback } from "@shared/schema";
 import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -21,6 +21,7 @@ export interface IStorage {
   // Transaction operations
   getTransactions(userId: number, limit?: number): Promise<Transaction[]>;
   getAccountTransactions(accountId: number, limit?: number): Promise<Transaction[]>;
+  getTransactionsByDateRange(userId: number, startDate: Date, endDate: Date): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   
   // Budget operations
@@ -147,6 +148,20 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
   
+  async getTransactionsByDateRange(userId: number, startDate: Date, endDate: Date): Promise<Transaction[]> {
+    return await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          gte(transactions.date, startDate),
+          lte(transactions.date, endDate)
+        )
+      )
+      .orderBy(desc(transactions.date));
+  }
+
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const [newTransaction] = await db
       .insert(transactions)
