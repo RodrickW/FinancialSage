@@ -13,11 +13,6 @@ export default function FloatingCoach() {
   const [showIntroMessage, setShowIntroMessage] = useState(true);
   const [location] = useLocation();
   const { toast } = useToast();
-
-  // Hide the floating coach on interview page to prevent button conflicts
-  if (location === '/coach/interview') {
-    return null;
-  }
   
   // Hide intro message after 8 seconds
   useEffect(() => {
@@ -97,6 +92,11 @@ export default function FloatingCoach() {
   const handleSuggestedQuestion = (question: string) => {
     setMessage(question);
   };
+
+  // Hide the floating coach on interview page to prevent button conflicts
+  if (location === '/coach/interview') {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-20 right-4 z-50 md:bottom-8" data-tour="ai-coach">
