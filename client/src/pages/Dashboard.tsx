@@ -111,11 +111,11 @@ export default function Dashboard() {
     }
   };
   
-  // Use user data from API or fallback to mock data
-  const user: UserProfile = userData || mockUserProfile;
+  // Only use real user data from API
+  const user: UserProfile = userData;
   
-  // Use financial overview from API or fallback to mock data
-  const financialOverview: FinancialOverviewData = financialData || mockFinancialOverview;
+  // Only use real financial data from API
+  const financialOverview: FinancialOverviewData = financialData;
   
   return (
     <div className="flex flex-col min-h-screen bg-white">

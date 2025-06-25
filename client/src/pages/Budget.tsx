@@ -73,16 +73,8 @@ export default function Budget() {
     queryKey: ['/api/ai/budget-recommendations'],
   });
   
-  // Set a fallback user if data isn't available yet
-  const fallbackUser: UserProfile = {
-    id: 1,
-    username: 'demo_user',
-    firstName: 'Demo',
-    lastName: 'User',
-    email: 'demo@example.com',
-  };
-  
-  const user = userData || fallbackUser;
+  // Only use real user data from API
+  const user = userData;
   
   // Calculate total budget
   const [totalBudget, setTotalBudget] = useState(0);
@@ -392,7 +384,7 @@ export default function Budget() {
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
-        <BottomNavigation user={fallbackUser} />
+        <BottomNavigation user={userData} />
         
         <div className="p-6">
           {/* Header */}

@@ -3,7 +3,7 @@ import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { InstallInstructions } from '@/components/InstallPrompt';
 import { useQuery } from '@tanstack/react-query';
-import { mockUserProfile } from '@/lib/utils/mockData';
+// Removed mock data imports - using real API data only
 
 export default function InstallApp() {
   // Get the user data
@@ -11,7 +11,7 @@ export default function InstallApp() {
     queryKey: ['/api/users/profile']
   });
 
-  const user = userData || mockUserProfile;
+  const user = userData;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">

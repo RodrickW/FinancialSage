@@ -10,7 +10,7 @@ import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { useQuery } from '@tanstack/react-query';
-import { mockUserProfile } from '@/lib/utils/mockData';
+// Removed mock data imports - using real API data only
 
 const plans = [
   {
@@ -61,7 +61,7 @@ export default function Subscribe() {
     queryKey: ['/api/users/profile']
   });
 
-  const user = userData || mockUserProfile;
+  const user = userData;
 
   const handleStartTrial = async (planType: string) => {
     setIsLoading(planType);
