@@ -24,8 +24,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
 import TrialNotificationBanner from '@/components/TrialNotificationBanner';
 import { UserProfile, FinancialOverviewData } from '@/types';
+import { Link } from 'wouter';
 
-// Removed mock data imports - using real API data only
+// Import mock data for demo mode only (not for logged-in users)
+import { 
+  mockUserProfile, 
+  mockFinancialOverview
+} from '@/lib/utils/mockData';
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -111,11 +116,12 @@ export default function Dashboard() {
     }
   };
   
-  // Only use real user data from API
-  const user: UserProfile = userData;
+  // Check if this is demo mode (no real user data)
+  const isDemoMode = !userData;
   
-  // Only use real financial data from API
-  const financialOverview: FinancialOverviewData = financialData;
+  // For demo mode, use mock data. For real users, use API data
+  const user: UserProfile = userData || mockUserProfile;
+  const financialOverview: FinancialOverviewData = financialData || mockFinancialOverview;
   
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -130,7 +136,7 @@ export default function Dashboard() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="mb-4 md:mb-0">
                 <h1 className="text-3xl font-bold text-black">
-                  Welcome back, {user.firstName}!
+                  Welcome back, {user?.firstName || 'Demo User'}!
                 </h1>
                 <p className="text-gray-600 flex items-center mt-1">
                   <span className="material-icons text-gray-500 text-sm mr-1">today</span>

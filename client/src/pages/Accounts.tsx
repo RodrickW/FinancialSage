@@ -8,7 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { UserProfile, ConnectedAccount } from '@/types';
 
-// Removed mock data imports - using real API data only
+// Import mock data for demo mode only
+import { mockUserProfile, mockConnectedAccounts } from '@/lib/utils/mockData';
 
 export default function Accounts() {
   const { toast } = useToast();
@@ -23,9 +24,12 @@ export default function Accounts() {
     queryKey: ['/api/accounts'],
   });
   
-  // Only use real data from API
-  const user = userData;
-  const accounts = accountsData;
+  // Check if this is demo mode
+  const isDemoMode = !userData;
+  
+  // For demo mode, use mock data. For real users, use API data
+  const user = userData || mockUserProfile;
+  const accounts = accountsData || (isDemoMode ? mockConnectedAccounts : []);
   
   const accountTypes = {
     checking: { icon: 'account_balance', color: 'bg-primary-50 text-primary-500' },
