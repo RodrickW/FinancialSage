@@ -87,7 +87,7 @@ export function SubscriptionBanner() {
           <p className="text-sm text-white/80">
             {subscriptionStatus?.isOnFreeTrial 
               ? "Continue with your Standard subscription after your trial ends." 
-              : "Full access to all features - no credit card required to start."}
+              : "Full access to all features - secure payment required."}
           </p>
         </div>
         <div>

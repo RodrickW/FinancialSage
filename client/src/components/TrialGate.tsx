@@ -95,7 +95,7 @@ export default function TrialGate({ children, feature, description, demoContent 
             </Button>
           </Link>
           <p className="text-xs text-gray-500">
-            Full access • No commitment • Cancel anytime
+            Full access • Cancel anytime • Secure payment setup
           </p>
         </div>
       </CardContent>

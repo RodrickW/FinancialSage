@@ -198,7 +198,7 @@ export default function Landing() {
             </div>
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              No credit card to start
+              Secure payment setup
             </div>
           </div>
         </div>
