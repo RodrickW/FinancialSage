@@ -146,6 +146,9 @@ function Router() {
       <Route path="/subscribe">
         {(params) => <ProtectedRoute component={Subscribe} params={params} />}
       </Route>
+      <Route path="/cancel-subscription">
+        {(params) => <ProtectedRoute component={CancelTrial} params={params} />}
+      </Route>
       <Route path="/subscription/success">
         {(params) => <ProtectedRoute component={SubscriptionSuccess} params={params} />}
       </Route>
