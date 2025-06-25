@@ -127,7 +127,7 @@ export default function TrialNotificationBanner() {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={handleCancelTrial}
+                  onClick={() => setLocation('/cancel-trial')}
                   className="text-gray-600"
                 >
                   Cancel Trial

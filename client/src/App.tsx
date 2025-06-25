@@ -26,6 +26,7 @@ import Subscribe from "@/pages/Subscribe";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import SubscriptionCancel from "@/pages/SubscriptionCancel";
 import Feedback from "@/pages/Feedback";
+import CancelTrial from "@/pages/CancelTrial";
 import InstallApp from "@/pages/InstallApp";
 import NotFound from "@/pages/not-found";
 

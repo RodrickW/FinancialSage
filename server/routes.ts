@@ -1122,18 +1122,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user.hasStartedTrial || !user.stripeSubscriptionId) {
         return res.status(400).json({ message: 'No active trial to cancel' });
       }
-      
+
       // Cancel the Stripe subscription
       await stripe.subscriptions.update(user.stripeSubscriptionId, {
         cancel_at_period_end: true
       });
-      
+
       // Update user status
       await storage.updateUser(user.id, {
-        subscriptionStatus: 'cancel_at_period_end'
+        subscriptionStatus: 'cancelled'
       });
-      
-      res.json({ message: 'Trial cancelled successfully' });
+
+      res.json({ 
+        success: true,
+        message: 'Trial cancelled successfully. You can continue using the service until your trial expires.'
+      });
     } catch (error) {
       console.error('Error cancelling trial:', error);
       res.status(500).json({ message: 'Failed to cancel trial' });

@@ -209,6 +209,10 @@ export default function Subscribe() {
               
               <p className="text-gray-500">
                 Your trial will begin immediately. You'll be charged after 30 days unless you cancel.
+                <br />
+                <a href="/cancel-trial" className="text-blue-600 hover:underline text-sm">
+                  Need to cancel? Click here
+                </a>
               </p>
             </div>
           </main>
