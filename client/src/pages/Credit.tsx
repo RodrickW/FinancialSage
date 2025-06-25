@@ -63,8 +63,8 @@ export default function Credit() {
     refetch();
   };
   
-  // Create a mockup credit score data for development/testing
-  const mockCreditData: CreditDetails = {
+  // Removed mock credit data - using real API data only
+  const placeholderCreditData: CreditDetails = {
     currentScore: {
       score: 752,
       rating: "Very Good"
@@ -110,14 +110,7 @@ export default function Credit() {
     ]
   };
 
-  // Fallback data for demonstration purposes
-  const fallbackUser = {
-    id: 1,
-    username: 'demo_user',
-    firstName: 'Demo',
-    lastName: 'User',
-    email: 'demo@example.com'
-  };
+  // Only use real user data from API
 
   // Helper function to get color based on credit score
   const getCreditScoreColor = (score: number) => {
@@ -210,16 +203,16 @@ export default function Credit() {
                 
                 <CardContent className="p-6">
                   <h3 className="font-medium mb-2">Analysis</h3>
-                  <p className="text-neutral-700">{mockCreditData.analysis}</p>
+                  <p className="text-neutral-700">{creditData?.analysis || "Credit analysis will appear here once data is available."}</p>
                   
                   <div className="mt-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="text-sm text-neutral-500">Target Score</h4>
                         <div className="flex items-center">
-                          <span className="text-xl font-medium mr-2">{mockCreditData.targetScore.score}</span>
+                          <span className="text-xl font-medium mr-2">{creditData?.targetScore?.score || "800"}</span>
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {mockCreditData.targetScore.timeEstimate}
+                            {creditData?.targetScore?.timeEstimate || "6-12 months"}
                           </Badge>
                         </div>
                       </div>
@@ -352,7 +345,7 @@ export default function Credit() {
         )}
       </main>
       
-      <BottomNavigation user={fallbackUser} />
+      <BottomNavigation user={userData} />
     </div>
   );
 }

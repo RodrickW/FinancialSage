@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2, AlertTriangle, CheckCircle, X, ArrowLeft } from 'lucide-react';
-import { mockUserProfile } from '@/lib/utils/mockData';
+// Removed mock data import - using real API data only
 
 export default function CancelTrial() {
   const [, setLocation] = useLocation();
@@ -27,7 +27,7 @@ export default function CancelTrial() {
     queryKey: ['/api/subscription/status']
   });
 
-  const user = userData || mockUserProfile;
+  const user = userData;
 
   // Cancel trial mutation
   const cancelMutation = useMutation({

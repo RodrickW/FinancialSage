@@ -25,17 +25,7 @@ import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
 import TrialNotificationBanner from '@/components/TrialNotificationBanner';
 import { UserProfile, FinancialOverviewData } from '@/types';
 
-// Import mock data for development
-import { 
-  mockUserProfile, 
-  mockFinancialOverview, 
-  mockSpendingCategories, 
-  mockMonthlySpending, 
-  mockTransactions, 
-  mockAIInsights, 
-  mockConnectedAccounts, 
-  mockBudgets 
-} from '@/lib/utils/mockData';
+// Removed mock data imports - using real API data only
 
 export default function Dashboard() {
   const { toast } = useToast();

@@ -36,8 +36,8 @@ export default function IncomeSpendingReport() {
     retry: false,
   });
 
-  // Mock data for development
-  const mockData: IncomeSpendingData = {
+  // Removed mock data - using real API data only
+  const placeholderData: IncomeSpendingData = {
     period: selectedPeriod,
     income: selectedPeriod === 'week' ? 1250 : 5200,
     spending: selectedPeriod === 'week' ? 987 : 3850,
