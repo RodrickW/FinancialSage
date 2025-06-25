@@ -73,10 +73,17 @@ export default function Subscribe() {
       if (data.checkoutUrl) {
         // Redirect to Stripe checkout
         window.location.href = data.checkoutUrl;
+      } else if (data.redirectToManage) {
+        // User already has a trial, show current status
+        toast({
+          title: "Trial Already Active",
+          description: "You already have an active trial. Manage your subscription below.",
+          variant: "default",
+        });
       } else {
         toast({
           title: "Error",
-          description: "Unable to start free trial. Please try again.",
+          description: data.message || "Unable to start free trial. Please try again.",
           variant: "destructive",
         });
       }

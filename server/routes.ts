@@ -1037,10 +1037,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { planType = 'standard' } = req.body;
       
-      // Skip if user already has a subscription
-      if (user.isPremium || user.hasStartedTrial) {
+      // Skip if user already has an active subscription
+      if (user.isPremium) {
         return res.json({ 
-          message: 'User already has an active subscription or trial',
+          message: 'User already has an active subscription',
+          isPremium: user.isPremium,
+          hasStartedTrial: user.hasStartedTrial
+        });
+      }
+      
+      // If user has already started a trial, redirect them to manage subscription
+      if (user.hasStartedTrial) {
+        return res.json({ 
+          message: 'User already has started a trial',
+          redirectToManage: true,
           isPremium: user.isPremium,
           hasStartedTrial: user.hasStartedTrial
         });

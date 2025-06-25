@@ -44,10 +44,13 @@ export function SubscriptionBanner() {
         if (data.checkoutUrl) {
           // Redirect to Stripe checkout
           window.location.href = data.checkoutUrl;
+        } else if (data.redirectToManage) {
+          // User already has a trial, redirect to subscription management
+          setLocation("/subscribe");
         } else {
           toast({
             title: "Error",
-            description: "Unable to start free trial. Please try again.",
+            description: data.message || "Unable to start free trial. Please try again.",
             variant: "destructive",
           });
         }
