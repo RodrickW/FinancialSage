@@ -168,8 +168,25 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* Trial Notification Banner */}
-          <TrialNotificationBanner />
+          {/* Demo Mode Banner */}
+          {isDemoMode && (
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg mb-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">👋 You're viewing a demo</h3>
+                  <p className="text-sm opacity-90">This shows sample data. Sign up to connect your real accounts.</p>
+                </div>
+                <Link href="/register">
+                  <Button variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+                    Sign Up Now
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+          
+          {/* Trial Notification Banner (only for real users) */}
+          {!isDemoMode && <TrialNotificationBanner />}
           
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
@@ -192,8 +209,8 @@ export default function Dashboard() {
               {/* Monthly Spending Trends */}
               <div className="stagger-item" data-tour="spending-trends">
                 <SpendingTrends 
-                  spendingData={mockMonthlySpending}
-                  categories={mockSpendingCategories}
+                  spendingData={isDemoMode ? mockMonthlySpending : []}
+                  categories={isDemoMode ? mockSpendingCategories : []}
                 />
               </div>
               
@@ -218,7 +235,7 @@ export default function Dashboard() {
           </div>
           
           {/* Budget Progress Overview */}
-          <BudgetProgress budgets={mockBudgets} />
+          <BudgetProgress budgets={isDemoMode ? mockBudgets : []} />
         </div>
       </main>
 

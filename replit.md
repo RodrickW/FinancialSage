@@ -107,6 +107,13 @@ Mind My Money is a comprehensive personal finance management platform that combi
 ```
 Changelog:
 - June 24, 2025. Initial setup
+- June 25, 2025. Production launch preparation:
+  * Updated Plaid to production environment for real bank connections
+  * Fixed Stripe checkout flow with 30-day free trial
+  * Implemented proper demo mode for marketing preview
+  * Added subscription cancellation functionality
+  * Separated demo users (sample data) from real users (authentic data only)
+  * Ready for production deployment
 ```
 
 ## User Preferences
