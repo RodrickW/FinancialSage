@@ -115,6 +115,7 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/demo" component={Dashboard} />
       <Route path="/dashboard">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}
       </Route>

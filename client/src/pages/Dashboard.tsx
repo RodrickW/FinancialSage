@@ -29,7 +29,13 @@ import { Link } from 'wouter';
 // Import mock data for demo mode only (not for logged-in users)
 import { 
   mockUserProfile, 
-  mockFinancialOverview
+  mockFinancialOverview,
+  mockSpendingCategories,
+  mockMonthlySpending,
+  mockTransactions,
+  mockAIInsights,
+  mockConnectedAccounts,
+  mockBudgets
 } from '@/lib/utils/mockData';
 
 export default function Dashboard() {
@@ -193,7 +199,7 @@ export default function Dashboard() {
               
               {/* Recent Transactions */}
               <div className="stagger-item" data-tour="transactions">
-                <RecentTransactions transactions={mockTransactions} />
+                <RecentTransactions transactions={isDemoMode ? mockTransactions : []} />
               </div>
             </div>
             
@@ -206,7 +212,7 @@ export default function Dashboard() {
               
               {/* Connected Accounts */}
               <div className="stagger-item">
-                <ConnectedAccounts accounts={mockConnectedAccounts} />
+                <ConnectedAccounts accounts={isDemoMode ? mockConnectedAccounts : []} />
               </div>
             </div>
           </div>

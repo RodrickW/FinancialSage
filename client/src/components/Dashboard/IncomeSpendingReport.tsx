@@ -60,7 +60,7 @@ export default function IncomeSpendingReport() {
     ]
   };
 
-  const data = reportData;
+  const data = reportData || placeholderData;
   const netIncome = data.income - data.spending;
   const previousNetIncome = data.previousIncome - data.previousSpending;
   const netIncomeChange = ((netIncome - previousNetIncome) / previousNetIncome) * 100;
