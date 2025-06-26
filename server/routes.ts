@@ -149,9 +149,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       res.status(201).json({ message: 'User created successfully' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      
+      // Handle duplicate email error
+      if (error.code === '23505' && error.constraint === 'users_email_unique') {
+        return res.status(400).json({ 
+          message: 'An account with this email already exists. Please use a different email or try logging in.' 
+        });
+      }
+      
+      // Handle duplicate username error
+      if (error.code === '23505' && error.constraint === 'users_username_unique') {
+        return res.status(400).json({ 
+          message: 'This username is already taken. Please choose a different username.' 
+        });
+      }
+      
+      res.status(500).json({ message: 'Registration failed. Please try again.' });
     }
   });
 
