@@ -54,6 +54,7 @@ export function usePlaidAuth() {
       const data = await response.json();
       
       if (!response.ok) {
+        console.error('Token exchange failed:', data);
         throw new Error(data.error || 'Failed to exchange token');
       }
       
@@ -89,12 +90,20 @@ export function usePlaidAuth() {
     },
     onExit: (err, metadata) => {
       if (err) {
-        setError(err.error_message || 'Something went wrong');
-        toast({
-          title: 'Connection Cancelled',
-          description: err.error_message || 'Failed to connect your account',
-          variant: 'destructive',
-        });
+        console.error('Plaid Link exit error:', err);
+        const errorMessage = err.error_message || 'Connection was cancelled';
+        setError(errorMessage);
+        
+        // Only show toast for actual errors, not user cancellations
+        if (err.error_code && err.error_code !== 'USER_CANCELLED') {
+          toast({
+            title: 'Connection Failed',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        console.log('User cancelled Plaid Link');
       }
     },
     onEvent: (eventName, metadata) => {

@@ -406,12 +406,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { publicToken, metadata } = req.body;
       const user = req.user as User;
       
+      console.log('Exchanging public token for user:', user.id);
+      console.log('Institution:', metadata.institution?.name);
+      
       const exchangeResponse = await exchangePublicToken(publicToken);
       const accessToken = exchangeResponse.access_token;
       const itemId = exchangeResponse.item_id;
       
+      console.log('Successfully exchanged token, item ID:', itemId);
+      
       // Get accounts from Plaid
       const accountsResponse = await getAccounts(accessToken);
+      console.log('Retrieved accounts:', accountsResponse.accounts.length);
       
       // Save accounts to database
       const institutionName = metadata.institution?.name || 'Financial Institution';
@@ -421,10 +427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const accountData = formatPlaidAccountData(plaidAccount, user.id, institutionName);
         const newAccount = await storage.createAccount(accountData);
         accountsCreated.push(newAccount);
-        
-        // Optional: Store access token securely in your database
-        // In a real app, you would store the access token and item ID in your database
-        // associated with the user's ID and account ID
+        console.log('Created account:', newAccount.accountName, 'Balance:', newAccount.balance);
       }
       
       // Get and save transactions for the last 30 days
@@ -435,8 +438,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const startDate = thirtyDaysAgo.toISOString().split('T')[0];
       const endDate = today.toISOString().split('T')[0];
       
-      const transactionsResponse = await getTransactions(accessToken, startDate, endDate);
+      console.log('Fetching transactions from', startDate, 'to', endDate);
       
+      const transactionsResponse = await getTransactions(accessToken, startDate, endDate);
+      console.log('Retrieved transactions:', transactionsResponse.transactions.length);
+      
+      let transactionsCreated = 0;
       for (const account of accountsCreated) {
         // Get the Plaid account ID from metadata
         const plaidAccountId = accountsResponse.accounts.find(a => 
@@ -452,14 +459,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
           for (const plaidTransaction of accountTransactions) {
             const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
             await storage.createTransaction(transactionData);
+            transactionsCreated++;
           }
         }
       }
       
-      res.json({ success: true, accounts: accountsCreated });
-    } catch (error) {
+      console.log('Successfully created', transactionsCreated, 'transactions');
+      
+      res.json({ 
+        success: true, 
+        accounts: accountsCreated,
+        transactionsCount: transactionsCreated
+      });
+    } catch (error: any) {
       console.error('Error exchanging token:', error);
-      res.status(500).json({ error: 'Failed to exchange token' });
+      
+      // Enhanced error logging for Plaid-specific errors
+      if (error.response?.data) {
+        console.error('Plaid API error details:', error.response.data);
+      }
+      
+      // Return specific error messages based on error type
+      let errorMessage = 'Failed to connect your account';
+      
+      if (error.response?.data?.error_code) {
+        const plaidError = error.response.data;
+        console.error('Plaid error code:', plaidError.error_code);
+        console.error('Plaid error message:', plaidError.error_message);
+        
+        switch (plaidError.error_code) {
+          case 'INVALID_CREDENTIALS':
+            errorMessage = 'Invalid bank credentials. Please check your username and password.';
+            break;
+          case 'ITEM_LOGIN_REQUIRED':
+            errorMessage = 'Please log in to your bank account again to reconnect.';
+            break;
+          case 'INSTITUTION_DOWN':
+            errorMessage = 'Your bank is temporarily unavailable. Please try again later.';
+            break;
+          case 'RATE_LIMIT_EXCEEDED':
+            errorMessage = 'Too many connection attempts. Please wait a few minutes and try again.';
+            break;
+          case 'ITEM_LOCKED':
+            errorMessage = 'Your account is temporarily locked. Please contact your bank.';
+            break;
+          default:
+            errorMessage = plaidError.error_message || 'Failed to connect your account';
+        }
+      }
+      
+      res.status(500).json({ 
+        error: errorMessage,
+        plaidError: error.response?.data?.error_code || null
+      });
     }
   });
   

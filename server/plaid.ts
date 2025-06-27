@@ -55,8 +55,11 @@ export async function exchangePublicToken(publicToken: string) {
       public_token: publicToken,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error exchanging public token:', error);
+    if (error.response?.data) {
+      console.error('Plaid exchange error details:', error.response.data);
+    }
     throw error;
   }
 }
