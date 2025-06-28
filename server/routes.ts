@@ -447,8 +447,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/plaid/create-link-token', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+      console.log('Creating link token for user:', user.id);
+      
       const linkToken = await createLinkToken(user.id, user.id.toString());
-      res.json(linkToken);
+      console.log('Link token created successfully');
+      
+      res.json({ link_token: linkToken.link_token });
     } catch (error) {
       console.error('Error creating link token:', error);
       res.status(500).json({ error: 'Failed to create link token' });

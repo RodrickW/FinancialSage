@@ -17,7 +17,7 @@ export function usePlaidAuth() {
     setError(null);
     
     try {
-      const response = await apiRequest('POST', '/api/plaid/create-link-token');
+      const response = await apiRequest('POST', '/api/plaid/create-link-token', {});
       const data = await response.json();
       
       if (!response.ok) {
@@ -125,8 +125,12 @@ export function usePlaidAuth() {
         const token = await getLinkToken();
         console.log('Received token:', token);
         if (token) {
-          // The hook will automatically update and open once the token is set
-          setLinkToken(token);
+          // Force a re-render with the new token
+          setTimeout(() => {
+            if (token) {
+              open();
+            }
+          }, 100);
         }
       } catch (err) {
         console.error('Error opening Plaid Link:', err);

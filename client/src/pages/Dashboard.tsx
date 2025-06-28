@@ -133,9 +133,22 @@ export default function Dashboard() {
   // Check if this is demo mode (only for anonymous marketing preview)
   const isDemoMode = !userData;
   
-  // For real users (including demo login with username "demo"), use API data only
-  const user: UserProfile = userData || mockUserProfile;
-  const financialOverview: FinancialOverviewData = financialData || {};
+  // For real users, only use actual API data - no fake data
+  const user: UserProfile = userData;
+  const financialOverview: FinancialOverviewData = financialData || {
+    totalBalance: 0,
+    previousMonthBalance: 0,
+    monthlySpending: 0,
+    previousMonthSpending: 0,
+    weeklySpending: 0,
+    dailySpending: 0,
+    creditScore: 0,
+    savingsProgress: {
+      current: 0,
+      target: 0,
+      name: 'Set a savings goal'
+    }
+  };
   
   return (
     <div className="flex flex-col min-h-screen bg-white">
