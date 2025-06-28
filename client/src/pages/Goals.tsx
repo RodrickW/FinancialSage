@@ -54,36 +54,13 @@ export default function Goals() {
     email: 'demo@example.com'
   };
 
-  // Sample goals data
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: 1,
-      name: "Emergency Fund",
-      currentAmount: 2500,
-      targetAmount: 10000,
-      deadline: "December 31, 2024",
-      color: "blue",
-      percent: 25
-    },
-    {
-      id: 2,
-      name: "Vacation",
-      currentAmount: 1200,
-      targetAmount: 3000,
-      deadline: "September 30, 2024",
-      color: "green",
-      percent: 40
-    },
-    {
-      id: 3,
-      name: "Down Payment",
-      currentAmount: 15000,
-      targetAmount: 50000,
-      deadline: "June 30, 2026",
-      color: "purple",
-      percent: 30
-    }
-  ]);
+  // Fetch real savings goals from API
+  const { data: savingsGoals = [] } = useQuery({
+    queryKey: ['/api/savings-goals'],
+  });
+  
+  // Use only real goals data
+  const [goals, setGoals] = useState<Goal[]>([]);
 
   // Functions for managing goals
   const openAddGoalDialog = () => {
@@ -311,70 +288,92 @@ export default function Goals() {
           </div>
           
           {/* Goals Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            {goals.map(goal => (
-              <div key={goal.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-medium text-black">{goal.name}</h3>
-                  <span className="inline-block bg-black text-white px-2 py-0.5 rounded-full text-sm font-medium">
-                    {goal.percent}%
-                  </span>
+          {goals.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              {goals.map(goal => (
+                <div key={goal.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-medium text-black">{goal.name}</h3>
+                    <span className="inline-block bg-black text-white px-2 py-0.5 rounded-full text-sm font-medium">
+                      {goal.percent}%
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Target</span>
+                      <span className="font-medium text-black">${goal.targetAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Current</span>
+                      <span className="font-medium text-black">${goal.currentAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Deadline</span>
+                      <span className="font-medium text-black">{goal.deadline}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-neutral-500">Progress</span>
+                      <span className="font-medium">${goal.currentAmount.toLocaleString()} of ${goal.targetAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 w-full bg-gray-200 rounded-full">
+                      <div
+                        className={`h-2 rounded-full ${
+                          goal.color === 'blue' ? 'bg-blue-500' :
+                          goal.color === 'green' ? 'bg-green-500' :
+                          goal.color === 'purple' ? 'bg-purple-500' :
+                          'bg-primary-500'
+                        }`}
+                        style={{ width: `${goal.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex justify-between">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => openEditGoalDialog(goal)}
+                      className="px-3 py-1"
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => openDeleteGoalDialog(goal)}
+                      className="px-3 py-1 text-red-500 border-red-200 hover:bg-red-50"
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
-                
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Target</span>
-                    <span className="font-medium text-black">${goal.targetAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Current</span>
-                    <span className="font-medium text-black">${goal.currentAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Deadline</span>
-                    <span className="font-medium text-black">{goal.deadline}</span>
-                  </div>
+              ))}
+            </div>
+          ) : (
+            // Empty state when no goals exist
+            <div className="mb-6">
+              <div className="text-center py-12">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <span className="text-white text-3xl">🎯</span>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">Progress</span>
-                    <span className="font-medium">${goal.currentAmount.toLocaleString()} of ${goal.targetAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-200 rounded-full">
-                    <div
-                      className={`h-2 rounded-full ${
-                        goal.color === 'blue' ? 'bg-blue-500' :
-                        goal.color === 'green' ? 'bg-green-500' :
-                        goal.color === 'purple' ? 'bg-purple-500' :
-                        'bg-primary-500'
-                      }`}
-                      style={{ width: `${goal.percent}%` }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => openEditGoalDialog(goal)}
-                    className="px-3 py-1"
-                  >
-                    Edit
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => openDeleteGoalDialog(goal)}
-                    className="px-3 py-1 text-red-500 border-red-200 hover:bg-red-50"
-                  >
-                    Delete
-                  </Button>
-                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Savings Goals Yet</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Start tracking your financial progress by creating your first savings goal. 
+                  Set targets for emergency funds, vacations, or major purchases.
+                </p>
+                <Button 
+                  onClick={openAddGoalDialog}
+                  className="bg-black text-white hover:bg-gray-800"
+                >
+                  Create Your First Goal
+                </Button>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
           
           {/* Money Mind Section */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm p-6">
