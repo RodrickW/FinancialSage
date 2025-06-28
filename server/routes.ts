@@ -65,8 +65,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return done(null, false, { message: 'Incorrect username' });
         }
         
-        // In a real app, you would hash and compare passwords
-        if (user.password !== password) {
+        // Compare hashed password
+        const bcrypt = await import('bcrypt');
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
           return done(null, false, { message: 'Incorrect password' });
         }
         
@@ -91,11 +93,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth middleware
+  // Enhanced auth middleware with security logging
   const requireAuth = (req: any, res: any, next: any) => {
     if (req.isAuthenticated()) {
-      return next();
+      return validateSession(req, res, next);
     }
+    
+    logSecurityEvent('UNAUTHORIZED_ACCESS_ATTEMPT', undefined, {
+      endpoint: req.path,
+      method: req.method,
+      userAgent: req.headers['user-agent']
+    });
+    
     res.status(401).json({ message: 'Unauthorized' });
   };
 
@@ -105,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!existingUser) {
       await storage.createUser({
         username: 'demo',
-        password: 'password',
+        password: await (await import('bcrypt')).hash('password', 12),
         firstName: 'Demo',
         lastName: 'User',
         email: 'demo@example.com'
@@ -119,12 +128,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register the subscription routes
   registerSubscriptionRoutes(app, requireAuth);
 
+  // Apply security middleware to all routes
+  app.use('/api/', validateInput);
+  app.use('/api/', csrfProtection);
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const result = insertUserSchema.safeParse(req.body);
+      const sanitizedBody = sanitizeInput(req.body);
+      const result = insertUserSchema.safeParse(sanitizedBody);
       
       if (!result.success) {
+        logSecurityEvent('INVALID_REGISTRATION_ATTEMPT', undefined, {
+          errors: result.error.issues,
+          submittedData: sanitizedBody
+        });
         return res.status(400).json({ message: 'Invalid input data', errors: result.error });
       }
       
@@ -133,7 +151,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Username already taken' });
       }
       
-      const user = await storage.createUser(result.data);
+      // Hash password before storing
+      const bcrypt = await import('bcrypt');
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(result.data.password, saltRounds);
+      
+      const userWithHashedPassword = {
+        ...result.data,
+        password: hashedPassword
+      };
+      
+      const user = await storage.createUser(userWithHashedPassword);
+      
+      logSecurityEvent('USER_REGISTERED', user.id, {
+        username: user.username,
+        email: user.email
+      });
       
       // Send email notifications for new user signup
       const { sendNewUserNotification, sendWelcomeEmail } = await import('./emailService');
@@ -176,22 +209,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return next(err);
       }
       if (!user) {
+        logSecurityEvent('USER_LOGIN_FAILED', undefined, {
+          reason: info?.message,
+          submittedUsername: req.body.username
+        });
         return res.status(401).json({ message: info?.message || 'Authentication failed' });
       }
       req.logIn(user, (err) => {
         if (err) {
           return next(err);
         }
+        
+        logSecurityEvent('USER_LOGIN_SUCCESS', user.id, {
+          username: user.username
+        });
+        
         return res.json({ message: 'Authentication successful', user: { id: user.id, username: user.username } });
       });
     })(req, res, next);
   });
 
   app.get('/api/auth/logout', (req, res) => {
+    const userId = req.user?.id;
+    
     req.logout((err) => {
       if (err) {
         return res.status(500).json({ message: 'Error during logout' });
       }
+      
+      logSecurityEvent('USER_LOGOUT', userId);
       res.json({ message: 'Logged out successfully' });
     });
   });
@@ -272,7 +318,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Token and password are required' });
       }
       
-      const success = await resetPassword(token, password);
+      // Hash new password before reset
+      const bcrypt = await import('bcrypt');
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      
+      const success = await resetPassword(token, hashedPassword);
       
       if (!success) {
         return res.status(400).json({ message: 'Invalid or expired token' });
