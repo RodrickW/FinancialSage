@@ -83,7 +83,7 @@ export default function Accounts() {
           
           <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
             {accountsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="bg-white rounded-xl shadow-sm">
                   <CardContent className="p-6">
@@ -102,8 +102,8 @@ export default function Accounts() {
                 </Card>
               ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {accounts.map((account: ConnectedAccount) => {
                 const accountType = accountTypes[account.accountType as keyof typeof accountTypes] || accountTypes.checking;
                 
@@ -141,7 +141,7 @@ export default function Accounts() {
                   </Card>
                 );
               })}
-            </div>
+              </div>
             )}
           </TrialGate>
         </div>
