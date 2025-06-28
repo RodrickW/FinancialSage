@@ -102,10 +102,17 @@ export default function Dashboard() {
         credentials: 'include'
       });
       setShowOnboarding(false);
+      
+      // Show toast encouraging bank connection
       toast({
         title: "Welcome aboard!",
-        description: "You're all set to start managing your finances.",
+        description: "Let's connect your bank account to get started with real insights.",
       });
+      
+      // After a brief delay, open the add account dialog if no accounts are connected
+      setTimeout(() => {
+        setAddAccountOpen(true);
+      }, 1500);
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
     }
@@ -158,9 +165,14 @@ export default function Dashboard() {
                     data-tour="connect-account"
                     onSuccess={() => {
                       toast({
-                        title: "Account connected",
-                        description: "Your account has been successfully connected.",
+                        title: "Account connected successfully!",
+                        description: "Let's set up your financial profile with our AI coach.",
                       });
+                      
+                      // Redirect to AI coach for initial interview after brief delay
+                      setTimeout(() => {
+                        window.location.href = '/coach?onboarding=true';
+                      }, 2000);
                     }}
                   >
                     <span className="material-icons text-sm mr-1">add</span>

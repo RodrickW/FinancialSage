@@ -23,6 +23,16 @@ export default function FinancialCoach() {
   const [, setLocation] = useLocation();
   const [showPersonalizedPlan, setShowPersonalizedPlan] = useState(false);
   const [interviewResponses, setInterviewResponses] = useState<any>(null);
+  const [showOnboardingInterview, setShowOnboardingInterview] = useState(false);
+  const [interviewStep, setInterviewStep] = useState(0);
+  
+  // Check if coming from onboarding flow
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('onboarding') === 'true') {
+      setShowOnboardingInterview(true);
+    }
+  }, []);
 
   // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -537,37 +547,77 @@ export default function FinancialCoach() {
           </div>
           
           <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || !userData}>
-            <Tabs 
-              defaultValue="budget" 
-              value={selectedTab} 
-              onValueChange={setSelectedTab}
-              className="space-y-6"
-            >
-              <TabsList className="mb-2">
-                <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
-                <TabsTrigger value="credit">Credit Score</TabsTrigger>
-                <TabsTrigger value="health">Financial Health</TabsTrigger>
-                <TabsTrigger value="ask">Ask Coach</TabsTrigger>
-              </TabsList>
-              
-              <div className="p-1">
-                <TabsContent value="budget" className="mt-0">
-                  {renderBudgetTab()}
-                </TabsContent>
+            {showOnboardingInterview ? (
+              <Card className="p-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center">
+                      <MessageCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span>Welcome to Your AI Financial Coach!</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Great job connecting your bank account! Now let's create your personalized financial profile. 
+                    I'll ask you a few quick questions to understand your goals and provide better recommendations.
+                  </p>
+                  
+                  <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-4 rounded-lg border border-teal-100">
+                    <h3 className="font-semibold text-teal-800 mb-2">What I'll help you with:</h3>
+                    <ul className="text-sm text-teal-700 space-y-1">
+                      <li>• Create a personalized budget based on your spending patterns</li>
+                      <li>• Set up savings goals that match your lifestyle</li>
+                      <li>• Identify areas where you can optimize your spending</li>
+                      <li>• Provide ongoing financial coaching and insights</li>
+                    </ul>
+                  </div>
+                  
+                  <Button 
+                    onClick={() => {
+                      setShowOnboardingInterview(false);
+                      window.history.replaceState({}, '', '/coach');
+                      setSelectedTab('ask');
+                    }}
+                    className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                  >
+                    Start Financial Interview
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Tabs 
+                defaultValue="budget" 
+                value={selectedTab} 
+                onValueChange={setSelectedTab}
+                className="space-y-6"
+              >
+                <TabsList className="mb-2">
+                  <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
+                  <TabsTrigger value="credit">Credit Score</TabsTrigger>
+                  <TabsTrigger value="health">Financial Health</TabsTrigger>
+                  <TabsTrigger value="ask">Ask Coach</TabsTrigger>
+                </TabsList>
                 
-                <TabsContent value="credit" className="mt-0">
-                  {renderCreditTab()}
-                </TabsContent>
-                
-                <TabsContent value="health" className="mt-0">
-                  {renderHealthTab()}
-                </TabsContent>
-                
-                <TabsContent value="ask" className="mt-0">
-                  {renderAskTab()}
-                </TabsContent>
-              </div>
-            </Tabs>
+                <div className="p-1">
+                  <TabsContent value="budget" className="mt-0">
+                    {renderBudgetTab()}
+                  </TabsContent>
+                  
+                  <TabsContent value="credit" className="mt-0">
+                    {renderCreditTab()}
+                  </TabsContent>
+                  
+                  <TabsContent value="health" className="mt-0">
+                    {renderHealthTab()}
+                  </TabsContent>
+                  
+                  <TabsContent value="ask" className="mt-0">
+                    {renderAskTab()}
+                  </TabsContent>
+                </div>
+              </Tabs>
+            )}
           </TrialGate>
         </div>
       </main>
