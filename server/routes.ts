@@ -13,6 +13,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import { validateInput, validateSession, logSecurityEvent, csrfProtection, sanitizeInput } from "./security";
 import Stripe from "stripe";
 
 // Initialize Stripe
@@ -232,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/logout', (req: any, res) => {
     const userId = req.user?.id;
     
-    req.logout((err) => {
+    req.logout((err: any) => {
       if (err) {
         return res.status(500).json({ message: 'Error during logout' });
       }
