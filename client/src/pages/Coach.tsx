@@ -4,6 +4,7 @@ import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
+import TrialGate from '@/components/TrialGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -535,37 +536,39 @@ export default function FinancialCoach() {
             </p>
           </div>
           
-          <Tabs 
-            defaultValue="budget" 
-            value={selectedTab} 
-            onValueChange={setSelectedTab}
-            className="space-y-6"
-          >
-            <TabsList className="mb-2">
-              <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
-              <TabsTrigger value="credit">Credit Score</TabsTrigger>
-              <TabsTrigger value="health">Financial Health</TabsTrigger>
-              <TabsTrigger value="ask">Ask Coach</TabsTrigger>
-            </TabsList>
-            
-            <div className="p-1">
-              <TabsContent value="budget" className="mt-0">
-                {renderBudgetTab()}
-              </TabsContent>
+          <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || !userData}>
+            <Tabs 
+              defaultValue="budget" 
+              value={selectedTab} 
+              onValueChange={setSelectedTab}
+              className="space-y-6"
+            >
+              <TabsList className="mb-2">
+                <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
+                <TabsTrigger value="credit">Credit Score</TabsTrigger>
+                <TabsTrigger value="health">Financial Health</TabsTrigger>
+                <TabsTrigger value="ask">Ask Coach</TabsTrigger>
+              </TabsList>
               
-              <TabsContent value="credit" className="mt-0">
-                {renderCreditTab()}
-              </TabsContent>
-              
-              <TabsContent value="health" className="mt-0">
-                {renderHealthTab()}
-              </TabsContent>
-              
-              <TabsContent value="ask" className="mt-0">
-                {renderAskTab()}
-              </TabsContent>
-            </div>
-          </Tabs>
+              <div className="p-1">
+                <TabsContent value="budget" className="mt-0">
+                  {renderBudgetTab()}
+                </TabsContent>
+                
+                <TabsContent value="credit" className="mt-0">
+                  {renderCreditTab()}
+                </TabsContent>
+                
+                <TabsContent value="health" className="mt-0">
+                  {renderHealthTab()}
+                </TabsContent>
+                
+                <TabsContent value="ask" className="mt-0">
+                  {renderAskTab()}
+                </TabsContent>
+              </div>
+            </Tabs>
+          </TrialGate>
         </div>
       </main>
     </div>

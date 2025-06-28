@@ -2,6 +2,7 @@ import React from 'react';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
+import TrialGate from '@/components/TrialGate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -80,7 +81,8 @@ export default function Accounts() {
             </div>
           </div>
           
-          {accountsLoading ? (
+          <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+            {accountsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="bg-white rounded-xl shadow-sm">
@@ -140,7 +142,8 @@ export default function Accounts() {
                 );
               })}
             </div>
-          )}
+            )}
+          </TrialGate>
         </div>
       </main>
     </div>
