@@ -127,6 +127,12 @@ Changelog:
   * Added security event logging and audit trail system for compliance
   * Updated demo user credentials (username: demo, password: demo123)
   * Production-ready security suitable for financial data handling
+- June 28, 2025. Branding and user experience improvements:
+  * Updated all email templates from "Waddle Innovations" to "Mind My Money" branding
+  * Fixed welcome emails, admin notifications, and trial reminder templates
+  * Updated landing page footer and privacy page contact information
+  * Modified onboarding tour to mark credit monitoring as "coming soon" feature
+  * Ensured consistent branding across all user touchpoints
 ```
 
 ## User Preferences

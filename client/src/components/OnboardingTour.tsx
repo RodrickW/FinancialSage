@@ -54,8 +54,8 @@ const tourSteps: TourStep[] = [
   },
   {
     id: 'credit-score',
-    title: 'Credit Score Monitoring',
-    description: 'Keep track of your credit score and get recommendations for improvement.',
+    title: 'Credit Score Monitoring (Coming Soon)',
+    description: 'We\'re building credit score tracking and improvement recommendations. This feature will be available soon!',
     target: '[data-tour="credit-score"]',
     position: 'left',
     spotlight: true

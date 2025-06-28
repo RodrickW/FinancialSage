@@ -12,6 +12,7 @@ import {
   BudgetProgressSkeleton
 } from '@/components/LoadingStates';
 import OnboardingTour from '@/components/OnboardingTour';
+import TrialGate from '@/components/TrialGate';
 
 import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
@@ -151,26 +152,30 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">
-                <PlaidLinkButton 
-                  className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
-                  data-tour="connect-account"
-                  onSuccess={() => {
-                    toast({
-                      title: "Account connected",
-                      description: "Your account has been successfully connected.",
-                    });
-                  }}
-                >
-                  <span className="material-icons text-sm mr-1">add</span>
-                  Connect Account
-                </PlaidLinkButton>
+                <TrialGate feature="Bank Connection" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                  <PlaidLinkButton 
+                    className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
+                    data-tour="connect-account"
+                    onSuccess={() => {
+                      toast({
+                        title: "Account connected",
+                        description: "Your account has been successfully connected.",
+                      });
+                    }}
+                  >
+                    <span className="material-icons text-sm mr-1">add</span>
+                    Connect Account
+                  </PlaidLinkButton>
+                </TrialGate>
                 
-                <Link href="/accounts">
-                  <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
-                    <span className="material-icons text-sm mr-1">account_balance_wallet</span>
-                    View Accounts
-                  </Button>
-                </Link>
+                <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                  <Link href="/accounts">
+                    <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
+                      <span className="material-icons text-sm mr-1">account_balance_wallet</span>
+                      View Accounts
+                    </Button>
+                  </Link>
+                </TrialGate>
               </div>
             </div>
           </div>
@@ -197,11 +202,13 @@ export default function Dashboard() {
           
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
-            {financialLoading ? (
-              <FinancialOverviewSkeleton />
-            ) : (
-              <FinancialOverview data={financialOverview} />
-            )}
+            <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+              {financialLoading ? (
+                <FinancialOverviewSkeleton />
+              ) : (
+                <FinancialOverview data={financialOverview} />
+              )}
+            </TrialGate>
           </div>
           
           {/* Income vs Spending Report */}
@@ -215,15 +222,19 @@ export default function Dashboard() {
             <div className="lg:col-span-2 space-y-6">
               {/* Monthly Spending Trends */}
               <div className="stagger-item" data-tour="spending-trends">
-                <SpendingTrends 
-                  spendingData={isDemoMode ? mockMonthlySpending : []}
-                  categories={isDemoMode ? mockSpendingCategories : []}
-                />
+                <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                  <SpendingTrends 
+                    spendingData={isDemoMode ? mockMonthlySpending : []}
+                    categories={isDemoMode ? mockSpendingCategories : []}
+                  />
+                </TrialGate>
               </div>
               
               {/* Recent Transactions */}
               <div className="stagger-item" data-tour="transactions">
-                <RecentTransactions transactions={isDemoMode ? mockTransactions : []} />
+                <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                  <RecentTransactions transactions={isDemoMode ? mockTransactions : []} />
+                </TrialGate>
               </div>
             </div>
             
@@ -231,18 +242,24 @@ export default function Dashboard() {
             <div className="space-y-6">
               {/* Savings Goals */}
               <div className="stagger-item">
-                <SavingsGoalCard />
+                <TrialGate feature="Savings Goals" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                  <SavingsGoalCard />
+                </TrialGate>
               </div>
               
               {/* Connected Accounts */}
               <div className="stagger-item">
-                <ConnectedAccounts accounts={isDemoMode ? mockConnectedAccounts : []} />
+                <TrialGate feature="Account Overview" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                  <ConnectedAccounts accounts={isDemoMode ? mockConnectedAccounts : []} />
+                </TrialGate>
               </div>
             </div>
           </div>
           
           {/* Budget Progress Overview */}
-          <BudgetProgress budgets={isDemoMode ? mockBudgets : []} />
+          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+            <BudgetProgress budgets={isDemoMode ? mockBudgets : []} />
+          </TrialGate>
         </div>
       </main>
 
