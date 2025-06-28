@@ -123,12 +123,12 @@ export default function Dashboard() {
     }
   };
   
-  // Check if this is demo mode (no real user data)
+  // Check if this is demo mode (only for anonymous marketing preview)
   const isDemoMode = !userData;
   
-  // For demo mode, use mock data. For real users, use API data
+  // For real users (including demo login with username "demo"), use API data only
   const user: UserProfile = userData || mockUserProfile;
-  const financialOverview: FinancialOverviewData = financialData || mockFinancialOverview;
+  const financialOverview: FinancialOverviewData = financialData || {};
   
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -152,7 +152,7 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">
-                <TrialGate feature="Bank Connection" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                <TrialGate feature="Bank Connection" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <PlaidLinkButton 
                     className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
                     data-tour="connect-account"
@@ -168,7 +168,7 @@ export default function Dashboard() {
                   </PlaidLinkButton>
                 </TrialGate>
                 
-                <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <Link href="/accounts">
                     <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
                       <span className="material-icons text-sm mr-1">account_balance_wallet</span>
@@ -202,7 +202,7 @@ export default function Dashboard() {
           
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
-            <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+            <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
               {financialLoading ? (
                 <FinancialOverviewSkeleton />
               ) : (
@@ -222,7 +222,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2 space-y-6">
               {/* Monthly Spending Trends */}
               <div className="stagger-item" data-tour="spending-trends">
-                <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <SpendingTrends 
                     spendingData={isDemoMode ? mockMonthlySpending : []}
                     categories={isDemoMode ? mockSpendingCategories : []}
@@ -232,7 +232,7 @@ export default function Dashboard() {
               
               {/* Recent Transactions */}
               <div className="stagger-item" data-tour="transactions">
-                <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <RecentTransactions transactions={isDemoMode ? mockTransactions : []} />
                 </TrialGate>
               </div>
@@ -242,14 +242,14 @@ export default function Dashboard() {
             <div className="space-y-6">
               {/* Savings Goals */}
               <div className="stagger-item">
-                <TrialGate feature="Savings Goals" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                <TrialGate feature="Savings Goals" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <SavingsGoalCard />
                 </TrialGate>
               </div>
               
               {/* Connected Accounts */}
               <div className="stagger-item">
-                <TrialGate feature="Account Overview" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+                <TrialGate feature="Account Overview" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <ConnectedAccounts accounts={isDemoMode ? mockConnectedAccounts : []} />
                 </TrialGate>
               </div>
@@ -257,7 +257,7 @@ export default function Dashboard() {
           </div>
           
           {/* Budget Progress Overview */}
-          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
             <BudgetProgress budgets={isDemoMode ? mockBudgets : []} />
           </TrialGate>
         </div>
