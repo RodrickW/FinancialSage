@@ -27,17 +27,7 @@ import TrialNotificationBanner from '@/components/TrialNotificationBanner';
 import { UserProfile, FinancialOverviewData } from '@/types';
 import { Link } from 'wouter';
 
-// Import mock data for demo mode only (not for logged-in users)
-import { 
-  mockUserProfile, 
-  mockFinancialOverview,
-  mockSpendingCategories,
-  mockMonthlySpending,
-  mockTransactions,
-  mockAIInsights,
-  mockConnectedAccounts,
-  mockBudgets
-} from '@/lib/utils/mockData';
+// Removed all mock data imports - using real API data only
 
 export default function Dashboard() {
   const { toast } = useToast();

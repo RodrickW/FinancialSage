@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { UserProfile } from '@/types';
 import { Loader2, MessageCircle, Target, TrendingUp } from 'lucide-react';
-import { mockUserProfile } from '@/lib/utils/mockData';
+
 
 export default function FinancialCoach() {
   const [selectedTab, setSelectedTab] = useState('budget');
@@ -57,7 +57,7 @@ export default function FinancialCoach() {
     enabled: selectedTab === 'health'
   });
 
-  const user = userData || mockUserProfile;
+  const user = userData;
 
   // Check if we should show personalized plan from interview
   useEffect(() => {

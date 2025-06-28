@@ -36,26 +36,7 @@ export default function IncomeSpendingReport() {
     retry: false,
   });
 
-  // Removed mock data - using real API data only
-  const placeholderData: IncomeSpendingData = {
-    period: selectedPeriod,
-    income: selectedPeriod === 'week' ? 1250 : 5200,
-    spending: selectedPeriod === 'week' ? 987 : 3850,
-    previousIncome: selectedPeriod === 'week' ? 1180 : 4950,
-    previousSpending: selectedPeriod === 'week' ? 1045 : 4100,
-    categories: [
-      { name: 'Food & Dining', amount: selectedPeriod === 'week' ? 245 : 980, percentage: 25 },
-      { name: 'Transportation', amount: selectedPeriod === 'week' ? 187 : 740, percentage: 19 },
-      { name: 'Entertainment', amount: selectedPeriod === 'week' ? 156 : 620, percentage: 16 },
-      { name: 'Shopping', amount: selectedPeriod === 'week' ? 134 : 535, percentage: 14 },
-      { name: 'Bills & Utilities', amount: selectedPeriod === 'week' ? 125 : 500, percentage: 13 },
-      { name: 'Other', amount: selectedPeriod === 'week' ? 140 : 475, percentage: 13 },
-    ],
-    transactions: [
-      { id: 1, description: 'Salary Deposit', amount: selectedPeriod === 'week' ? 1250 : 5200, type: 'income', date: '2024-01-15', category: 'Salary' },
-      { id: 2, description: 'Grocery Store', amount: -85, type: 'expense', date: '2024-01-14', category: 'Food & Dining' },
-      { id: 3, description: 'Gas Station', amount: -45, type: 'expense', date: '2024-01-13', category: 'Transportation' },
-      { id: 4, description: 'Netflix', amount: -15, type: 'expense', date: '2024-01-12', category: 'Entertainment' },
+  // Only use authentic data from API
       { id: 5, description: 'Amazon Purchase', amount: -67, type: 'expense', date: '2024-01-11', category: 'Shopping' },
     ]
   };
