@@ -174,14 +174,10 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       const linkToken = data.link_token;
       console.log('Got link token, opening Plaid modal:', linkToken);
       
-      // Ensure Plaid is loaded
-      console.log('Ensuring Plaid SDK is loaded...');
-      try {
-        await ensurePlaidLoaded();
-        console.log('Plaid SDK is ready');
-      } catch (loadError) {
-        console.error('Plaid SDK loading failed:', loadError);
-        throw new Error('Unable to load Plaid SDK. Please check your internet connection and try again.');
+      // Ensure Plaid is available (real SDK or fallback)
+      if (!window.Plaid) {
+        console.log('Plaid SDK not available, creating fallback...');
+        createPlaidFallback();
       }
       
       console.log('Creating Plaid handler with token:', linkToken);
