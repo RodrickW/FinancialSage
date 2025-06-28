@@ -108,7 +108,7 @@ export default function FinancialCoach() {
       );
     }
 
-    if (!budgetData || !budgetData.recommendations) {
+    if (!budgetData) {
       return (
         <div className="p-6 text-center">
           <p>No budget data available. Try connecting your accounts first.</p>
@@ -128,18 +128,18 @@ export default function FinancialCoach() {
               <p className="text-sm text-neutral-600">Personalized budget recommendations</p>
             </div>
           </div>
-          <p className="text-neutral-700">{budgetData.summary}</p>
-          {budgetData.savingsRecommendation && (
+          <p className="text-neutral-700">{(budgetData as any)?.summary || "Your budget analysis will appear here once you connect your accounts."}</p>
+          {(budgetData as any)?.savingsRecommendation && (
             <div className="mt-3">
               <Badge className="bg-green-100 text-green-700 hover:bg-green-200">Savings Tip</Badge>
-              <p className="mt-1 text-sm text-neutral-600">{budgetData.savingsRecommendation}</p>
+              <p className="mt-1 text-sm text-neutral-600">{(budgetData as any).savingsRecommendation}</p>
             </div>
           )}
         </div>
 
         <h3 className="text-lg font-medium">Category Recommendations</h3>
         <div className="space-y-4">
-          {budgetData.recommendations.map((rec: any, i: number) => (
+          {(budgetData as any)?.recommendations?.map((rec: any, i: number) => (
             <Card key={i} className="overflow-hidden">
               <div className="flex flex-col md:flex-row">
                 <div className="p-4 md:p-6 flex-1">
@@ -189,7 +189,7 @@ export default function FinancialCoach() {
       );
     }
 
-    if (!creditData || !creditData.currentScore) {
+    if (!creditData) {
       return (
         <div className="p-6 text-center">
           <p>No credit score data available. Please connect your accounts to import your credit score.</p>
@@ -214,16 +214,16 @@ export default function FinancialCoach() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center mb-2">
-                <div className="text-4xl font-bold mr-3">{creditData.currentScore.score}</div>
-                <Badge className="text-white bg-primary-500">{creditData.currentScore.rating}</Badge>
+                <div className="text-4xl font-bold mr-3">{(creditData as any)?.currentScore?.score || "N/A"}</div>
+                <Badge className="text-white bg-primary-500">{(creditData as any)?.currentScore?.rating || "Pending"}</Badge>
               </div>
-              <p className="text-neutral-700">{creditData.analysis}</p>
+              <p className="text-neutral-700">{(creditData as any)?.analysis || "Credit analysis will appear here once your credit data is loaded."}</p>
               <div className="mt-3">
                 <div className="text-sm text-neutral-500">Target Score</div>
                 <div className="flex items-center">
-                  <span className="text-lg font-medium mr-2">{creditData.targetScore.score}</span>
+                  <span className="text-lg font-medium mr-2">{(creditData as any)?.targetScore?.score || "TBD"}</span>
                   <span className="text-sm text-neutral-600">
-                    Estimated time: {creditData.targetScore.timeEstimate}
+                    Estimated time: {(creditData as any)?.targetScore?.timeEstimate || "Calculating..."}
                   </span>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function FinancialCoach() {
               <CardTitle className="text-lg">Impact Factors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {creditData.improvementSteps.slice(0, 3).map((step: any, i: number) => (
+              {(creditData as any)?.improvementSteps?.slice(0, 3).map((step: any, i: number) => (
                 <div key={i} className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{step.title}</span>

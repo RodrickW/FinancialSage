@@ -190,7 +190,7 @@ export default function CoachInterview() {
     queryKey: ['/api/users/profile']
   });
 
-  const user: UserProfile = userData || mockUserProfile;
+  const user: UserProfile = userData;
 
   // Save interview responses
   const saveInterviewMutation = useMutation({
