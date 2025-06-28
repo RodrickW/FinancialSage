@@ -28,15 +28,12 @@ export default function Login() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   
-  // Demo login credentials
-  const defaultValues = {
-    username: 'demo',
-    password: 'demo123',
-  };
-  
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues,
+    defaultValues: {
+      username: '',
+      password: '',
+    },
   });
 
   const onSubmit = async (data: LoginFormData) => {
@@ -97,9 +94,20 @@ export default function Login() {
           <CardDescription className="text-center">
             Log in to access Money Mind, your AI financial coach
           </CardDescription>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-            <p className="text-sm text-blue-800 font-medium">Demo Account</p>
-            <p className="text-xs text-blue-600">Username: demo | Password: demo123</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+            <div className="flex items-center mb-2">
+              <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mr-2">
+                <span className="text-white text-xs font-bold">?</span>
+              </div>
+              <p className="text-sm text-blue-800 font-semibold">Try the Demo</p>
+            </div>
+            <p className="text-xs text-blue-700 mb-2">
+              Experience all features with our demo account:
+            </p>
+            <div className="bg-white/60 rounded px-3 py-2 text-xs text-blue-800 font-mono">
+              Username: <span className="font-bold">demo</span><br/>
+              Password: <span className="font-bold">demo123</span>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -112,7 +120,7 @@ export default function Login() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="demo" {...field} />
+                      <Input placeholder="Enter username" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -130,7 +138,7 @@ export default function Login() {
                       </Link>
                     </div>
                     <FormControl>
-                      <Input type="password" placeholder="demo123" {...field} />
+                      <Input type="password" placeholder="Enter password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
