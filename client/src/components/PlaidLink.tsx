@@ -21,9 +21,14 @@ export function PlaidLinkButton({
 
   const handleClick = async () => {
     setIsLinking(true);
-    await openPlaidLink();
-    setIsLinking(false);
-    if (onSuccess) onSuccess();
+    try {
+      await openPlaidLink();
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error('Plaid Link error:', error);
+    } finally {
+      setIsLinking(false);
+    }
   };
 
   return (

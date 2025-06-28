@@ -3,7 +3,7 @@ import { ConnectedAccount } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useState } from 'react';
-import { PlaidBankOptions } from '@/components/PlaidLink';
+import { PlaidLinkButton } from '@/components/PlaidLink';
 import { useQueryClient } from '@tanstack/react-query';
 import TrialGate from '@/components/TrialGate';
 
@@ -84,7 +84,8 @@ export default function ConnectedAccounts({ accounts }: ConnectedAccountsProps) 
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
-            <PlaidBankOptions 
+            <PlaidLinkButton 
+              className="w-full"
               onSuccess={() => {
                 setAddAccountOpen(false);
                 // Refresh the accounts list after successful connection
