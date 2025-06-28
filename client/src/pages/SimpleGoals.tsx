@@ -17,36 +17,10 @@ interface Goal {
 }
 
 export default function SimpleGoals() {
-  // Sample goals data
-  const sampleGoals: Goal[] = [
-    {
-      id: 1,
-      name: "Emergency Fund",
-      currentAmount: 2500,
-      targetAmount: 10000,
-      deadline: "December 31, 2024",
-      color: "blue",
-      percent: 25
-    },
-    {
-      id: 2,
-      name: "Vacation",
-      currentAmount: 1200,
-      targetAmount: 3000,
-      deadline: "September 30, 2024",
-      color: "green",
-      percent: 40
-    },
-    {
-      id: 3,
-      name: "Down Payment",
-      currentAmount: 15000,
-      targetAmount: 50000,
-      deadline: "June 30, 2026",
-      color: "purple",
-      percent: 30
-    }
-  ];
+  // Fetch real savings goals from API
+  const { data: savingsGoals = [] } = useQuery({
+    queryKey: ['/api/savings-goals'],
+  });
 
   // Get user profile for sidebar
   const { data: user } = useQuery<UserProfile>({
@@ -86,23 +60,23 @@ export default function SimpleGoals() {
           
           {/* Goals Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            {sampleGoals.map(goal => (
+            {savingsGoals.length > 0 ? savingsGoals.map((goal: any) => (
               <div key={goal.id} className="bg-white p-5 rounded-lg shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-medium">{goal.name}</h3>
                   <span className="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-sm font-medium">
-                    {goal.percent}%
+                    {goal.progress || 0}%
                   </span>
                 </div>
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500">Target</span>
-                    <span className="font-medium">${goal.targetAmount.toLocaleString()}</span>
+                    <span className="font-medium">${goal.targetAmount?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500">Current</span>
-                    <span className="font-medium">${goal.currentAmount.toLocaleString()}</span>
+                    <span className="font-medium">${goal.currentAmount?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500">Deadline</span>
@@ -113,7 +87,7 @@ export default function SimpleGoals() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500">Progress</span>
-                    <span className="font-medium">${goal.currentAmount.toLocaleString()} of ${goal.targetAmount.toLocaleString()}</span>
+                    <span className="font-medium">${goal.currentAmount?.toLocaleString()} of ${goal.targetAmount?.toLocaleString()}</span>
                   </div>
                   <div className="h-2 w-full bg-gray-200 rounded-full">
                     <div
@@ -123,7 +97,7 @@ export default function SimpleGoals() {
                         goal.color === 'purple' ? 'bg-purple-500' :
                         'bg-blue-500'
                       }`}
-                      style={{ width: `${goal.percent}%` }}
+                      style={{ width: `${goal.progress || 0}%` }}
                     />
                   </div>
                 </div>
@@ -133,7 +107,17 @@ export default function SimpleGoals() {
                   <button className="px-3 py-1 border border-gray-300 rounded text-sm text-red-500">Delete</button>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-12">
+                <div className="max-w-md mx-auto">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <span className="text-2xl">🎯</span>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No savings goals yet</h3>
+                  <p className="text-gray-500 mb-6">Create your first savings goal to start tracking your progress</p>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Money Mind Section */}
