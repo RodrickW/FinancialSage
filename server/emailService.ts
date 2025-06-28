@@ -78,7 +78,7 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
       </div>
       
       <p style="color: #666; font-size: 14px; margin-top: 30px;">
-        This is an automated notification from Waddle Innovations.
+        This is an automated notification from Mind My Money.
       </p>
     </div>
   `;
@@ -98,7 +98,7 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
     - Trial Started: ${user.hasStartedTrial ? 'Yes' : 'No'}
     - Subscription Status: ${user.subscriptionStatus || 'Inactive'}
     
-    This is an automated notification from Waddle Innovations.
+    This is an automated notification from Mind My Money.
   `;
   
   return await sendEmail({
@@ -116,18 +116,18 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
 export async function sendWelcomeEmail(user: any): Promise<boolean> {
   const fromEmail = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
   
-  const subject = `Welcome to Waddle Innovations, ${user.firstName}!`;
+  const subject = `Welcome to Mind My Money, ${user.firstName}!`;
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #059669; margin-bottom: 10px;">Welcome to Waddle Innovations!</h1>
+        <h1 style="color: #059669; margin-bottom: 10px;">Welcome to Mind My Money!</h1>
         <p style="color: #666; font-size: 18px;">Your journey to better financial management starts here</p>
       </div>
       
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
         <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName},</h2>
-        <p>Thank you for joining Waddle Innovations! We're excited to help you take control of your finances with our AI-powered platform.</p>
+        <p>Thank you for joining Mind My Money! We're excited to help you take control of your finances with our AI-powered platform.</p>
       </div>
       
       <div style="margin-bottom: 25px;">
@@ -153,15 +153,15 @@ export async function sendWelcomeEmail(user: any): Promise<boolean> {
       
       <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
         Welcome aboard!<br>
-        The Waddle Innovations Team
+        The Mind My Money Team
       </p>
     </div>
   `;
   
   const text = `
-    Welcome to Waddle Innovations, ${user.firstName}!
+    Welcome to Mind My Money, ${user.firstName}!
     
-    Thank you for joining Waddle Innovations! We're excited to help you take control of your finances with our AI-powered platform.
+    Thank you for joining Mind My Money! We're excited to help you take control of your finances with our AI-powered platform.
     
     Get Started in 3 Easy Steps:
     1. Connect Your Accounts: Link your bank accounts securely to get real-time insights
@@ -173,7 +173,7 @@ export async function sendWelcomeEmail(user: any): Promise<boolean> {
     Need help? Visit our feedback page or reply to this email.
     
     Welcome aboard!
-    The Waddle Innovations Team
+    The Mind My Money Team
   `;
   
   if (!user.email) {

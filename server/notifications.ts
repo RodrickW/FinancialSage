@@ -150,13 +150,13 @@ async function sendTrialEmail(user: any, daysRemaining: number) {
 function generateTrialEmailContent(user: any, daysRemaining: number) {
   const urgencyLevel = daysRemaining <= 3 ? 'high' : 'medium';
   const subject = daysRemaining === 1 
-    ? 'Your Waddle Innovations trial expires tomorrow!'
-    : `${daysRemaining} days left in your Waddle Innovations trial`;
+    ? 'Your Mind My Money trial expires tomorrow!'
+    : `${daysRemaining} days left in your Mind My Money trial`;
   
   const content = `
     <h2>Hi ${user.firstName},</h2>
     
-    <p>Your free trial of Waddle Innovations ${daysRemaining === 1 ? 'expires tomorrow' : `expires in ${daysRemaining} days`}.</p>
+    <p>Your free trial of Mind My Money ${daysRemaining === 1 ? 'expires tomorrow' : `expires in ${daysRemaining} days`}.</p>
     
     ${daysRemaining <= 3 ? `
       <div style="background: #fee2e2; padding: 16px; border-radius: 8px; margin: 16px 0;">
