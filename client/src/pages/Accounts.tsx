@@ -81,7 +81,7 @@ export default function Accounts() {
             </div>
           </div>
           
-          <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || isDemoMode}>
+          <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
             {accountsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (

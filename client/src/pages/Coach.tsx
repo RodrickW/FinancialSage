@@ -536,7 +536,7 @@ export default function FinancialCoach() {
             </p>
           </div>
           
-          <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || !userData}>
+          <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || !userData}>
             <Tabs 
               defaultValue="budget" 
               value={selectedTab} 
