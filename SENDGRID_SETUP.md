@@ -38,6 +38,6 @@ curl -X POST your-app-url/api/admin/test-email
 - User details for admin notifications
 - Welcome onboarding steps for new users
 - Call-to-action buttons
-- Branded styling for Waddle Innovations
+- Branded styling for Mind My Money
 
 The system is non-blocking - registration will work even if emails fail to send.

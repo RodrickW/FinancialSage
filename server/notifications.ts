@@ -182,7 +182,7 @@ function generateTrialEmailContent(user: any, daysRemaining: number) {
     
     <p><small>Or <a href="${process.env.APP_URL}/cancel-trial">cancel your trial</a> if you're not ready to continue.</small></p>
     
-    <p>Best regards,<br>The Waddle Innovations Team</p>
+    <p>Best regards,<br>The Mind My Money Team</p>
   `;
   
   return {
