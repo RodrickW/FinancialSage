@@ -140,6 +140,8 @@ Changelog:
   * Protected Accounts page for account management and bank connection features
   * Implemented proper trial validation logic with demo mode bypass for marketing preview
   * Users must start free trial to access any premium functionality beyond basic login
+  * Fixed subscription banner to properly hide after successful trial signup
+  * Added immediate trial status update on return from Stripe checkout to eliminate UI lag
 ```
 
 ## User Preferences
