@@ -66,10 +66,10 @@ export default function Accounts() {
   
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-white">
-      <Sidebar user={user} />
+      <Sidebar user={user as any} />
       
       <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
-        <BottomNavigation user={user} />
+        <BottomNavigation user={user as any} />
         <TopNav title="Accounts" />
         
         <div className="p-6">

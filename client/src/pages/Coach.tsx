@@ -259,7 +259,7 @@ export default function FinancialCoach() {
 
         <h3 className="text-lg font-medium mt-6">Improvement Steps</h3>
         <div className="space-y-4">
-          {creditData.improvementSteps.map((step: any, i: number) => (
+          {(creditData as any)?.improvementSteps?.map((step: any, i: number) => (
             <Card key={i}>
               <CardContent className="p-4">
                 <div className="flex items-start">
@@ -302,7 +302,7 @@ export default function FinancialCoach() {
       );
     }
 
-    if (!healthData || !healthData.overallHealth) {
+    if (!healthData) {
       return (
         <div className="p-6 text-center">
           <p>No financial health data available. Try connecting your accounts first.</p>
@@ -318,13 +318,13 @@ export default function FinancialCoach() {
               <div>
                 <h3 className="text-xl font-semibold mb-2">Financial Health Score</h3>
                 <div className="flex items-center">
-                  <div className="text-4xl font-bold mr-3">{healthData.overallHealth.score}/100</div>
-                  <Badge className="text-white bg-primary-500">{healthData.overallHealth.rating}</Badge>
+                  <div className="text-4xl font-bold mr-3">{(healthData as any)?.overallHealth?.score || "N/A"}/100</div>
+                  <Badge className="text-white bg-primary-500">{(healthData as any)?.overallHealth?.rating || "Pending"}</Badge>
                 </div>
               </div>
               <div className="mt-4 md:mt-0 md:ml-4 p-4 bg-white rounded-lg">
                 <h4 className="text-sm font-medium text-neutral-500 mb-1">Long-term Outlook</h4>
-                <p className="text-neutral-700">{healthData.longTermOutlook}</p>
+                <p className="text-neutral-700">{(healthData as any)?.longTermOutlook || "Analysis pending..."}</p>
               </div>
             </div>
           </CardContent>
@@ -337,7 +337,7 @@ export default function FinancialCoach() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {healthData.strengths.map((strength: string, i: number) => (
+                {(healthData as any)?.strengths?.map((strength: string, i: number) => (
                   <li key={i} className="flex items-center">
                     <span className="mr-2 text-green-500">✓</span>
                     <span>{strength}</span>
@@ -353,12 +353,12 @@ export default function FinancialCoach() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {healthData.weaknesses.map((weakness: string, i: number) => (
+                {(healthData as any)?.weaknesses?.map((weakness: string, i: number) => (
                   <li key={i} className="flex items-center">
                     <span className="mr-2 text-red-500">!</span>
                     <span>{weakness}</span>
                   </li>
-                ))}
+                )) || []}
               </ul>
             </CardContent>
           </Card>
@@ -366,7 +366,7 @@ export default function FinancialCoach() {
 
         <h3 className="text-lg font-medium mt-6">Personalized Recommendations</h3>
         <div className="space-y-4">
-          {healthData.recommendations.map((rec: any, i: number) => (
+          {(healthData as any)?.recommendations?.map((rec: any, i: number) => (
             <Card key={i}>
               <CardContent className="p-4">
                 <div className="flex items-start">
@@ -532,10 +532,10 @@ export default function FinancialCoach() {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
-      <Sidebar user={user} />
+      <Sidebar user={user as any} />
       
       <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
-        <BottomNavigation user={user} />
+        <BottomNavigation user={user as any} />
         <TopNav title="Financial Coach" />
         
         <div className="p-6">
@@ -546,7 +546,7 @@ export default function FinancialCoach() {
             </p>
           </div>
           
-          <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || !userData}>
+          <TrialGate feature="AI Financial Coach" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || !userData}>
             {showOnboardingInterview ? (
               <Card className="p-6">
                 <CardHeader>
