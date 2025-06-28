@@ -31,7 +31,7 @@ export default function Login() {
   // Demo login credentials
   const defaultValues = {
     username: 'demo',
-    password: 'password',
+    password: 'demo123',
   };
   
   const form = useForm<LoginFormData>({
@@ -97,6 +97,10 @@ export default function Login() {
           <CardDescription className="text-center">
             Log in to access Money Mind, your AI financial coach
           </CardDescription>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+            <p className="text-sm text-blue-800 font-medium">Demo Account</p>
+            <p className="text-xs text-blue-600">Username: demo | Password: demo123</p>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -126,7 +130,7 @@ export default function Login() {
                       </Link>
                     </div>
                     <FormControl>
-                      <Input type="password" placeholder="password" {...field} />
+                      <Input type="password" placeholder="demo123" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -146,7 +150,6 @@ export default function Login() {
           </Form>
           <div className="mt-4 text-sm text-center text-neutral-500">
             <p>Use the demo account to experience Money Mind AI</p>
-            <p>Username: demo | Password: password</p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
