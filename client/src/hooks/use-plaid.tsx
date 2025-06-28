@@ -1,5 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
-import { usePlaidLink, PlaidLinkOptions } from 'react-plaid-link';
+import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -71,46 +70,48 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       }
       
       const linkToken = data.link_token;
-      console.log('Got link token, initializing Plaid:', linkToken);
+      console.log('Got link token, opening Plaid modal:', linkToken);
       
-      // Configure Plaid Link with fresh token
-      const config: PlaidLinkOptions = {
-        token: linkToken,
-        onSuccess: (publicToken, metadata) => {
-          console.log('Plaid success, exchanging token');
-          exchangePublicToken(publicToken, metadata);
-        },
-        onExit: (err, metadata) => {
-          if (err) {
-            console.error('Plaid Link exit error:', err);
-            const errorMessage = err.error_message || 'Connection was cancelled';
-            setError(errorMessage);
-            
-            // Only show toast for actual errors, not user cancellations
-            if (err.error_code && err.error_code !== 'USER_CANCELLED') {
-              toast({
-                title: 'Connection Failed',
-                description: errorMessage,
-                variant: 'destructive',
-              });
-            }
-          }
-          setIsLoading(false);
-        },
-        onEvent: (eventName, metadata) => {
-          console.log(`Plaid event: ${eventName}`, metadata);
-        },
-      };
-
-      // Import and use Plaid directly
-      const { create } = await import('react-plaid-link');
-      const plaidInstance = create(config);
-      
-      if (plaidInstance.open) {
-        console.log('Opening Plaid Link modal');
-        plaidInstance.open();
+      // Create script element to load Plaid if not already loaded
+      if (!window.Plaid) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+        script.onload = () => initializePlaid();
+        document.head.appendChild(script);
       } else {
-        throw new Error('Failed to initialize Plaid Link');
+        initializePlaid();
+      }
+      
+      function initializePlaid() {
+        const handler = window.Plaid.create({
+          token: linkToken,
+          onSuccess: (publicToken: string, metadata: any) => {
+            console.log('Plaid success, exchanging token');
+            exchangePublicToken(publicToken, metadata);
+          },
+          onExit: (err: any, metadata: any) => {
+            if (err) {
+              console.error('Plaid Link exit error:', err);
+              const errorMessage = err.error_message || 'Connection was cancelled';
+              setError(errorMessage);
+              
+              // Only show toast for actual errors, not user cancellations
+              if (err.error_code && err.error_code !== 'USER_CANCELLED') {
+                toast({
+                  title: 'Connection Failed',
+                  description: errorMessage,
+                  variant: 'destructive',
+                });
+              }
+            }
+            setIsLoading(false);
+          },
+          onEvent: (eventName: string, metadata: any) => {
+            console.log(`Plaid event: ${eventName}`, metadata);
+          },
+        });
+        
+        handler.open();
       }
       
     } catch (err) {
@@ -129,6 +130,13 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
     openPlaidLink,
     isLoading,
     error,
-    ready: true, // Always ready with this approach
+    ready: true,
   };
+}
+
+// Add Plaid types to window
+declare global {
+  interface Window {
+    Plaid: any;
+  }
 }
