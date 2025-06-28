@@ -216,9 +216,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return res.status(401).json({ message: info?.message || 'Authentication failed' });
       }
-      req.logIn(user, (err) => {
+      req.logIn(user, async (err) => {
         if (err) {
           return next(err);
+        }
+        
+        // Increment login count
+        try {
+          await storage.updateUser(user.id, { 
+            loginCount: (user.loginCount || 0) + 1 
+          });
+        } catch (error) {
+          console.error('Failed to update login count:', error);
         }
         
         logSecurityEvent('USER_LOGIN_SUCCESS', user.id, {

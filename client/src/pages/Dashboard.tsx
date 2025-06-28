@@ -61,11 +61,12 @@ export default function Dashboard() {
     queryKey: ['/api/users/profile']
   });
 
-  // Check if user is new and should see onboarding
+  // Check if user is new and should see onboarding (only on first two logins)
   useEffect(() => {
     if (userData && !userLoading) {
-      // Check from database instead of localStorage
-      if (!userData.hasSeenTour) {
+      // Show tour only on first two logins and if they haven't seen it yet
+      const shouldShowTour = !userData.hasSeenTour && (userData.loginCount || 0) <= 2;
+      if (shouldShowTour) {
         setTimeout(() => setShowOnboarding(true), 1000);
       }
     }

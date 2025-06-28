@@ -149,6 +149,11 @@ Changelog:
   * Enhanced PlaidLink component to only redirect to coach after genuine bank account connection
   * System now requires real authentication and shows empty states until actual accounts are connected
   * Production-ready for customers with authentic bank data integration
+- June 28, 2025. Smart onboarding tour optimization:
+  * Added loginCount field to user schema to track user login frequency
+  * Updated onboarding tour logic to only show on first two logins (not every login)
+  * Implemented automatic login count increment on successful authentication
+  * Enhanced user experience by preventing repetitive tours for returning users
 ```
 
 ## User Preferences
