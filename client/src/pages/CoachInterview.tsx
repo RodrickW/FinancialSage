@@ -17,7 +17,7 @@ import { UserProfile } from '@/types';
 import { Loader2, MessageCircle, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { mockUserProfile } from '@/lib/utils/mockData';
+// Removed mock data import - using real API data only
 
 interface InterviewQuestion {
   id: string;

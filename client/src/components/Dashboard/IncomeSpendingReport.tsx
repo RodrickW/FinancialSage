@@ -36,26 +36,31 @@ export default function IncomeSpendingReport() {
     retry: false,
   });
 
-  // Only use authentic data from API
-      { id: 5, description: 'Amazon Purchase', amount: -67, type: 'expense', date: '2024-01-11', category: 'Shopping' },
-    ]
-  };
+  // Only use authentic data from API - no placeholder data
+  if (!reportData) {
+    return (
+      <Card className="border border-neutral-200">
+        <CardContent className="p-6 text-center">
+          <p className="text-neutral-500">Connect your bank account to view income and spending analysis</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const data = reportData || placeholderData;
-  const netIncome = data.income - data.spending;
-  const previousNetIncome = data.previousIncome - data.previousSpending;
+  const netIncome = reportData.income - reportData.spending;
+  const previousNetIncome = reportData.previousIncome - reportData.previousSpending;
   const netIncomeChange = ((netIncome - previousNetIncome) / previousNetIncome) * 100;
-  const spendingRatio = (data.spending / data.income) * 100;
+  const spendingRatio = (reportData.spending / reportData.income) * 100;
 
   const handleExport = () => {
     const csvContent = [
       ['Type', 'Amount', 'Previous Period', 'Change'],
-      ['Income', data.income.toFixed(2), data.previousIncome.toFixed(2), ((data.income - data.previousIncome) / data.previousIncome * 100).toFixed(1) + '%'],
-      ['Spending', data.spending.toFixed(2), data.previousSpending.toFixed(2), ((data.spending - data.previousSpending) / data.previousSpending * 100).toFixed(1) + '%'],
+      ['Income', reportData.income.toFixed(2), reportData.previousIncome.toFixed(2), ((reportData.income - reportData.previousIncome) / reportData.previousIncome * 100).toFixed(1) + '%'],
+      ['Spending', reportData.spending.toFixed(2), reportData.previousSpending.toFixed(2), ((reportData.spending - reportData.previousSpending) / reportData.previousSpending * 100).toFixed(1) + '%'],
       ['Net Income', netIncome.toFixed(2), previousNetIncome.toFixed(2), netIncomeChange.toFixed(1) + '%'],
       [''],
       ['Category Breakdown'],
-      ...data.categories.map(cat => [cat.name, cat.amount.toFixed(2), cat.percentage.toFixed(1) + '%'])
+      ...reportData.categories.map((cat: any) => [cat.name, cat.amount.toFixed(2), cat.percentage.toFixed(1) + '%'])
     ].map(row => row.join(',')).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -125,13 +130,13 @@ export default function IncomeSpendingReport() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-green-600 font-medium">Total Income</p>
-                <p className="text-2xl font-bold text-green-700">${data.income.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-green-700">${reportData.income.toLocaleString()}</p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-600" />
             </div>
             <div className="flex items-center mt-2">
               <span className="text-xs text-green-600">
-                {((data.income - data.previousIncome) / data.previousIncome * 100).toFixed(1)}% vs last {selectedPeriod}
+                {((reportData.income - reportData.previousIncome) / reportData.previousIncome * 100).toFixed(1)}% vs last {selectedPeriod}
               </span>
             </div>
           </div>
@@ -140,13 +145,13 @@ export default function IncomeSpendingReport() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-red-600 font-medium">Total Spending</p>
-                <p className="text-2xl font-bold text-red-700">${data.spending.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-red-700">${reportData.spending.toLocaleString()}</p>
               </div>
               <TrendingDown className="w-8 h-8 text-red-600" />
             </div>
             <div className="flex items-center mt-2">
               <span className="text-xs text-red-600">
-                {((data.spending - data.previousSpending) / data.previousSpending * 100).toFixed(1)}% vs last {selectedPeriod}
+                {((reportData.spending - reportData.previousSpending) / reportData.previousSpending * 100).toFixed(1)}% vs last {selectedPeriod}
               </span>
             </div>
           </div>
@@ -193,7 +198,7 @@ export default function IncomeSpendingReport() {
         <div>
           <h4 className="font-medium mb-3">Spending by Category</h4>
           <div className="space-y-3">
-            {data.categories.map((category, index) => (
+            {reportData.categories.map((category: any, index: number) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -211,7 +216,7 @@ export default function IncomeSpendingReport() {
         <div>
           <h4 className="font-medium mb-3">Recent Transactions</h4>
           <div className="space-y-2">
-            {data.transactions.slice(0, 5).map((transaction) => (
+            {reportData.transactions.slice(0, 5).map((transaction: any) => (
               <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-gray-100">
                 <div>
                   <p className="text-sm font-medium">{transaction.description}</p>
