@@ -48,7 +48,8 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         subscriptionStatus: user.subscriptionStatus,
         isOnFreeTrial,
         trialDaysLeft,
-        trialEndsAt: user.trialEndsAt
+        trialEndsAt: user.trialEndsAt,
+        hasStartedTrial: user.hasStartedTrial
       });
     } catch (error) {
       console.error('Error checking subscription status:', error);

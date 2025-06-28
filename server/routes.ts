@@ -1041,6 +1041,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Handle successful trial signup return from Stripe
+  app.get("/subscription/success", async (req, res) => {
+    const sessionId = req.query.session_id as string;
+    
+    if (sessionId) {
+      try {
+        // Retrieve the session from Stripe
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        
+        if (session.customer && session.subscription) {
+          // Find user by Stripe customer ID
+          const user = await storage.getUserByStripeCustomerId(session.customer as string);
+          
+          if (user) {
+            // Get the subscription details
+            const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+            
+            // Calculate trial end date
+            const trialEndsAt = subscription.trial_end 
+              ? new Date(subscription.trial_end * 1000) 
+              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+            
+            // Update user immediately to reflect trial status
+            await storage.updateUser(user.id, {
+              stripeSubscriptionId: session.subscription as string,
+              hasStartedTrial: true,
+              isPremium: false,
+              trialEndsAt,
+              subscriptionStatus: 'trialing'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error processing trial success:', error);
+      }
+    }
+    
+    // Redirect to dashboard
+    res.redirect('/');
+  });
+
   // Start free trial endpoint
   app.post("/api/start-free-trial", requireAuth, async (req, res) => {
     try {

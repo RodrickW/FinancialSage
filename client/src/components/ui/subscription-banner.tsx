@@ -12,6 +12,7 @@ export function SubscriptionBanner() {
     isOnFreeTrial: boolean;
     trialDaysLeft: number;
     trialEndsAt: string | null;
+    hasStartedTrial: boolean;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,6 +78,10 @@ export function SubscriptionBanner() {
   
   // Don't show if user is already premium
   if (subscriptionStatus?.isPremium) return null;
+  
+  // Don't show if user has started trial but we're not in an active trial period
+  // This handles the case where user completed trial signup but trial hasn't been activated yet
+  if (subscriptionStatus?.hasStartedTrial && !subscriptionStatus?.isOnFreeTrial) return null;
 
   return (
     <div className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3 px-4 shadow-md">
