@@ -229,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })(req, res, next);
   });
 
-  app.get('/api/auth/logout', (req, res) => {
+  app.get('/api/auth/logout', (req: any, res) => {
     const userId = req.user?.id;
     
     req.logout((err) => {
@@ -237,7 +237,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: 'Error during logout' });
       }
       
-      logSecurityEvent('USER_LOGOUT', userId);
+      if (userId) {
+        logSecurityEvent('USER_LOGOUT', userId);
+      }
       res.json({ message: 'Logged out successfully' });
     });
   });

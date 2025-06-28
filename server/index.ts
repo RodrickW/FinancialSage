@@ -2,9 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startScheduler, stopScheduler } from "./scheduler";
+import { validateEnvironment } from "./envValidation";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
+
+// Validate environment on startup
+validateEnvironment();
 
 const app = express();
 
