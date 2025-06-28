@@ -3,6 +3,38 @@ import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
+// Load Plaid script dynamically
+function loadPlaidScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.Plaid) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+    script.async = true;
+    
+    script.onload = () => {
+      // Give a small delay for Plaid to initialize
+      setTimeout(() => {
+        if (window.Plaid) {
+          console.log('Plaid script loaded successfully');
+          resolve();
+        } else {
+          reject(new Error('Plaid failed to initialize'));
+        }
+      }, 100);
+    };
+    
+    script.onerror = () => {
+      reject(new Error('Failed to load Plaid script'));
+    };
+    
+    document.head.appendChild(script);
+  });
+}
+
 export function usePlaidAuth(onConnectionSuccess?: () => void) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,47 +104,47 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       const linkToken = data.link_token;
       console.log('Got link token, opening Plaid modal:', linkToken);
       
-      // Create script element to load Plaid if not already loaded
-      if (!window.Plaid) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
-        script.onload = () => initializePlaid();
-        document.head.appendChild(script);
-      } else {
-        initializePlaid();
+      // Load Plaid script first
+      try {
+        await loadPlaidScript();
+      } catch (loadError) {
+        const errorMsg = loadError instanceof Error ? loadError.message : 'Unknown error';
+        throw new Error('Failed to load Plaid: ' + errorMsg);
       }
       
-      function initializePlaid() {
-        const handler = window.Plaid.create({
-          token: linkToken,
-          onSuccess: (publicToken: string, metadata: any) => {
-            console.log('Plaid success, exchanging token');
-            exchangePublicToken(publicToken, metadata);
-          },
-          onExit: (err: any, metadata: any) => {
-            if (err) {
-              console.error('Plaid Link exit error:', err);
-              const errorMessage = err.error_message || 'Connection was cancelled';
-              setError(errorMessage);
-              
-              // Only show toast for actual errors, not user cancellations
-              if (err.error_code && err.error_code !== 'USER_CANCELLED') {
-                toast({
-                  title: 'Connection Failed',
-                  description: errorMessage,
-                  variant: 'destructive',
-                });
-              }
+      console.log('Creating Plaid handler with token:', linkToken);
+      
+      const handler = window.Plaid.create({
+        token: linkToken,
+        onSuccess: (publicToken: string, metadata: any) => {
+          console.log('Plaid connection successful! Public token received, exchanging for access token');
+          exchangePublicToken(publicToken, metadata);
+        },
+        onExit: (err: any, metadata: any) => {
+          console.log('Plaid Link exited', { err, metadata });
+          if (err) {
+            console.error('Plaid Link exit error:', err);
+            const errorMessage = err.error_message || 'Connection was cancelled';
+            setError(errorMessage);
+            
+            // Only show toast for actual errors, not user cancellations
+            if (err.error_code && err.error_code !== 'USER_CANCELLED') {
+              toast({
+                title: 'Connection Failed',
+                description: errorMessage,
+                variant: 'destructive',
+              });
             }
-            setIsLoading(false);
-          },
-          onEvent: (eventName: string, metadata: any) => {
-            console.log(`Plaid event: ${eventName}`, metadata);
-          },
-        });
-        
-        handler.open();
-      }
+          }
+          setIsLoading(false);
+        },
+        onEvent: (eventName: string, metadata: any) => {
+          console.log(`Plaid event: ${eventName}`, metadata);
+        },
+      });
+      
+      console.log('Opening Plaid Link modal');
+      handler.open();
       
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to open Plaid Link';
