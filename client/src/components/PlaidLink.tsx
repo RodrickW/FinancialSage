@@ -16,14 +16,15 @@ export function PlaidLinkButton({
   children,
   onSuccess,
 }: PlaidLinkButtonProps) {
-  const { openPlaidLink, isLoading } = usePlaidAuth();
+  const { openPlaidLink, isLoading } = usePlaidAuth(onSuccess);
   const [isLinking, setIsLinking] = useState(false);
 
   const handleClick = async () => {
     setIsLinking(true);
     try {
       await openPlaidLink();
-      if (onSuccess) onSuccess();
+      // onSuccess will be called by the Plaid hook's exchangePublicToken function
+      // after a real successful connection, not here
     } catch (error) {
       console.error('Plaid Link error:', error);
     } finally {

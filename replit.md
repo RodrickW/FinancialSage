@@ -142,6 +142,13 @@ Changelog:
   * Users must start free trial to access any premium functionality beyond basic login
   * Fixed subscription banner to properly hide after successful trial signup
   * Added immediate trial status update on return from Stripe checkout to eliminate UI lag
+- June 28, 2025. Real Plaid integration and guided onboarding implementation:
+  * Removed all fake/mock data fallbacks that were preventing real bank connections
+  * Fixed Plaid integration to trigger actual bank login modal instead of fake success messages
+  * Implemented complete guided onboarding flow: Tour → Real Bank Connection → AI Coach Interview
+  * Enhanced PlaidLink component to only redirect to coach after genuine bank account connection
+  * System now requires real authentication and shows empty states until actual accounts are connected
+  * Production-ready for customers with authentic bank data integration
 ```
 
 ## User Preferences

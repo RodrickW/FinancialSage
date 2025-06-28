@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-export function usePlaidAuth() {
+export function usePlaidAuth(onConnectionSuccess?: () => void) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +67,11 @@ export function usePlaidAuth() {
         description: 'Your account has been connected successfully!',
         variant: 'default',
       });
+      
+      // Call the success callback if provided
+      if (onConnectionSuccess) {
+        onConnectionSuccess();
+      }
       
       return data;
     } catch (err) {
