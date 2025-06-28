@@ -164,6 +164,13 @@ export default function Dashboard() {
                   <span className="material-icons text-sm mr-1">add</span>
                   Connect Account
                 </PlaidLinkButton>
+                
+                <Link href="/accounts">
+                  <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
+                    <span className="material-icons text-sm mr-1">account_balance_wallet</span>
+                    View Accounts
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
