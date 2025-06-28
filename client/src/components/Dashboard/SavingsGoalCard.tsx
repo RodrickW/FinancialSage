@@ -17,27 +17,8 @@ interface SavingsGoalCardProps {
 }
 
 export default function SavingsGoalCard({ goals = [] }: SavingsGoalCardProps) {
-  const demoGoals: SavingsGoal[] = [
-    {
-      id: 1,
-      name: "Emergency Fund",
-      currentAmount: 2500,
-      targetAmount: 10000,
-      progress: 25,
-      color: "blue"
-    },
-    {
-      id: 2,
-      name: "Vacation",
-      currentAmount: 1200,
-      targetAmount: 3000,
-      progress: 40,
-      color: "green"
-    }
-  ];
-
-  // Use demo goals if no goals provided
-  const displayGoals = goals.length > 0 ? goals : demoGoals;
+  // Only use real goals from the database
+  const displayGoals = goals;
   const displayCount = Math.min(displayGoals.length, 2); // Only show up to 2 goals on dashboard
 
   const getProgressColorClass = (color: string) => {
