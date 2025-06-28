@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink, PlaidLinkOptions } from 'react-plaid-link';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -8,6 +8,7 @@ export function usePlaidAuth() {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shouldOpen, setShouldOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -114,6 +115,15 @@ export function usePlaidAuth() {
 
   const { open, ready } = usePlaidLink(config);
 
+  // Auto-open Plaid when token becomes ready
+  useEffect(() => {
+    if (shouldOpen && ready && linkToken) {
+      console.log('Auto-opening Plaid Link with token');
+      open();
+      setShouldOpen(false);
+    }
+  }, [shouldOpen, ready, linkToken, open]);
+
   const openPlaidLink = useCallback(async () => {
     console.log('openPlaidLink called', { ready, linkToken });
     if (ready && linkToken) {
@@ -125,12 +135,7 @@ export function usePlaidAuth() {
         const token = await getLinkToken();
         console.log('Received token:', token);
         if (token) {
-          // Force a re-render with the new token
-          setTimeout(() => {
-            if (token) {
-              open();
-            }
-          }, 100);
+          setShouldOpen(true);
         }
       } catch (err) {
         console.error('Error opening Plaid Link:', err);

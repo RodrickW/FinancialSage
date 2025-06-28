@@ -249,8 +249,8 @@ export default function Dashboard() {
               <div className="stagger-item" data-tour="spending-trends">
                 <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
                   <SpendingTrends 
-                    spendingData={isDemoMode ? mockMonthlySpending : []}
-                    categories={isDemoMode ? mockSpendingCategories : []}
+                    spendingData={[]}
+                    categories={[]}
                   />
                 </TrialGate>
               </div>
@@ -258,7 +258,7 @@ export default function Dashboard() {
               {/* Recent Transactions */}
               <div className="stagger-item" data-tour="transactions">
                 <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-                  <RecentTransactions transactions={isDemoMode ? mockTransactions : []} />
+                  <RecentTransactions transactions={[]} />
                 </TrialGate>
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function Dashboard() {
               {/* Connected Accounts */}
               <div className="stagger-item">
                 <TrialGate feature="Account Overview" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-                  <ConnectedAccounts accounts={isDemoMode ? mockConnectedAccounts : []} />
+                  <ConnectedAccounts accounts={[]} />
                 </TrialGate>
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function Dashboard() {
           
           {/* Budget Progress Overview */}
           <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-            <BudgetProgress budgets={isDemoMode ? mockBudgets : []} />
+            <BudgetProgress budgets={[]} />
           </TrialGate>
         </div>
       </main>
