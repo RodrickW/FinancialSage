@@ -3,35 +3,66 @@ import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-// Load Plaid script dynamically
+// Load Plaid script dynamically with fallback options
 function loadPlaidScript(): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Check if Plaid is already loaded
     if (window.Plaid) {
+      console.log('Plaid already loaded');
       resolve();
       return;
     }
 
+    // Check if script is already being loaded
+    const existingScript = document.querySelector('script[src*="plaid.com"]');
+    if (existingScript) {
+      console.log('Plaid script already loading, waiting...');
+      const checkPlaid = setInterval(() => {
+        if (window.Plaid) {
+          clearInterval(checkPlaid);
+          resolve();
+        }
+      }, 100);
+      
+      setTimeout(() => {
+        clearInterval(checkPlaid);
+        if (!window.Plaid) {
+          reject(new Error('Plaid script timeout'));
+        }
+      }, 10000);
+      return;
+    }
+
+    console.log('Loading Plaid script...');
     const script = document.createElement('script');
     script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
     script.async = true;
+    script.crossOrigin = 'anonymous';
     
     script.onload = () => {
-      // Give a small delay for Plaid to initialize
-      setTimeout(() => {
+      console.log('Plaid script onload event fired');
+      // Poll for Plaid to be available
+      let attempts = 0;
+      const checkPlaid = setInterval(() => {
+        attempts++;
         if (window.Plaid) {
-          console.log('Plaid script loaded successfully');
+          console.log('Plaid is now available after', attempts, 'attempts');
+          clearInterval(checkPlaid);
           resolve();
-        } else {
-          reject(new Error('Plaid failed to initialize'));
+        } else if (attempts > 50) { // 5 seconds max
+          clearInterval(checkPlaid);
+          reject(new Error('Plaid failed to initialize after loading'));
         }
       }, 100);
     };
     
-    script.onerror = () => {
-      reject(new Error('Failed to load Plaid script'));
+    script.onerror = (error) => {
+      console.error('Script loading error:', error);
+      reject(new Error('Failed to load Plaid script from CDN'));
     };
     
     document.head.appendChild(script);
+    console.log('Plaid script element added to document');
   });
 }
 
@@ -104,12 +135,9 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       const linkToken = data.link_token;
       console.log('Got link token, opening Plaid modal:', linkToken);
       
-      // Load Plaid script first
-      try {
-        await loadPlaidScript();
-      } catch (loadError) {
-        const errorMsg = loadError instanceof Error ? loadError.message : 'Unknown error';
-        throw new Error('Failed to load Plaid: ' + errorMsg);
+      // Check if Plaid is available (should be pre-loaded)
+      if (!window.Plaid) {
+        throw new Error('Plaid SDK not available. Please refresh the page.');
       }
       
       console.log('Creating Plaid handler with token:', linkToken);
