@@ -132,6 +132,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Plaid SDK proxy endpoint (before security middleware)
   app.get('/api/plaid-sdk.js', servePlaidSDK);
+  
+  // Plaid webhook endpoint (before security middleware)
+  app.post('/api/plaid/webhook', (req, res) => {
+    console.log('Plaid webhook received:', req.body);
+    res.status(200).send('OK');
+  });
 
   // Apply security middleware to all routes
   app.use('/api/', validateInput);

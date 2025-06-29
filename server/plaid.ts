@@ -38,6 +38,8 @@ export async function createLinkToken(userId: number, clientUserId: string) {
       products: ['auth', 'transactions'] as Products[],
       language: 'en',
       country_codes: ['US'] as CountryCode[],
+      redirect_uri: process.env.PLAID_ENV === 'production' ? 'https://mindmymoney.replit.app' : undefined,
+      webhook: process.env.PLAID_ENV === 'production' ? 'https://mindmymoney.replit.app/api/plaid/webhook' : undefined,
     };
 
     const response = await plaidClient.linkTokenCreate(request);

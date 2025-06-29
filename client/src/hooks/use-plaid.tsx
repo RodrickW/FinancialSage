@@ -138,37 +138,52 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       
       console.log('Creating Plaid handler with token:', linkToken);
       
-      const handler = window.Plaid.create({
-        token: linkToken,
-        onSuccess: (publicToken: string, metadata: any) => {
-          console.log('Plaid connection successful! Public token received, exchanging for access token');
-          exchangePublicToken(publicToken, metadata);
-        },
-        onExit: (err: any, metadata: any) => {
-          console.log('Plaid Link exited', { err, metadata });
-          if (err) {
-            console.error('Plaid Link exit error:', err);
-            const errorMessage = err.error_message || 'Connection was cancelled';
-            setError(errorMessage);
-            
-            // Only show toast for actual errors, not user cancellations
-            if (err.error_code && err.error_code !== 'USER_CANCELLED') {
-              toast({
-                title: 'Connection Failed',
-                description: errorMessage,
-                variant: 'destructive',
-              });
-            }
-          }
-          setIsLoading(false);
-        },
-        onEvent: (eventName: string, metadata: any) => {
-          console.log(`Plaid event: ${eventName}`, metadata);
-        },
-      });
+      // Ensure Plaid is properly initialized before creating handler
+      if (!window.Plaid || !window.Plaid.create) {
+        throw new Error('Plaid SDK not properly initialized');
+      }
       
-      console.log('Opening Plaid Link modal');
-      handler.open();
+      try {
+        const handler = window.Plaid.create({
+          token: linkToken,
+          onSuccess: (publicToken: string, metadata: any) => {
+            console.log('Plaid connection successful! Public token received, exchanging for access token');
+            exchangePublicToken(publicToken, metadata);
+          },
+          onExit: (err: any, metadata: any) => {
+            console.log('Plaid Link exited', { err, metadata });
+            if (err) {
+              console.error('Plaid Link exit error:', err);
+              const errorMessage = err.error_message || 'Connection was cancelled';
+              setError(errorMessage);
+              
+              // Only show toast for actual errors, not user cancellations
+              if (err.error_code && err.error_code !== 'USER_CANCELLED') {
+                toast({
+                  title: 'Connection Failed',
+                  description: errorMessage,
+                  variant: 'destructive',
+                });
+              }
+            }
+            setIsLoading(false);
+          },
+          onEvent: (eventName: string, metadata: any) => {
+            console.log(`Plaid event: ${eventName}`, metadata);
+          },
+          onLoad: () => {
+            console.log('Plaid Link loaded successfully');
+          },
+        });
+        
+        console.log('Opening Plaid Link modal');
+        handler.open();
+        
+      } catch (createError) {
+        console.error('Error creating Plaid handler:', createError);
+        const errorMessage = createError instanceof Error ? createError.message : 'Unknown error';
+        throw new Error(`Failed to initialize Plaid Link: ${errorMessage}`);
+      }
       
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to open Plaid Link';
