@@ -21,12 +21,14 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://replit.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "wss:", "https://api.stripe.com", "https://production.plaid.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      frameSrc: ["'self'", "https://js.stripe.com"]
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://replit.com", "https://cdn.plaid.com", "https://*.plaid.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.plaid.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://*.plaid.com"],
+      connectSrc: ["'self'", "wss:", "https://api.stripe.com", "https://production.plaid.com", "https://*.plaid.com"],
+      imgSrc: ["'self'", "data:", "https:", "https://*.plaid.com"],
+      frameSrc: ["'self'", "https://js.stripe.com", "https://*.plaid.com"],
+      childSrc: ["'self'", "https://*.plaid.com"],
+      formAction: ["'self'", "https://*.plaid.com"]
     }
   }
 }));
