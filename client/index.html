@@ -13,8 +13,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <!-- Load Plaid Link script with immediate availability -->
-    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <!-- Load Plaid Link script via proxy -->
+    <script src="/api/plaid-sdk.js" 
+            onload="window.plaidLoaded = true;" 
+            onerror="console.error('Plaid SDK failed to load');">
+    </script>
   </head>
   <body>
     <div id="root"></div>

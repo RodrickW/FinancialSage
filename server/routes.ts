@@ -6,6 +6,7 @@ import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "
 import { User } from "@shared/schema";
 import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore } from "./openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
+import { servePlaidSDK } from "./plaid-proxy";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
 import { registerSubscriptionRoutes } from "./routes-subscription";
 import { generatePasswordResetToken, verifyResetToken, resetPassword } from "./passwordReset";
@@ -128,6 +129,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register the subscription routes
   registerSubscriptionRoutes(app, requireAuth);
+
+  // Plaid SDK proxy endpoint (before security middleware)
+  app.get('/api/plaid-sdk.js', servePlaidSDK);
 
   // Apply security middleware to all routes
   app.use('/api/', validateInput);

@@ -3,46 +3,28 @@ import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-// Load Plaid SDK dynamically with proper error handling
-function loadPlaidSDK(): Promise<void> {
+// Check for Plaid SDK availability
+function waitForPlaidSDK(): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Check if already loaded
     if (window.Plaid) {
       resolve();
       return;
     }
 
-    // Remove any existing scripts to avoid duplicates
-    const existingScript = document.querySelector('script[src*="plaid.com"]');
-    if (existingScript) {
-      existingScript.remove();
-    }
-
-    console.log('Loading Plaid SDK...');
-    const script = document.createElement('script');
-    script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
-    script.async = false; // Load synchronously to ensure availability
-    script.defer = false;
+    // Poll for Plaid availability (should be loaded via HTML script tag)
+    let attempts = 0;
+    const maxAttempts = 30; // 3 seconds
     
-    script.onload = () => {
-      console.log('Plaid script loaded');
-      // Wait a moment for Plaid to initialize
-      setTimeout(() => {
-        if (window.Plaid) {
-          console.log('Plaid SDK ready');
-          resolve();
-        } else {
-          reject(new Error('Plaid SDK not available after script load'));
-        }
-      }, 100);
-    };
-    
-    script.onerror = (error) => {
-      console.error('Failed to load Plaid script:', error);
-      reject(new Error('Network error loading Plaid SDK'));
-    };
-    
-    document.head.appendChild(script);
+    const checkPlaid = setInterval(() => {
+      attempts++;
+      if (window.Plaid) {
+        clearInterval(checkPlaid);
+        resolve();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkPlaid);
+        reject(new Error('Plaid SDK not available'));
+      }
+    }, 100);
   });
 }
 
@@ -115,16 +97,16 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       const linkToken = data.link_token;
       console.log('Got link token, opening Plaid modal:', linkToken);
       
-      // Load Plaid SDK
-      console.log('Loading Plaid SDK...');
+      // Wait for Plaid SDK
+      console.log('Waiting for Plaid SDK...');
       try {
-        await loadPlaidSDK();
-        console.log('Plaid SDK loaded successfully');
+        await waitForPlaidSDK();
+        console.log('Plaid SDK ready');
       } catch (error) {
-        console.error('Plaid SDK loading failed:', error);
+        console.error('Plaid SDK not available:', error);
         toast({
           title: "Connection Error",
-          description: "Unable to load bank connection service. Please refresh the page and try again.",
+          description: "Bank connection service unavailable. Please refresh the page and try again.",
           variant: "destructive",
         });
         return;
