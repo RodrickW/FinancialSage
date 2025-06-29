@@ -26,21 +26,24 @@ function loadPlaidSDK(): Promise<void> {
     
     script.onload = () => {
       console.log('Plaid SDK script loaded');
-      // Wait for Plaid to be available
+      // Wait for Plaid to be available with more robust checking
       let attempts = 0;
-      const maxAttempts = 50;
+      const maxAttempts = 100; // Increased timeout
       
       const checkPlaid = setInterval(() => {
         attempts++;
-        if (window.Plaid) {
+        console.log(`Checking for Plaid SDK availability (attempt ${attempts}/${maxAttempts})`);
+        
+        if (window.Plaid && typeof window.Plaid.create === 'function') {
           clearInterval(checkPlaid);
-          console.log('Plaid SDK ready');
+          console.log('Plaid SDK ready with create function available');
           resolve();
         } else if (attempts >= maxAttempts) {
           clearInterval(checkPlaid);
+          console.error('Plaid SDK failed to initialize properly');
           reject(new Error('Plaid SDK not initialized after loading'));
         }
-      }, 100);
+      }, 50); // Check more frequently
     };
     
     script.onerror = (error) => {
@@ -153,14 +156,32 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       }
       
       try {
+        console.log('Plaid SDK object:', window.Plaid);
+        console.log('Plaid.create function:', typeof window.Plaid.create);
+        
+        // Add global error handler for Plaid modal errors
+        const originalErrorHandler = window.onerror;
+        window.onerror = (message, source, lineno, colno, error) => {
+          if (typeof message === 'string' && message.includes('Failed to find script')) {
+            console.log('Caught Plaid script error, but continuing with modal');
+            return true; // Prevent default error handling
+          }
+          if (originalErrorHandler) {
+            return originalErrorHandler(message, source, lineno, colno, error);
+          }
+          return false;
+        };
+
         const handler = window.Plaid.create({
           token: linkToken,
           onSuccess: (publicToken: string, metadata: any) => {
             console.log('Plaid connection successful! Public token received, exchanging for access token');
+            window.onerror = originalErrorHandler; // Restore original handler
             exchangePublicToken(publicToken, metadata);
           },
           onExit: (err: any, metadata: any) => {
             console.log('Plaid Link exited', { err, metadata });
+            window.onerror = originalErrorHandler; // Restore original handler
             if (err) {
               console.error('Plaid Link exit error:', err);
               const errorMessage = err.error_message || 'Connection was cancelled';
