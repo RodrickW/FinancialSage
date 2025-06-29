@@ -3,106 +3,47 @@ import { useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-// Create a fallback Plaid implementation for environments where CDN is blocked
-function createPlaidFallback() {
-  if (window.Plaid) return;
-  
-  console.log('Creating Plaid fallback implementation...');
-  
-  window.Plaid = {
-    create: (config: any) => {
-      console.log('Plaid.create called with config:', config);
-      
-      return {
-        open: () => {
-          console.log('Opening Plaid Link modal...');
-          
-          // Create a simple modal to explain the situation
-          const modal = document.createElement('div');
-          modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-          `;
-          
-          const content = document.createElement('div');
-          content.style.cssText = `
-            background: white;
-            padding: 24px;
-            border-radius: 8px;
-            max-width: 400px;
-            text-align: center;
-          `;
-          
-          content.innerHTML = `
-            <h3 style="margin: 0 0 16px 0; color: #1a1a1a;">Bank Connection Demo</h3>
-            <p style="margin: 0 0 16px 0; color: #666;">
-              In the live version, this would open your bank's secure login page. 
-              For this demo, we'll simulate a successful connection.
-            </p>
-            <button id="simulate-success" style="
-              background: #0066cc;
-              color: white;
-              border: none;
-              padding: 8px 16px;
-              border-radius: 4px;
-              margin-right: 8px;
-              cursor: pointer;
-            ">Simulate Connection</button>
-            <button id="cancel" style="
-              background: #666;
-              color: white;
-              border: none;
-              padding: 8px 16px;
-              border-radius: 4px;
-              cursor: pointer;
-            ">Cancel</button>
-          `;
-          
-          modal.appendChild(content);
-          document.body.appendChild(modal);
-          
-          // Handle button clicks
-          const successBtn = content.querySelector('#simulate-success');
-          const cancelBtn = content.querySelector('#cancel');
-          
-          successBtn?.addEventListener('click', () => {
-            document.body.removeChild(modal);
-            // Simulate successful connection with a public token
-            const publicToken = 'public-sandbox-' + Math.random().toString(36).substr(2, 9);
-            config.onSuccess?.(publicToken, {
-              institution: {
-                name: 'Demo Bank',
-                institution_id: 'demo_bank'
-              },
-              accounts: [{
-                id: 'demo_account_1',
-                name: 'Demo Checking',
-                type: 'depository',
-                subtype: 'checking'
-              }]
-            });
-          });
-          
-          cancelBtn?.addEventListener('click', () => {
-            document.body.removeChild(modal);
-            config.onExit?.();
-          });
-        },
-        
-        exit: () => {
-          console.log('Plaid Link exit called');
-        }
-      };
+// Load Plaid SDK dynamically with proper error handling
+function loadPlaidSDK(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Check if already loaded
+    if (window.Plaid) {
+      resolve();
+      return;
     }
-  };
+
+    // Remove any existing scripts to avoid duplicates
+    const existingScript = document.querySelector('script[src*="plaid.com"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    console.log('Loading Plaid SDK...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+    script.async = false; // Load synchronously to ensure availability
+    script.defer = false;
+    
+    script.onload = () => {
+      console.log('Plaid script loaded');
+      // Wait a moment for Plaid to initialize
+      setTimeout(() => {
+        if (window.Plaid) {
+          console.log('Plaid SDK ready');
+          resolve();
+        } else {
+          reject(new Error('Plaid SDK not available after script load'));
+        }
+      }, 100);
+    };
+    
+    script.onerror = (error) => {
+      console.error('Failed to load Plaid script:', error);
+      reject(new Error('Network error loading Plaid SDK'));
+    };
+    
+    document.head.appendChild(script);
+  });
 }
 
 export function usePlaidAuth(onConnectionSuccess?: () => void) {
@@ -174,10 +115,19 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       const linkToken = data.link_token;
       console.log('Got link token, opening Plaid modal:', linkToken);
       
-      // Ensure Plaid is available (real SDK or fallback)
-      if (!window.Plaid) {
-        console.log('Plaid SDK not available, creating fallback...');
-        createPlaidFallback();
+      // Load Plaid SDK
+      console.log('Loading Plaid SDK...');
+      try {
+        await loadPlaidSDK();
+        console.log('Plaid SDK loaded successfully');
+      } catch (error) {
+        console.error('Plaid SDK loading failed:', error);
+        toast({
+          title: "Connection Error",
+          description: "Unable to load bank connection service. Please refresh the page and try again.",
+          variant: "destructive",
+        });
+        return;
       }
       
       console.log('Creating Plaid handler with token:', linkToken);
