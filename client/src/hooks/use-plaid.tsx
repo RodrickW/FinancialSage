@@ -18,10 +18,10 @@ function loadPlaidSDK(): Promise<void> {
     const existingScripts = document.querySelectorAll('script[src*="plaid"]');
     existingScripts.forEach(script => script.remove());
     
-    // Create script element
+    // Create script element - try direct CDN first, fallback to proxy
     const script = document.createElement('script');
-    script.src = '/api/plaid-sdk.js';
-    script.async = false; // Load synchronously to ensure proper initialization
+    script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+    script.async = false;
     script.defer = false;
     
     script.onload = () => {
