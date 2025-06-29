@@ -115,6 +115,15 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       const data = await response.json();
       
       if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to connect your bank account.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
         throw new Error(data.error || 'Failed to get link token');
       }
       
