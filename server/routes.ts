@@ -501,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const accountsCreated = [];
       
       for (const plaidAccount of accountsResponse.accounts) {
-        const accountData = formatPlaidAccountData(plaidAccount, user.id, institutionName);
+        const accountData = formatPlaidAccountData(plaidAccount, user.id, institutionName, accessToken);
         const newAccount = await storage.createAccount(accountData);
         accountsCreated.push(newAccount);
         console.log('Created account:', newAccount.accountName, 'Balance:', newAccount.balance);
@@ -624,6 +624,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error getting account:', error);
       res.status(500).json({ error: 'Failed to get account' });
+    }
+  });
+  
+  // Sync transactions from Plaid for connected accounts
+  app.post('/api/plaid/sync-transactions', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { accountId, days = 30 } = req.body;
+      
+      // Get the account to sync
+      const account = await storage.getAccount(accountId);
+      if (!account || account.userId !== user.id) {
+        return res.status(404).json({ error: 'Account not found' });
+      }
+      
+      if (!account.plaidAccessToken) {
+        return res.status(400).json({ error: 'Account not connected to Plaid' });
+      }
+      
+      // Calculate date range
+      const today = new Date();
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() - days);
+      
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = today.toISOString().split('T')[0];
+      
+      console.log(`Syncing transactions for account ${accountId} from ${startDateStr} to ${endDateStr}`);
+      
+      // Fetch new transactions from Plaid
+      const transactionsResponse = await getTransactions(account.plaidAccessToken, startDateStr, endDateStr);
+      
+      // Filter transactions for this specific account
+      const accountTransactions = transactionsResponse.transactions.filter(
+        t => t.account_id === account.plaidAccountId
+      );
+      
+      let newTransactionsCount = 0;
+      for (const plaidTransaction of accountTransactions) {
+        // Check if transaction already exists to avoid duplicates
+        const existingTransactions = await storage.getAccountTransactions(accountId, 1000);
+        const exists = existingTransactions.some(existing => 
+          existing.description === plaidTransaction.name && 
+          existing.amount === plaidTransaction.amount &&
+          new Date(existing.date).getTime() === new Date(plaidTransaction.date).getTime()
+        );
+        
+        if (!exists) {
+          const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, accountId);
+          await storage.createTransaction(transactionData);
+          newTransactionsCount++;
+        }
+      }
+      
+      console.log(`Synced ${newTransactionsCount} new transactions for account ${accountId}`);
+      
+      res.json({ 
+        message: 'Transaction sync completed',
+        newTransactions: newTransactionsCount,
+        dateRange: { start: startDateStr, end: endDateStr }
+      });
+      
+    } catch (error) {
+      console.error('Error syncing transactions:', error);
+      res.status(500).json({ error: 'Failed to sync transactions' });
     }
   });
   

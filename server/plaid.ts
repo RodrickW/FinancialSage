@@ -100,7 +100,7 @@ export async function getTransactions(
 }
 
 // Helper function to format Plaid account data to our schema
-export function formatPlaidAccountData(plaidAccount: any, userId: number, institutionName: string) {
+export function formatPlaidAccountData(plaidAccount: any, userId: number, institutionName: string, accessToken?: string) {
   return {
     userId,
     accountName: plaidAccount.name,
@@ -109,7 +109,9 @@ export function formatPlaidAccountData(plaidAccount: any, userId: number, instit
     balance: plaidAccount.balances.current || 0,
     institutionName: institutionName,
     institutionLogo: '',
-    isConnected: true
+    isConnected: true,
+    plaidAccessToken: accessToken,
+    plaidAccountId: plaidAccount.account_id
   };
 }
 

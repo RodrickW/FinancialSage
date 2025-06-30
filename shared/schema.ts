@@ -38,6 +38,8 @@ export const accounts = pgTable("accounts", {
   institutionName: text("institution_name").notNull(),
   institutionLogo: text("institution_logo"),
   isConnected: boolean("is_connected").notNull().default(true),
+  plaidAccessToken: text("plaid_access_token"), // Store access token for transaction syncing
+  plaidAccountId: text("plaid_account_id"), // Store Plaid account ID for reference
 });
 
 // Transaction schema
