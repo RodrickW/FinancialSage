@@ -47,10 +47,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       checkPeriod: 86400000 // Prune expired entries every 24h
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      secure: false, // Always false for Replit to work with OAuth flows
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-site cookies in production
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+      sameSite: 'lax', // Lax for OAuth compatibility
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+      domain: undefined // Let browser handle domain for OAuth flows
     }
   }));
 
@@ -507,41 +508,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Created account:', newAccount.accountName, 'Balance:', newAccount.balance);
       }
       
-      // Get and save transactions for the last 30 days
-      const today = new Date();
-      const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(today.getDate() - 30);
-      
-      const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-      const endDate = today.toISOString().split('T')[0];
-      
-      console.log('Fetching transactions from', startDate, 'to', endDate);
-      
-      const transactionsResponse = await getTransactions(accessToken, startDate, endDate);
-      console.log('Retrieved transactions:', transactionsResponse.transactions.length);
-      
+      // Try to get and save transactions, but don't fail if transactions aren't ready yet
       let transactionsCreated = 0;
-      for (const account of accountsCreated) {
-        // Get the Plaid account ID from metadata
-        const plaidAccountId = accountsResponse.accounts.find(a => 
-          a.name === account.accountName && 
-          a.type === account.accountType
-        )?.account_id;
+      try {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
         
-        if (plaidAccountId) {
-          const accountTransactions = transactionsResponse.transactions.filter(
-            t => t.account_id === plaidAccountId
-          );
+        const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+        const endDate = today.toISOString().split('T')[0];
+        
+        console.log('Fetching transactions from', startDate, 'to', endDate);
+        
+        const transactionsResponse = await getTransactions(accessToken, startDate, endDate);
+        console.log('Retrieved transactions:', transactionsResponse.transactions.length);
+        
+        for (const account of accountsCreated) {
+          // Get the Plaid account ID from metadata
+          const plaidAccountId = accountsResponse.accounts.find(a => 
+            a.name === account.accountName && 
+            a.type === account.accountType
+          )?.account_id;
           
-          for (const plaidTransaction of accountTransactions) {
-            const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
-            await storage.createTransaction(transactionData);
-            transactionsCreated++;
+          if (plaidAccountId) {
+            const accountTransactions = transactionsResponse.transactions.filter(
+              t => t.account_id === plaidAccountId
+            );
+            
+            for (const plaidTransaction of accountTransactions) {
+              const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
+              await storage.createTransaction(transactionData);
+              transactionsCreated++;
+            }
           }
         }
+        
+        console.log('Successfully created', transactionsCreated, 'transactions');
+      } catch (transactionError: any) {
+        console.log('Transaction sync failed (this is normal for new connections):', transactionError.message);
+        
+        // Check if it's a PRODUCT_NOT_READY error
+        if (transactionError.response?.data?.error_code === 'PRODUCT_NOT_READY') {
+          console.log('Transactions not ready yet - will be available later via sync endpoint');
+        } else {
+          console.error('Unexpected transaction error:', transactionError);
+        }
       }
-      
-      console.log('Successfully created', transactionsCreated, 'transactions');
       
       res.json({ 
         success: true, 
