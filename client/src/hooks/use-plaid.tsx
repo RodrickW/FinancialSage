@@ -7,43 +7,43 @@ import { useToast } from '@/hooks/use-toast';
 function loadPlaidSDK(): Promise<void> {
   return new Promise((resolve, reject) => {
     // Check if already loaded
-    if (window.Plaid) {
+    if (window.Plaid && typeof window.Plaid.create === 'function') {
+      console.log('Plaid SDK already loaded');
       resolve();
       return;
     }
 
-    console.log('Loading Plaid SDK from proxy...');
+    console.log('Loading Plaid SDK...');
     
     // Remove any existing Plaid scripts first
     const existingScripts = document.querySelectorAll('script[src*="plaid"]');
     existingScripts.forEach(script => script.remove());
     
-    // Create script element - try direct CDN first, fallback to proxy
+    // Create script element
     const script = document.createElement('script');
     script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
-    script.async = false;
+    script.async = true;
     script.defer = false;
     
     script.onload = () => {
       console.log('Plaid SDK script loaded');
-      // Wait for Plaid to be available with more robust checking
+      // Wait for Plaid to be available
       let attempts = 0;
-      const maxAttempts = 100; // Increased timeout
+      const maxAttempts = 200; // Increased timeout
       
       const checkPlaid = setInterval(() => {
         attempts++;
-        console.log(`Checking for Plaid SDK availability (attempt ${attempts}/${maxAttempts})`);
         
         if (window.Plaid && typeof window.Plaid.create === 'function') {
           clearInterval(checkPlaid);
-          console.log('Plaid SDK ready with create function available');
+          console.log('Plaid SDK ready');
           resolve();
         } else if (attempts >= maxAttempts) {
           clearInterval(checkPlaid);
-          console.error('Plaid SDK failed to initialize properly');
-          reject(new Error('Plaid SDK not initialized after loading'));
+          console.error('Plaid SDK failed to initialize');
+          reject(new Error('Plaid SDK timeout'));
         }
-      }, 50); // Check more frequently
+      }, 50);
     };
     
     script.onerror = (error) => {
@@ -119,11 +119,16 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
       
       if (!response.ok) {
         if (response.status === 401) {
+          console.log('Authentication failed - redirecting to login');
           toast({
-            title: "Authentication Required",
-            description: "Please log in to connect your bank account.",
+            title: "Please Log In",
+            description: "You need to log in to connect your bank account.",
             variant: "destructive",
           });
+          // Redirect to login page
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1500);
           setIsLoading(false);
           return;
         }
