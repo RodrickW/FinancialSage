@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { UserProfile } from '@/types';
-import { Loader2, MessageCircle, Target, TrendingUp } from 'lucide-react';
+import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap } from 'lucide-react';
 
 
 export default function FinancialCoach() {
@@ -25,6 +25,7 @@ export default function FinancialCoach() {
   const [interviewResponses, setInterviewResponses] = useState<any>(null);
   const [showOnboardingInterview, setShowOnboardingInterview] = useState(false);
   const [interviewStep, setInterviewStep] = useState(0);
+  const [isCreatingBudget, setIsCreatingBudget] = useState(false);
   
   // Check if coming from onboarding flow
   useEffect(() => {
@@ -95,6 +96,46 @@ export default function FinancialCoach() {
       setAnswer('Sorry, I encountered an error while processing your question. Please try again later.');
     } finally {
       setIsAsking(false);
+    }
+  };
+
+  const handleCreateAIBudget = async () => {
+    setIsCreatingBudget(true);
+    
+    try {
+      const response = await fetch('/api/ai/create-budget', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create AI budget');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.budgetPlan) {
+        setAnswer(`I've successfully analyzed your spending patterns and created a personalized budget for you! 
+
+${data.budgetPlan.message || `I found ${Object.keys(data.budgetPlan.budgetPlan?.budgetCategories || {}).length} spending categories in your transaction history and created budget recommendations based on your actual spending patterns.`}
+
+Your new budget categories have been saved and you can view them on the Budget page. Would you like me to explain any specific category or help you adjust the recommendations?
+
+Money Mind 💰`);
+        
+        // Clear the question field
+        setAiQuestion('');
+      } else {
+        throw new Error('Failed to process AI budget');
+      }
+      
+    } catch (error) {
+      console.error('Error creating AI budget:', error);
+      setAnswer('I encountered an error while creating your budget. Please make sure you have connected bank accounts with transaction data. You can connect accounts on the Accounts page first, then ask me to create your budget again.');
+    } finally {
+      setIsCreatingBudget(false);
     }
   };
 

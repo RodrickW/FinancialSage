@@ -191,48 +191,52 @@ export default function Budget() {
     });
   };
   
-  // Handle getting AI recommendations
-  const handleGetAiRecommendations = () => {
-    setAiRecommendationsDialogOpen(true);
+  // Handle getting AI budget recommendations based on real spending data
+  const handleGetAiRecommendations = async () => {
+    setAiRecommendationsLoading(true);
     
-    // Here we would normally fetch recommendations from the API
-    // For now, we'll simulate it with a timeout
-    setTimeout(() => {
-      // Add some sample recommendations to demonstrate
-      const recommendedCategories = [
-        {
-          id: Date.now(),
-          name: "Subscriptions",
-          icon: <Wifi className="h-5 w-5" />,
-          color: 'bg-purple-500',
-          allocated: 80,
-          spent: 65.99,
-          remaining: 14.01,
-          percentUsed: 82
+    try {
+      const response = await fetch('/api/ai/create-budget', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          id: Date.now() + 1,
-          name: "Personal Care",
-          icon: <ShoppingCart className="h-5 w-5" />,
-          color: 'bg-pink-500',
-          allocated: 120,
-          spent: 85.75,
-          remaining: 34.25,
-          percentUsed: 71
-        }
-      ];
-      
-      // Add the recommended categories
-      setBudgetCategories([...budgetCategories, ...recommendedCategories]);
-      
-      // Close the dialog
-      setAiRecommendationsDialogOpen(false);
-      
-      toast({
-        title: "AI Recommendations Added",
-        description: "We've analyzed your spending and added 2 new budget categories",
       });
-    }, 2000);
+      
+      if (!response.ok) {
+        throw new Error('Failed to create AI budget');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.budgetPlan) {
+        // Close dialog first
+        setAiRecommendationsDialogOpen(false);
+        
+        // Show success message
+        toast({
+          title: "Money Mind Created Your Budget!",
+          description: data.message,
+        });
+        
+        // Refresh the page to show new budget categories
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        throw new Error('Failed to process AI budget');
+      }
+      
+    } catch (error) {
+      console.error('Error creating AI budget:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create AI budget. Please ensure you have connected accounts with transaction data.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiRecommendationsLoading(false);
+    }
   };
 
   // Function to determine progress bar color
