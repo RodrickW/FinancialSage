@@ -46,6 +46,7 @@ export default function Budget() {
   // Add category dialog state
   const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
   const [aiRecommendationsDialogOpen, setAiRecommendationsDialogOpen] = useState(false);
+  const [aiRecommendationsLoading, setAiRecommendationsLoading] = useState(false);
 
   // Form state for adding a new category
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -449,12 +450,21 @@ export default function Budget() {
               Add Category
             </Button>
             <Button 
-              variant="outline" 
               onClick={handleGetAiRecommendations}
-              className="border-blue-200 hover:bg-blue-50 transition-all duration-200"
+              disabled={aiRecommendationsLoading}
+              className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
             >
-              <span className="material-icons mr-2 text-sm">auto_awesome</span>
-              Get AI Recommendations
+              {aiRecommendationsLoading ? (
+                <>
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  Creating Budget...
+                </>
+              ) : (
+                <>
+                  <PiggyBank className="mr-2 h-4 w-4" />
+                  Create AI Budget
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -635,11 +645,11 @@ export default function Budget() {
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
             <DialogTitle className="flex items-center text-blue-700">
-              <span className="material-icons mr-2 text-blue-500">psychology</span>
-              AI Budget Recommendations
+              <PiggyBank className="mr-2 h-5 w-5 text-purple-500" />
+              Money Mind AI Budget Creation
             </DialogTitle>
             <DialogDescription>
-              Money Mind is analyzing your spending patterns to create personalized budget recommendations.
+              Analyzing your actual spending patterns from connected accounts to create personalized budget categories.
             </DialogDescription>
           </DialogHeader>
           
@@ -650,21 +660,21 @@ export default function Budget() {
                 <span className="material-icons text-3xl text-blue-500">psychology</span>
               </div>
             </div>
-            <p className="text-center text-blue-700">
-              Analyzing your financial data and spending habits...
+            <p className="text-center text-purple-700">
+              Money Mind is analyzing your Wells Fargo transaction data...
             </p>
             <div className="mt-6 space-y-2 w-full">
               <div className="flex items-center">
                 <Check className="h-4 w-4 text-green-500 mr-2" />
-                <p className="text-sm text-green-700">Analyzing transaction history</p>
+                <p className="text-sm text-green-700">Reviewing transaction history</p>
               </div>
               <div className="flex items-center">
                 <Check className="h-4 w-4 text-green-500 mr-2" />
-                <p className="text-sm text-green-700">Identifying spending patterns</p>
+                <p className="text-sm text-green-700">Categorizing spending patterns</p>
               </div>
               <div className="flex items-center">
-                <div className="h-4 w-4 border-t border-r border-blue-500 rounded-full animate-spin mr-2"></div>
-                <p className="text-sm text-blue-700">Creating optimized budget categories</p>
+                <div className="h-4 w-4 border-t border-r border-purple-500 rounded-full animate-spin mr-2"></div>
+                <p className="text-sm text-purple-700">Creating personalized budget categories</p>
               </div>
             </div>
           </div>
