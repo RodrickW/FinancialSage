@@ -1013,6 +1013,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint to see what user data is available
+  app.get('/api/debug/user-data', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id, 10);
+      
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName
+        },
+        accounts: accounts,
+        transactionCount: transactions.length,
+        sampleTransactions: transactions.slice(0, 3)
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get debug data' });
+    }
+  });
+
   // Money Mind AI coaching endpoint
   app.post('/api/ai/coaching', requireAuth, async (req, res) => {
     try {
