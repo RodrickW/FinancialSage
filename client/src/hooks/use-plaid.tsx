@@ -113,6 +113,28 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
     setError(null);
     
     try {
+      // First check if user is authenticated
+      console.log('Checking authentication before Plaid connection...');
+      const authCheck = await fetch('/api/users/profile', {
+        credentials: 'include'
+      });
+      
+      if (!authCheck.ok) {
+        console.log('Authentication check failed - user not logged in');
+        toast({
+          title: "Please Log In",
+          description: "You must be logged in to connect your bank account.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('User authenticated, creating Plaid link token...');
+      
       // Get fresh link token
       const response = await apiRequest('POST', '/api/plaid/create-link-token', {});
       const data = await response.json();

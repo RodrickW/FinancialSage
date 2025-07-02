@@ -47,9 +47,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       checkPeriod: 86400000 // Prune expired entries every 24h
     }),
     cookie: {
-      secure: false, // Allow cookies over HTTP for Replit deployment
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-site cookies in production
       maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
     }
   }));

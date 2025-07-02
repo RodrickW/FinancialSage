@@ -20,14 +20,12 @@ export function PlaidLinkButton({
   const [isLinking, setIsLinking] = useState(false);
 
   const handleClick = async () => {
-    console.log('Connect Account button clicked');
+    console.log('Connect Account button clicked - checking authentication...');
     setIsLinking(true);
     try {
       console.log('About to call openPlaidLink');
       await openPlaidLink();
-      console.log('openPlaidLink completed');
-      // onSuccess will be called by the Plaid hook's exchangePublicToken function
-      // after a real successful connection, not here
+      console.log('openPlaidLink completed successfully');
     } catch (error) {
       console.error('Plaid Link error:', error);
     } finally {

@@ -36,7 +36,7 @@ app.use(helmet({
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.replit.app'] // Update with your actual domain
+    ? ['https://mindmymoney.replit.app', /\.replit\.app$/, /\.replit\.co$/] // Allow Replit domains
     : true,
   credentials: true
 }));
