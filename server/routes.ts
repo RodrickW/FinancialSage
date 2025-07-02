@@ -767,35 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/coaching', requireAuth, async (req, res) => {
-    try {
-      const { question } = req.body;
-      
-      if (!question) {
-        return res.status(400).json({ message: 'Question is required' });
-      }
-      
-      // In a real app, you would fetch user's financial data and pass it to the AI
-      const userData = {
-        spending: [
-          { category: 'Food & Dining', amount: 820.45 },
-          { category: 'Housing', amount: 1450.00 },
-          { category: 'Transportation', amount: 385.20 },
-          { category: 'Shopping', amount: 605.85 }
-        ],
-        income: 5000,
-        savings: 5420,
-        savingsGoal: 10000,
-        creditScore: 752
-      };
-      
-      const advice = await getFinancialCoaching(question, userData);
-      res.json({ advice });
-    } catch (error) {
-      console.error('Error getting financial coaching:', error);
-      res.status(500).json({ message: 'Failed to get financial coaching' });
-    }
-  });
+
 
   app.get('/api/ai/budget-recommendations', requireAuth, async (req, res) => {
     try {
@@ -1084,18 +1056,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accounts: accounts.map(account => ({
           type: account.accountType,
           balance: account.balance,
-          institution: account.institutionName
+          institution: account.institutionName,
+          accountName: account.accountName
         })),
         totalBalance,
         totalExpenses,
+        transactionCount: transactions.length,
         savingsGoals: savingsGoals.map(g => ({
           name: g.name,
           target: g.targetAmount,
           current: g.currentAmount
         })),
         spendingByCategory: categorySpending,
-        creditScore: creditScore ? creditScore.score : null
+        creditScore: creditScore ? creditScore.score : null,
+        hasAccounts: accounts.length > 0,
+        hasTransactions: transactions.length > 0
       };
+      
+      // Log the user data being sent to OpenAI for debugging
+      console.log('AI Coaching - User Data being sent to OpenAI:', JSON.stringify({
+        userInfo: `${user.firstName} ${user.lastName}`,
+        accountCount: accounts.length,
+        totalBalance: totalBalance,
+        transactionCount: transactions.length,
+        question: question
+      }, null, 2));
       
       // Add a personality to the coach in the prompt
       const answer = await getFinancialCoaching(question, userData);

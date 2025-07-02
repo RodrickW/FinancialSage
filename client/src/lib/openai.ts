@@ -18,7 +18,7 @@ export async function getFinancialCoaching(question: string): Promise<string> {
   try {
     const response = await apiRequest('POST', '/api/ai/coaching', { question });
     const data = await response.json();
-    return data.advice;
+    return data.answer;
   } catch (error) {
     console.error('Error fetching financial coaching:', error);
     throw error;
