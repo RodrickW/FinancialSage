@@ -42,17 +42,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'mindmymoneysecret',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Enable for mobile compatibility
     store: new MemoryStoreSession({
       checkPeriod: 86400000 // Prune expired entries every 24h
     }),
     cookie: {
-      secure: false, // Always false for Replit to work with OAuth flows
-      httpOnly: true,
-      sameSite: 'lax', // Lax for OAuth compatibility
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
-      domain: undefined // Let browser handle domain for OAuth flows
-    }
+      secure: false, // False for development on Replit
+      httpOnly: false, // Allow client-side access for mobile
+      sameSite: 'none', // Required for cross-origin requests
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+    },
+    name: 'connect.sid' // Explicit session name
   }));
 
   // Initialize Passport
