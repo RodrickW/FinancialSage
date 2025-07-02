@@ -192,6 +192,16 @@ export default function Dashboard() {
                     </Button>
                   </Link>
                 </TrialGate>
+                
+                {/* Money Mind Interview Button */}
+                <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                  <Link href="/coach?onboarding=true">
+                    <Button variant="outline" className="flex items-center border-green-300 text-green-600 hover:bg-green-50 shadow-md btn-animate card-hover">
+                      <span className="material-icons text-sm mr-1">psychology</span>
+                      Money Mind Interview
+                    </Button>
+                  </Link>
+                </TrialGate>
               </div>
             </div>
           </div>

@@ -42,9 +42,36 @@ export default function ConnectedAccounts({ accounts }: ConnectedAccountsProps) 
                 <p className="text-xs text-neutral-500">{account.accountNumber}</p>
               </div>
             </div>
-            <p className={`font-medium tabular-nums ${account.balance < 0 ? 'text-error-500' : ''}`}>
-              {formatCurrency(account.balance)}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className={`font-medium tabular-nums ${account.balance < 0 ? 'text-error-500' : ''}`}>
+                {formatCurrency(account.balance)}
+              </p>
+              <button 
+                className="text-xs text-blue-600 hover:text-blue-800 border border-blue-200 px-2 py-1 rounded"
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`/api/plaid/sync-transactions`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({ accountId: account.id, days: 30 })
+                    });
+                    
+                    if (response.ok) {
+                      const data = await response.json();
+                      alert(`Synced ${data.newTransactions} new transactions`);
+                      window.location.reload(); // Refresh to show new transactions
+                    } else {
+                      alert('Sync failed - transactions may not be ready yet');
+                    }
+                  } catch (error) {
+                    alert('Sync failed - please try again later');
+                  }
+                }}
+              >
+                Sync
+              </button>
+            </div>
           </div>
         ))}
         
