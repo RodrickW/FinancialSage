@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { UserProfile } from '@/types';
 
 interface SidebarProps {
-  user: UserProfile;
+  user?: UserProfile;
 }
 
 export default function Sidebar({ user }: SidebarProps) {
@@ -98,17 +98,19 @@ export default function Sidebar({ user }: SidebarProps) {
         ))}
       </nav>
       
-      <div className={cn("mt-auto p-4 border-t border-neutral-100", mobileMenuOpen ? "block" : "hidden md:block")}>
-        <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-500 flex items-center justify-center mr-2">
-            {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-          </div>
-          <div>
-            <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
-            <p className="text-xs text-neutral-500">{user.email}</p>
+      {user && (
+        <div className={cn("mt-auto p-4 border-t border-neutral-100", mobileMenuOpen ? "block" : "hidden md:block")}>
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-500 flex items-center justify-center mr-2">
+              {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
+            </div>
+            <div>
+              <p className="text-sm font-medium">{user.firstName || 'User'} {user.lastName || ''}</p>
+              <p className="text-xs text-neutral-500">{user.email || ''}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

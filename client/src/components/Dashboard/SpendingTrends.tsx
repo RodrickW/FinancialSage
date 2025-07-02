@@ -19,6 +19,7 @@ export default function SpendingTrends({ spendingData, categories }: SpendingTre
     // Clean up previous chart instance
     if (chart) {
       chart.destroy();
+      setChart(null);
     }
     
     if (chartRef.current) {
