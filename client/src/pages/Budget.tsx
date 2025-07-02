@@ -655,9 +655,9 @@ export default function Budget() {
           
           <div className="py-8 flex flex-col items-center justify-center">
             <div className="relative w-20 h-20 mb-4">
-              <div className="absolute inset-0 rounded-full border-t-4 border-b-4 border-blue-500 animate-spin"></div>
+              <div className="absolute inset-0 rounded-full border-t-4 border-b-4 border-purple-500 animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="material-icons text-3xl text-blue-500">psychology</span>
+                <PiggyBank className="h-8 w-8 text-purple-500" />
               </div>
             </div>
             <p className="text-center text-purple-700">
