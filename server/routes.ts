@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { User } from "@shared/schema";
-import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore } from "./openai";
+import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget } from "./openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { servePlaidSDK } from "./plaid-proxy";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
@@ -35,6 +35,13 @@ const mockFinancialData = {
     name: 'Vacation Fund'
   }
 };
+
+// Helper function to check if date is within last month
+function isWithinLastMonth(date: Date): boolean {
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  return date >= lastMonth;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session
@@ -1033,6 +1040,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to get debug data' });
+    }
+  });
+
+  // AI Budget Creation - Money Mind analyzes spending and creates personalized budget
+  app.post('/api/ai/create-budget', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Get comprehensive user financial data
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id, 100); // Last 100 transactions for better analysis
+      const existingBudgets = await storage.getBudgets(user.id);
+      const savingsGoals = await storage.getSavingsGoals(user.id);
+      
+      // Calculate financial stats for AI analysis
+      const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+      const monthlyExpenses = transactions
+        .filter(t => t.amount < 0 && isWithinLastMonth(new Date(t.date)))
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      const monthlyIncome = transactions
+        .filter(t => t.amount > 0 && isWithinLastMonth(new Date(t.date)))
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      // Group spending by category for the last month
+      const categorySpending: Record<string, number> = {};
+      transactions
+        .filter(t => t.amount < 0 && isWithinLastMonth(new Date(t.date)))
+        .forEach(t => {
+          const category = t.category || 'Other';
+          if (!categorySpending[category]) {
+            categorySpending[category] = 0;
+          }
+          categorySpending[category] += Math.abs(t.amount);
+        });
+      
+      // Prepare data for AI analysis
+      const userData = {
+        firstName: user.firstName,
+        accounts: accounts.map(account => ({
+          type: account.accountType,
+          balance: account.balance,
+          institution: account.institutionName
+        })),
+        totalBalance,
+        monthlyIncome,
+        monthlyExpenses,
+        spendingByCategory: categorySpending,
+        existingBudgets: existingBudgets.length,
+        savingsGoals: savingsGoals.map(g => ({
+          name: g.name,
+          target: g.targetAmount,
+          current: g.currentAmount
+        })),
+        transactionCount: transactions.length
+      };
+      
+      console.log('AI Budget Creation - Analyzing spending data for:', user.firstName, {
+        monthlyIncome,
+        monthlyExpenses,
+        categoriesFound: Object.keys(categorySpending).length,
+        transactionCount: transactions.length
+      });
+      
+      // Get AI budget recommendations
+      const budgetPlan = await createPersonalizedBudget(userData);
+      
+      // Save AI-generated budget categories to database
+      const createdBudgets = [];
+      if (budgetPlan.budgetPlan && budgetPlan.budgetPlan.budgetCategories) {
+        for (const category of budgetPlan.budgetPlan.budgetCategories) {
+          try {
+            const newBudget = await storage.createBudget({
+              userId: user.id,
+              category: category.category,
+              amount: category.recommendedAmount,
+              period: 'monthly',
+              spent: category.currentSpending || 0,
+              icon: category.icon || '💰'
+            });
+            createdBudgets.push(newBudget);
+          } catch (error) {
+            console.error('Error creating budget category:', category.category, error);
+          }
+        }
+      }
+      
+      res.json({
+        success: true,
+        budgetPlan,
+        createdBudgets: createdBudgets.length,
+        message: `Money Mind created ${createdBudgets.length} budget categories based on your spending patterns`
+      });
+      
+    } catch (error) {
+      console.error('Error creating AI budget:', error);
+      res.status(500).json({ message: 'Failed to create AI budget' });
     }
   });
 

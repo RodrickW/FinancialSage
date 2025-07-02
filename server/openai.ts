@@ -76,10 +76,62 @@ export async function generateBudgetRecommendations(spendingData: any): Promise<
       response_format: { type: "json_object" }
     });
 
-    return JSON.parse(response.choices[0].message.content);
+    return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error: any) {
     console.error("Error generating budget recommendations:", error.message);
     throw new Error("Failed to generate budget recommendations");
+  }
+}
+
+// AI-powered budget creation based on real user spending patterns
+export async function createPersonalizedBudget(userData: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, an AI financial coach that creates personalized budgets based on real user spending data. 
+
+Analyze the user's actual transaction history and account information to create a comprehensive monthly budget. Use their real spending patterns to identify categories and set realistic budget amounts.
+
+Return a JSON response with this structure:
+{
+  "budgetPlan": {
+    "monthlyIncome": number,
+    "totalExpenses": number,
+    "suggestedSavings": number,
+    "budgetCategories": [
+      {
+        "category": "string",
+        "icon": "string", 
+        "currentSpending": number,
+        "recommendedAmount": number,
+        "priority": "high|medium|low",
+        "reasoning": "string"
+      }
+    ]
+  },
+  "insights": {
+    "spendingAnalysis": "string",
+    "recommendations": ["string"],
+    "potentialSavings": number
+  },
+  "message": "Personalized message from Money Mind about the budget plan"
+}`
+        },
+        {
+          role: "user",
+          content: JSON.stringify(userData)
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error creating personalized budget:", error.message);
+    throw new Error("Failed to create personalized budget");
   }
 }
 
