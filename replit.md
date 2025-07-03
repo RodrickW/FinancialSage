@@ -196,6 +196,13 @@ Changelog:
   * Enhanced database schema to store Plaid access tokens and account IDs for ongoing sync
   * System now handles authentic transaction data from connected bank accounts
   * Dashboard and AI coaching features ready to use real financial data
+- July 2, 2025. Account disconnection functionality implementation:
+  * Added secure account disconnection feature with confirmation dialog
+  * Implemented DELETE /api/accounts/:id endpoint with proper user authorization
+  * Enhanced Accounts page with red "Disconnect" button for each connected account
+  * Added comprehensive confirmation dialog explaining disconnection consequences
+  * Integrated automatic data cleanup when accounts are removed
+  * Users can now safely disconnect and reconnect accounts as needed
 ```
 
 ## User Preferences

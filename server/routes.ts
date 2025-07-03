@@ -645,6 +645,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to get account' });
     }
   });
+
+  // Delete/disconnect account
+  app.delete('/api/accounts/:id', requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const user = req.user as User;
+      
+      // Get the account to verify ownership
+      const account = await storage.getAccount(accountId);
+      if (!account) {
+        return res.status(404).json({ error: 'Account not found' });
+      }
+      
+      // Check if the account belongs to the user
+      if (account.userId !== user.id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+      
+      // First, get all transactions for this account to clean up related data
+      const accountTransactions = await storage.getAccountTransactions(accountId, 1000);
+      
+      // Delete the account (we'll manually clean up related data)
+      const deleted = await storage.deleteAccount(accountId);
+      
+      if (!deleted) {
+        return res.status(500).json({ error: 'Failed to disconnect account' });
+      }
+      
+      // Note: Related transactions are automatically cleaned up by foreign key constraints
+      // Budget data and insights will be recalculated on next access
+      
+      // Log the account disconnection for audit purposes
+      console.log(`Account disconnected: ${account.accountName} (ID: ${accountId}) by user ${user.id}`);
+      
+      res.json({ 
+        message: 'Account disconnected successfully',
+        accountName: account.accountName
+      });
+      
+    } catch (error) {
+      console.error('Error disconnecting account:', error);
+      res.status(500).json({ error: 'Failed to disconnect account' });
+    }
+  });
   
   // Sync transactions from Plaid for connected accounts
   app.post('/api/plaid/sync-transactions', requireAuth, async (req, res) => {

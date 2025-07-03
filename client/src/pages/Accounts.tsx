@@ -1,18 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import TrialGate from '@/components/TrialGate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { UserProfile, ConnectedAccount } from '@/types';
 
 // Removed all mock data imports - using real API data only
 
 export default function Accounts() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // State for disconnect confirmation dialog
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [accountToDisconnect, setAccountToDisconnect] = useState<{ id: number; name: string } | null>(null);
   
   // Get the user data
   const { data: userData } = useQuery({
@@ -48,6 +55,31 @@ export default function Accounts() {
     }).format(amount);
   };
   
+  // Disconnect account mutation
+  const disconnectAccountMutation = useMutation({
+    mutationFn: async (accountId: number) => {
+      return await apiRequest('DELETE', `/api/accounts/${accountId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      toast({
+        title: "Account Disconnected",
+        description: "Your account has been successfully disconnected.",
+      });
+      setDisconnectDialogOpen(false);
+      setAccountToDisconnect(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to disconnect account. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Handle refresh account action
   const handleRefreshAccount = () => {
     toast({
@@ -62,6 +94,19 @@ export default function Accounts() {
       title: "View account details",
       description: `Viewing details for account #${accountId}`
     });
+  };
+
+  // Handle disconnect account - show confirmation dialog
+  const handleDisconnectAccount = (accountId: number, accountName: string) => {
+    setAccountToDisconnect({ id: accountId, name: accountName });
+    setDisconnectDialogOpen(true);
+  };
+
+  // Confirm disconnect account
+  const confirmDisconnectAccount = () => {
+    if (accountToDisconnect) {
+      disconnectAccountMutation.mutate(accountToDisconnect.id);
+    }
   };
   
   return (
@@ -126,14 +171,23 @@ export default function Accounts() {
                           {account.accountType.charAt(0).toUpperCase() + account.accountType.slice(1)}
                         </span>
                       </div>
-                      <div className="mt-4 flex">
-                        <Button variant="outline" size="sm" className="text-xs mr-2" onClick={handleRefreshAccount}>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" className="text-xs" onClick={handleRefreshAccount}>
                           <span className="material-icons text-sm mr-1">sync</span>
                           Refresh
                         </Button>
                         <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewDetails(account.id)}>
                           <span className="material-icons text-sm mr-1">more_horiz</span>
                           Details
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" 
+                          onClick={() => handleDisconnectAccount(account.id, account.accountName)}
+                        >
+                          <span className="material-icons text-sm mr-1">link_off</span>
+                          Disconnect
                         </Button>
                       </div>
                     </CardContent>
@@ -145,6 +199,65 @@ export default function Accounts() {
           </TrialGate>
         </div>
       </main>
+
+      {/* Disconnect Account Confirmation Dialog */}
+      <Dialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-red-700">
+              <span className="material-icons mr-2 text-red-500">warning</span>
+              Disconnect Account
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disconnect "{accountToDisconnect?.name}"? This will remove the account and all associated transaction data from your profile.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <span className="material-icons text-yellow-600 mr-3 mt-0.5">info</span>
+                <div className="text-sm text-yellow-800">
+                  <p className="font-medium mb-1">What happens when you disconnect:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Account will be removed from your dashboard</li>
+                    <li>Transaction history will be cleared</li>
+                    <li>Budget and insights will be updated</li>
+                    <li>You can reconnect this account anytime</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDisconnectDialogOpen(false)}
+              disabled={disconnectAccountMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDisconnectAccount}
+              disabled={disconnectAccountMutation.isPending}
+            >
+              {disconnectAccountMutation.isPending ? (
+                <>
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  Disconnecting...
+                </>
+              ) : (
+                <>
+                  <span className="material-icons mr-2 text-sm">link_off</span>
+                  Disconnect Account
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
