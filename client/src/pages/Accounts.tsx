@@ -106,7 +106,7 @@ export default function Accounts() {
   // Balance refresh mutation - only refreshes account balances
   const refreshBalancesMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/plaid/refresh-balances');
+      return await apiRequest('POST', '/api/plaid/refresh-balances', {});
     },
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
@@ -117,6 +117,7 @@ export default function Accounts() {
       });
     },
     onError: (error: any) => {
+      console.error('Balance refresh error:', error);
       toast({
         title: "Refresh Failed",
         description: error.message || "Failed to refresh balances. Please try again.",
