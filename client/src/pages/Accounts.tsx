@@ -85,10 +85,13 @@ export default function Accounts() {
     mutationFn: async () => {
       return await apiRequest('POST', '/api/plaid/full-sync', { days: 7 });
     },
-    onSuccess: (response: any) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
+    onSuccess: async (response: any) => {
+      // Small delay to ensure database update is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      // Force fresh data fetch instead of just invalidating cache
+      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
+      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
+      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
       toast({
         title: "Sync Complete",
         description: `Updated ${response.updatedBalances} balances and added ${response.newTransactions} new transactions.`,
@@ -108,9 +111,12 @@ export default function Accounts() {
     mutationFn: async () => {
       return await apiRequest('POST', '/api/plaid/refresh-balances', {});
     },
-    onSuccess: (response: any) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
+    onSuccess: async (response: any) => {
+      // Small delay to ensure database update is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      // Force fresh data fetch instead of just invalidating cache
+      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
+      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
       toast({
         title: "Balances Updated",
         description: `Refreshed ${response.updatedAccounts} account balances.`,
