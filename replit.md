@@ -203,6 +203,14 @@ Changelog:
   * Added comprehensive confirmation dialog explaining disconnection consequences
   * Integrated automatic data cleanup when accounts are removed
   * Users can now safely disconnect and reconnect accounts as needed
+- July 3, 2025. Critical balance and transaction sync resolution:
+  * Fixed account balance display issues by implementing real-time Plaid balance refresh
+  * Added comprehensive transaction sync system with duplicate prevention
+  * Implemented /api/plaid/refresh-balances endpoint for balance updates
+  * Added /api/plaid/full-sync endpoint for complete account and transaction sync
+  * Enhanced Accounts page with "Sync All Accounts" button and individual refresh options
+  * Resolved AI budget creation blocking issue by ensuring transaction data availability
+  * System now properly syncs Wells Fargo and other bank data for accurate financial insights
 ```
 
 ## User Preferences

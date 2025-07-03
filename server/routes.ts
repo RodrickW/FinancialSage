@@ -754,6 +754,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to sync transactions' });
     }
   });
+
+  // Refresh account balances from Plaid
+  app.post('/api/plaid/refresh-balances', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Get all connected accounts for the user
+      const accounts = await storage.getAccounts(user.id);
+      const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
+      
+      if (plaidAccounts.length === 0) {
+        return res.json({ message: 'No Plaid-connected accounts to refresh' });
+      }
+      
+      let updatedAccountsCount = 0;
+      
+      for (const account of plaidAccounts) {
+        try {
+          // Get fresh account data from Plaid
+          const plaidData = await getAccounts(account.plaidAccessToken!);
+          
+          // Find the matching account in Plaid response
+          const plaidAccount = plaidData.accounts.find(
+            acc => acc.account_id === account.plaidAccountId
+          );
+          
+          if (plaidAccount && plaidAccount.balances.current !== null) {
+            // Update the account balance
+            await storage.updateAccount(account.id, {
+              balance: plaidAccount.balances.current
+            });
+            updatedAccountsCount++;
+            
+            console.log(`Updated balance for ${account.accountName}: $${plaidAccount.balances.current}`);
+          }
+          
+        } catch (accountError) {
+          console.error(`Error refreshing account ${account.id}:`, accountError);
+          // Continue with other accounts even if one fails
+        }
+      }
+      
+      res.json({ 
+        message: 'Balance refresh completed',
+        updatedAccounts: updatedAccountsCount,
+        totalAccounts: plaidAccounts.length
+      });
+      
+    } catch (error) {
+      console.error('Error refreshing balances:', error);
+      res.status(500).json({ error: 'Failed to refresh account balances' });
+    }
+  });
+
+  // Comprehensive sync: refresh balances and sync recent transactions
+  app.post('/api/plaid/full-sync', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { days = 7 } = req.body; // Default to last 7 days for quicker sync
+      
+      // Get all connected accounts
+      const accounts = await storage.getAccounts(user.id);
+      const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
+      
+      if (plaidAccounts.length === 0) {
+        return res.json({ message: 'No Plaid-connected accounts to sync' });
+      }
+      
+      let totalNewTransactions = 0;
+      let updatedBalances = 0;
+      
+      for (const account of plaidAccounts) {
+        try {
+          // 1. Refresh account balance
+          const plaidData = await getAccounts(account.plaidAccessToken!);
+          const plaidAccount = plaidData.accounts.find(
+            acc => acc.account_id === account.plaidAccountId
+          );
+          
+          if (plaidAccount && plaidAccount.balances.current !== null) {
+            await storage.updateAccount(account.id, {
+              balance: plaidAccount.balances.current
+            });
+            updatedBalances++;
+          }
+          
+          // 2. Sync recent transactions
+          const today = new Date();
+          const startDate = new Date(today);
+          startDate.setDate(today.getDate() - days);
+          
+          const startDateStr = startDate.toISOString().split('T')[0];
+          const endDateStr = today.toISOString().split('T')[0];
+          
+          const transactionsResponse = await getTransactions(
+            account.plaidAccessToken!, 
+            startDateStr, 
+            endDateStr
+          );
+          
+          const accountTransactions = transactionsResponse.transactions.filter(
+            t => t.account_id === account.plaidAccountId
+          );
+          
+          // Check for new transactions
+          const existingTransactions = await storage.getAccountTransactions(account.id, 1000);
+          
+          for (const plaidTransaction of accountTransactions) {
+            const exists = existingTransactions.some(existing => 
+              existing.description === plaidTransaction.name && 
+              Math.abs(existing.amount - plaidTransaction.amount) < 0.01 &&
+              new Date(existing.date).getTime() === new Date(plaidTransaction.date).getTime()
+            );
+            
+            if (!exists) {
+              const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
+              await storage.createTransaction(transactionData);
+              totalNewTransactions++;
+            }
+          }
+          
+        } catch (accountError) {
+          console.error(`Error syncing account ${account.accountName}:`, accountError);
+        }
+      }
+      
+      console.log(`Full sync completed: ${updatedBalances} balances updated, ${totalNewTransactions} new transactions`);
+      
+      res.json({
+        message: 'Full sync completed successfully',
+        updatedBalances,
+        newTransactions: totalNewTransactions,
+        syncedAccounts: plaidAccounts.length
+      });
+      
+    } catch (error) {
+      console.error('Error in full sync:', error);
+      res.status(500).json({ error: 'Failed to complete full sync' });
+    }
+  });
   
   // Transactions routes
   app.get('/api/transactions', requireAuth, async (req, res) => {

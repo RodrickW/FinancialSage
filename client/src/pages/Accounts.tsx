@@ -80,13 +80,50 @@ export default function Accounts() {
     },
   });
 
-  // Handle refresh account action
-  const handleRefreshAccount = () => {
-    toast({
-      title: "Account refreshed",
-      description: "Account information has been refreshed."
-    });
-  };
+  // Full sync mutation - refreshes balances and syncs recent transactions
+  const fullSyncMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/plaid/full-sync', { days: 7 });
+    },
+    onSuccess: (response: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
+      toast({
+        title: "Sync Complete",
+        description: `Updated ${response.updatedBalances} balances and added ${response.newTransactions} new transactions.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync account data. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Balance refresh mutation - only refreshes account balances
+  const refreshBalancesMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/plaid/refresh-balances');
+    },
+    onSuccess: (response: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
+      toast({
+        title: "Balances Updated",
+        description: `Refreshed ${response.updatedAccounts} account balances.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Refresh Failed",
+        description: error.message || "Failed to refresh balances. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
   
   // Show account details
   const handleViewDetails = (accountId: number) => {
@@ -122,6 +159,26 @@ export default function Accounts() {
             <div>
               <h1 className="text-2xl font-bold">Connected Accounts</h1>
               <p className="text-neutral-500">Manage your linked financial accounts</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
+              <Button 
+                variant="outline" 
+                onClick={() => fullSyncMutation.mutate()}
+                disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
+              >
+                {fullSyncMutation.isPending ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    Syncing All...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-icons mr-2">sync</span>
+                    Sync All Accounts
+                  </>
+                )}
+              </Button>
             </div>
           </div>
           
@@ -172,9 +229,24 @@ export default function Accounts() {
                         </span>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" className="text-xs" onClick={handleRefreshAccount}>
-                          <span className="material-icons text-sm mr-1">sync</span>
-                          Refresh
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-xs" 
+                          onClick={() => refreshBalancesMutation.mutate()}
+                          disabled={refreshBalancesMutation.isPending}
+                        >
+                          {refreshBalancesMutation.isPending ? (
+                            <>
+                              <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full mr-1" />
+                              Syncing...
+                            </>
+                          ) : (
+                            <>
+                              <span className="material-icons text-sm mr-1">sync</span>
+                              Refresh
+                            </>
+                          )}
                         </Button>
                         <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewDetails(account.id)}>
                           <span className="material-icons text-sm mr-1">more_horiz</span>
