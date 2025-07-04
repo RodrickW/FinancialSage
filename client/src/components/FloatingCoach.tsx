@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { X, MessageCircle, Loader2, Info } from 'lucide-react';
+import { X, MessageCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { MoneyMindLogo } from '@/components/Logo';
 
 export default function FloatingCoach() {
   const [isOpen, setIsOpen] = useState(false);
@@ -129,7 +130,7 @@ export default function FloatingCoach() {
                 <X size={14} />
               </button>
               <div className="flex items-start">
-                <Info className="text-green-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
+                <MoneyMindLogo className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium text-green-700 mb-1">Money Mind Coach Available</p>
                   <p className="text-xs text-neutral-600 mb-2">Your AI financial advisor is here to answer any questions about budgeting, investing, or financial planning.</p>
@@ -147,8 +148,8 @@ export default function FloatingCoach() {
         <Card className="w-80 md:w-96 shadow-lg max-h-[500px] flex flex-col">
           <CardHeader className="p-3 flex flex-row items-center justify-between bg-app-gradient text-white rounded-t-lg">
             <CardTitle className="text-base flex items-center">
-              <div className="bg-white text-teal-600 h-6 w-6 rounded-full flex items-center justify-center mr-2">
-                <span className="text-xs font-bold">MM</span>
+              <div className="bg-white rounded-full h-6 w-6 p-1 mr-2 flex items-center justify-center">
+                <MoneyMindLogo className="w-4 h-4" />
               </div>
               Money Mind Coach
             </CardTitle>

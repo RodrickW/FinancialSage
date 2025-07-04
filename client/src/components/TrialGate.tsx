@@ -2,7 +2,8 @@ import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Star, TrendingUp, Brain, Shield } from 'lucide-react';
+import { Lock, Star, TrendingUp, Shield } from 'lucide-react';
+import { MoneyMindLogo } from '@/components/Logo';
 
 interface TrialGateProps {
   feature: string;
@@ -37,7 +38,7 @@ export default function TrialGate({ feature, children, hasStartedTrial }: TrialG
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="flex items-center space-x-2 text-sm">
-            <Brain className="w-4 h-4 text-teal-600" />
+            <MoneyMindLogo className="w-4 h-4" />
             <span>AI Financial Coach</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">

@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { ChessCrownLogo } from '@/components/Logo';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { 
-  Brain, 
   TrendingUp, 
   Shield, 
   Target, 
@@ -22,13 +21,14 @@ import {
   Smartphone,
   Globe
 } from 'lucide-react';
+import { MoneyMindLogo } from '@/components/Logo';
 
 export default function Landing() {
   const [, setLocation] = useLocation();
 
   const features = [
     {
-      icon: Brain,
+      icon: () => <MoneyMindLogo className="w-8 h-8" />,
       title: "AI Coaching",
       description: "Personalized advice from Money Mind AI that learns your habits and goals."
     },

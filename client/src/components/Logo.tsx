@@ -1,4 +1,5 @@
 import React from 'react';
+import moneyMindLogo from '@assets/042CC59E-4A7D-45FD-AF0D-01DB446C8817_1751662203818.png';
 
 export function ChessKingLogo({ className = "w-6 h-6", color = "text-white" }: { className?: string, color?: string }) {
   return (
@@ -14,15 +15,21 @@ export function ChessKingLogo({ className = "w-6 h-6", color = "text-white" }: {
 
 export function ChessCrownLogo({ className = "w-6 h-6", color = "text-white" }: { className?: string, color?: string }) {
   return (
-    <div className={`${className} ${color}`}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="currentColor">
-        {/* More detailed ornate crown */}
-        <path d="M5 42l5-20 10 10 7-18 7 18 10-10 5 20z" />
-        <path d="M5 42h44v6H5z" />
-        <path d="M7 52h40v5H7z" />
-        <path d="M15 20a3 3 0 100-6 3 3 0 000 6zM32 15a3 3 0 100-6 3 3 0 000 6zM49 20a3 3 0 100-6 3 3 0 000 6z" />
-      </svg>
-    </div>
+    <img 
+      src={moneyMindLogo} 
+      alt="Money Mind Logo" 
+      className={`${className} object-contain`}
+    />
+  );
+}
+
+export function MoneyMindLogo({ className = "w-6 h-6" }: { className?: string }) {
+  return (
+    <img 
+      src={moneyMindLogo} 
+      alt="Money Mind Logo" 
+      className={`${className} object-contain`}
+    />
   );
 }
 

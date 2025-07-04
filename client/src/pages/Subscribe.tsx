@@ -4,7 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { MoneyMindLogo } from '@/components/Logo';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import Sidebar from '@/components/Sidebar';
@@ -119,7 +120,9 @@ export default function Subscribe() {
           
           <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">
-              <Crown className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white p-4" />
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 p-3">
+                <MoneyMindLogo className="w-10 h-10" />
+              </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
                 Unlock Your Financial Potential
               </h1>
