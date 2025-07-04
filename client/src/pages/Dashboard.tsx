@@ -14,7 +14,7 @@ import {
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
 
-import ConnectedAccounts from '@/components/Dashboard/ConnectedAccounts';
+
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
 import SavingsGoalCard from '@/components/Dashboard/SavingsGoalCard';
 import IncomeSpendingReport from '@/components/Dashboard/IncomeSpendingReport';
@@ -327,12 +327,7 @@ export default function Dashboard() {
                 </TrialGate>
               </div>
               
-              {/* Connected Accounts */}
-              <div className="stagger-item">
-                <TrialGate feature="Account Overview" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-                  <ConnectedAccounts accounts={[]} />
-                </TrialGate>
-              </div>
+
             </div>
           </div>
           
