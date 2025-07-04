@@ -5,6 +5,7 @@ import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { User } from "@shared/schema";
 import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget } from "./openai";
+import OpenAI from "openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { servePlaidSDK } from "./plaid-proxy";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
@@ -20,6 +21,11 @@ import Stripe from "stripe";
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil',
+});
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Mock transaction data for the dashboard
