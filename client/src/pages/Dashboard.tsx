@@ -72,6 +72,12 @@ export default function Dashboard() {
     queryKey: ['/api/transactions'],
     select: (data) => data?.slice(0, 5) || [], // Take only first 5 transactions
   });
+
+  // Get spending trends data for chart
+  const { data: spendingTrendsData, isLoading: spendingTrendsLoading } = useQuery({
+    queryKey: ['/api/spending-trends'],
+    retry: false,
+  });
   
   // Handle connect account
   const handleConnectAccount = () => {
@@ -255,10 +261,28 @@ export default function Dashboard() {
               {/* Monthly Spending Trends */}
               <div className="stagger-item" data-tour="spending-trends">
                 <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-                  <SpendingTrends 
-                    spendingData={[]}
-                    categories={[]}
-                  />
+                  {spendingTrendsLoading ? (
+                    <div className="bg-white rounded-xl p-6 shadow-sm">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                        <div className="h-64 bg-gray-200 rounded mb-4"></div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="text-center">
+                              <div className="w-10 h-10 bg-gray-200 rounded-full mx-auto mb-2"></div>
+                              <div className="h-3 bg-gray-200 rounded mb-1"></div>
+                              <div className="h-4 bg-gray-200 rounded"></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <SpendingTrends 
+                      spendingData={spendingTrendsData?.spendingData || []}
+                      categories={spendingTrendsData?.categories || []}
+                    />
+                  )}
                 </TrialGate>
               </div>
               

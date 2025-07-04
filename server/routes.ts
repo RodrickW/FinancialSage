@@ -1020,6 +1020,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to generate budget recommendations' });
     }
   });
+
+  // Monthly spending trends endpoint - provides data for the trends chart
+  app.get('/api/spending-trends', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const transactions = await storage.getTransactions(user.id);
+      
+      if (transactions.length === 0) {
+        return res.json({
+          spendingData: [],
+          categories: []
+        });
+      }
+      
+      // Group transactions by month for the last 6 months
+      const now = new Date();
+      const monthlyData: Record<string, { income: number; expenses: number; month: string }> = {};
+      const categoryTotals: Record<string, number> = {};
+      
+      // Generate last 6 months
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
+        const monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        
+        monthlyData[monthKey] = {
+          income: 0,
+          expenses: 0,
+          month: monthLabel
+        };
+      }
+      
+      // Process transactions
+      transactions.forEach(transaction => {
+        const transactionDate = new Date(transaction.date);
+        const monthKey = transactionDate.toISOString().slice(0, 7);
+        
+        if (monthlyData[monthKey]) {
+          if (transaction.amount > 0) {
+            // Income
+            monthlyData[monthKey].income += transaction.amount;
+          } else {
+            // Expenses
+            monthlyData[monthKey].expenses += Math.abs(transaction.amount);
+            
+            // Track category spending
+            const category = transaction.category || 'Other';
+            categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(transaction.amount);
+          }
+        }
+      });
+      
+      // Convert to array format for chart
+      const spendingData = Object.values(monthlyData);
+      
+      // Create spending categories with icons and colors
+      const categoryColors = [
+        'bg-blue-500',
+        'bg-green-500', 
+        'bg-purple-500',
+        'bg-orange-500',
+        'bg-red-500',
+        'bg-yellow-500',
+        'bg-pink-500',
+        'bg-indigo-500'
+      ];
+      
+      const categoryIcons = [
+        'shopping_cart',
+        'home',
+        'restaurant',
+        'directions_car',
+        'local_gas_station',
+        'school',
+        'fitness_center',
+        'category'
+      ];
+      
+      const categories = Object.entries(categoryTotals)
+        .map(([name, amount], index) => ({
+          name,
+          amount,
+          color: categoryColors[index % categoryColors.length],
+          icon: categoryIcons[index % categoryIcons.length]
+        }))
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 8); // Top 8 categories
+      
+      res.json({
+        spendingData,
+        categories
+      });
+      
+    } catch (error) {
+      console.error('Error generating spending trends:', error);
+      res.status(500).json({ error: 'Failed to generate spending trends' });
+    }
+  });
   
   // Credit score analysis and improvement recommendations
   app.get('/api/ai/credit-score-analysis', requireAuth, async (req, res) => {
