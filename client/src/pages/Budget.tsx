@@ -81,6 +81,11 @@ export default function Budget() {
     queryKey: ['/api/transactions']
   });
 
+  // Get user's saved budget data from database
+  const { data: savedBudgets = [], isLoading: budgetsLoading } = useQuery({
+    queryKey: ['/api/budgets']
+  });
+
   // Define comprehensive budget categories based on Dave Ramsey's EveryDollar
   const defaultBudgetGroups: BudgetGroup[] = [
     {
@@ -160,9 +165,11 @@ export default function Budget() {
     },
     onSuccess: (data) => {
       updateBudgetWithAnalysis(data.categorizedSpending);
+      // Refresh budget data from database
+      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
       toast({
         title: "Spending Analysis Complete",
-        description: "Your budget has been updated with your actual spending patterns."
+        description: "Your budget has been updated with your actual spending patterns and saved."
       });
       setIsAnalyzing(false);
     },
@@ -241,12 +248,28 @@ export default function Budget() {
     });
   };
 
-  // Initialize with default categories
+  // Initialize budget data with saved data from database merged with defaults
   useEffect(() => {
-    if (budgetData.length === 0) {
-      setBudgetData(defaultBudgetGroups);
+    if (!budgetsLoading && budgetData.length === 0) {
+      // Merge saved budget data with default categories
+      const mergedGroups = defaultBudgetGroups.map(group => ({
+        ...group,
+        categories: group.categories.map(category => {
+          const savedBudget = savedBudgets.find(b => b.category === category.id);
+          if (savedBudget) {
+            return {
+              ...category,
+              plannedAmount: savedBudget.amount,
+              actualSpent: savedBudget.spent,
+              remaining: savedBudget.remaining || (savedBudget.amount - savedBudget.spent)
+            };
+          }
+          return category;
+        })
+      }));
+      setBudgetData(mergedGroups);
     }
-  }, []);
+  }, [savedBudgets, budgetsLoading]);
 
   // Set current month
   useEffect(() => {

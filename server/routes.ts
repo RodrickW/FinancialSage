@@ -1606,6 +1606,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's saved budget data with spending analysis
+  app.get('/api/budgets', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const budgets = await storage.getBudgets(user.id);
+      res.json(budgets);
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+      res.status(500).json({ message: 'Failed to fetch budget data' });
+    }
+  });
+
+  // Save/update budget data
+  app.post('/api/budgets', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { budgets } = req.body;
+      
+      if (!Array.isArray(budgets)) {
+        return res.status(400).json({ message: 'Budgets array is required' });
+      }
+
+      // Clear existing budgets and save new ones
+      const existingBudgets = await storage.getBudgets(user.id);
+      
+      // Update or create budget entries
+      const updatedBudgets = [];
+      for (const budget of budgets) {
+        const existing = existingBudgets.find(b => b.category === budget.category);
+        if (existing) {
+          const updated = await storage.updateBudget(existing.id, {
+            amount: budget.amount,
+            spent: budget.spent,
+            remaining: budget.remaining,
+            icon: budget.icon
+          });
+          if (updated) updatedBudgets.push(updated);
+        } else {
+          const created = await storage.createBudget({
+            userId: user.id,
+            category: budget.category,
+            amount: budget.amount,
+            period: 'monthly',
+            spent: budget.spent,
+            remaining: budget.remaining,
+            icon: budget.icon
+          });
+          updatedBudgets.push(created);
+        }
+      }
+      
+      res.json(updatedBudgets);
+    } catch (error) {
+      console.error('Error saving budgets:', error);
+      res.status(500).json({ message: 'Failed to save budget data' });
+    }
+  });
+
   // AI spending analysis endpoint for comprehensive budget categorization
   app.post('/api/ai/analyze-spending', requireAuth, async (req, res) => {
     try {
@@ -1685,6 +1743,37 @@ Group similar transactions together and sum the amounts for each category. Only 
       const analysisResult = JSON.parse(response.choices[0].message.content || '{"categorizedSpending": []}');
       
       console.log('AI Spending Analysis Result:', analysisResult);
+      
+      // Save the analyzed spending data to the database
+      if (analysisResult.categorizedSpending && Array.isArray(analysisResult.categorizedSpending)) {
+        const existingBudgets = await storage.getBudgets(user.id);
+        
+        for (const categorySpending of analysisResult.categorizedSpending) {
+          const existing = existingBudgets.find(b => b.category === categorySpending.categoryId);
+          const spentAmount = Math.abs(categorySpending.amount);
+          
+          if (existing) {
+            // Update existing budget with new spending data
+            await storage.updateBudget(existing.id, {
+              spent: spentAmount,
+              remaining: existing.amount - spentAmount
+            });
+          } else {
+            // Create new budget entry with spending data
+            await storage.createBudget({
+              userId: user.id,
+              category: categorySpending.categoryId,
+              amount: 0, // No planned amount set yet
+              period: 'monthly',
+              spent: spentAmount,
+              remaining: -spentAmount, // Negative because no planned amount
+              icon: null
+            });
+          }
+        }
+        
+        console.log('Saved spending analysis to database for user:', user.id);
+      }
       
       res.json(analysisResult);
       
