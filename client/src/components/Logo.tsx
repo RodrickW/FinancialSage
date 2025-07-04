@@ -1,5 +1,5 @@
 import React from 'react';
-import moneyMindLogo from '@assets/042CC59E-4A7D-45FD-AF0D-01DB446C8817_1751662203818.png';
+import moneyMindLogo from '@assets/IMG_4113_1751662538398.png';
 
 export function ChessKingLogo({ className = "w-6 h-6", color = "text-white" }: { className?: string, color?: string }) {
   return (
