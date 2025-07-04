@@ -112,7 +112,7 @@ export default function FloatingCoach() {
               Ask Money Mind Coach
             </div>
             <div className="flex flex-col items-center">
-              <MessageCircle className="h-6 w-6" />
+              <MoneyMindLogo className="h-6 w-6" />
               <span className="text-[10px] font-bold mt-0.5">Coach</span>
             </div>
           </Button>
