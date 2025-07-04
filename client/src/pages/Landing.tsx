@@ -183,7 +183,7 @@ export default function Landing() {
               onClick={() => setLocation('/login')}
               className="border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
             >
-              See Demo
+              Login/See Demo
             </Button>
           </div>
           

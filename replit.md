@@ -217,6 +217,12 @@ Changelog:
   * Applied new logo to landing page features, trial gate, floating coach, and subscription page
   * Enhanced visual consistency across TopNav, authentication pages, and privacy page
   * Improved brand recognition with unified logo usage throughout entire application
+- July 4, 2025. Dashboard transaction display and landing page improvements:
+  * Fixed Dashboard Recent Transactions section to display 5 most recent transactions immediately
+  * Added real-time transaction data fetching from connected bank accounts
+  * Updated floating coach button to use full Money Mind logo instead of generic chat icon
+  * Changed landing page button from "See Demo" to "Login/See Demo" for better user experience
+  * Enhanced user flow for both existing customers and new visitors
 ```
 
 ## User Preferences
