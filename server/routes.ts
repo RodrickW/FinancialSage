@@ -1850,7 +1850,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name,
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount || '0'),
-        deadline: deadline || null
+        deadline: deadline ? new Date(deadline) : null
       };
       
       const newGoal = await storage.createSavingsGoal(goalData);
@@ -1886,7 +1886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name,
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount || '0'),
-        deadline: deadline || null
+        deadline: deadline ? new Date(deadline) : null
       };
       
       const updatedGoal = await storage.updateSavingsGoal(goalId, updateData);
