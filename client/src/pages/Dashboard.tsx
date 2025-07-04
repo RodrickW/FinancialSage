@@ -24,7 +24,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
 import TrialNotificationBanner from '@/components/TrialNotificationBanner';
-import { UserProfile, FinancialOverviewData } from '@/types';
+import { UserProfile, FinancialOverviewData, Transaction } from '@/types';
 import { Link } from 'wouter';
 
 // Removed all mock data imports - using real API data only
@@ -65,6 +65,12 @@ export default function Dashboard() {
   // Get the financial overview data
   const { data: financialData, isLoading: financialLoading, error: financialError } = useQuery<any>({
     queryKey: ['/api/financial-overview']
+  });
+
+  // Get recent transactions (limit 5 for dashboard display)
+  const { data: recentTransactions, isLoading: transactionsLoading } = useQuery<any[]>({
+    queryKey: ['/api/transactions'],
+    select: (data) => data?.slice(0, 5) || [], // Take only first 5 transactions
   });
   
   // Handle connect account
@@ -259,7 +265,11 @@ export default function Dashboard() {
               {/* Recent Transactions */}
               <div className="stagger-item" data-tour="transactions">
                 <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-                  <RecentTransactions transactions={[]} />
+                  {transactionsLoading ? (
+                    <TransactionsSkeleton />
+                  ) : (
+                    <RecentTransactions transactions={recentTransactions || []} />
+                  )}
                 </TrialGate>
               </div>
             </div>
