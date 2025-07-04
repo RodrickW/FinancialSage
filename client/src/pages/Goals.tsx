@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserProfile } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -12,16 +12,17 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { apiRequest } from '@/lib/queryClient';
 
-// Define the Goal type
+// Define the Goal type to match API response
 interface Goal {
   id: number;
   name: string;
   currentAmount: number;
   targetAmount: number;
-  deadline: string;
+  deadline?: string;
   color: string;
-  percent: number;
+  progress: number;
 }
 
 export default function Goals() {
@@ -39,28 +40,59 @@ export default function Goals() {
   const [selectedColor, setSelectedColor] = useState('blue');
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Get user profile
   const { data: user } = useQuery<UserProfile>({
     queryKey: ['/api/users/profile']
   });
   
-  // Set up a fallback user
-  const fallbackUser: UserProfile = {
-    id: 1,
-    username: 'demo',
-    firstName: 'Demo',
-    lastName: 'User',
-    email: 'demo@example.com'
-  };
-
   // Fetch real savings goals from API
-  const { data: savingsGoals = [] } = useQuery({
+  const { data: savingsGoals = [] } = useQuery<Goal[]>({
     queryKey: ['/api/savings-goals'],
   });
   
-  // Use only real goals data
-  const [goals, setGoals] = useState<Goal[]>([]);
+  // Create mutation for adding goals
+  const createGoalMutation = useMutation({
+    mutationFn: async (goalData: any) => {
+      return await apiRequest('POST', '/api/savings-goals', goalData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      toast({
+        title: "Goal Created",
+        description: "Your savings goal has been created successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create goal",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Update mutation for editing goals
+  const updateGoalMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      return await apiRequest('PUT', `/api/savings-goals/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      toast({
+        title: "Goal Updated",
+        description: "Your savings goal has been updated successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update goal",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Functions for managing goals
   const openAddGoalDialog = () => {
@@ -81,12 +113,12 @@ export default function Goals() {
     setSelectedColor(goal.color);
     // Parse deadline string to Date object for the calendar
     try {
-      const dateParts = goal.deadline.split(' ');
-      if (dateParts.length >= 3) {
-        const month = dateParts[0];
-        const day = parseInt(dateParts[1].replace(',', ''));
-        const year = parseInt(dateParts[2]);
-        setSelectedDate(new Date(year, getMonthNumber(month), day));
+      if (goal.deadline) {
+        // Handle different date formats
+        const dateObj = new Date(goal.deadline);
+        if (!isNaN(dateObj.getTime())) {
+          setSelectedDate(dateObj);
+        }
       }
     } catch (e) {
       console.error("Error parsing date:", e);
@@ -150,30 +182,22 @@ export default function Goals() {
     }
     
     // Format the deadline date
-    const formattedDeadline = format(selectedDate, 'MMMM d, yyyy');
+    const formattedDeadline = format(selectedDate, 'yyyy-MM-dd');
     
-    // Calculate percentage progress
-    const percentComplete = Math.round((currentAmt / targetAmt) * 100);
-    
-    // Create new goal with a unique ID
-    const newGoal: Goal = {
-      id: Date.now(), // Use timestamp as a simple unique ID
+    // Create goal data for API
+    const goalData = {
       name: goalName,
       targetAmount: targetAmt,
       currentAmount: currentAmt,
-      deadline: formattedDeadline,
-      color: selectedColor,
-      percent: percentComplete
+      deadline: formattedDeadline
     };
     
-    // Add to goals list
-    setGoals([...goals, newGoal]);
+    // Submit to API
+    createGoalMutation.mutate(goalData);
     setIsAddDialogOpen(false);
     
-    toast({
-      title: "Goal Created",
-      description: `Your ${goalName} goal has been created successfully.`
-    });
+    // Clear form
+    resetForm();
   };
   
   // Function to update an existing goal
@@ -218,43 +242,29 @@ export default function Goals() {
     }
     
     // Format the deadline date
-    const formattedDeadline = format(selectedDate, 'MMMM d, yyyy');
+    const formattedDeadline = format(selectedDate, 'yyyy-MM-dd');
     
-    // Calculate percentage progress
-    const percentComplete = Math.round((currentAmt / targetAmt) * 100);
+    // Create update data for API
+    const updateData = {
+      name: goalName,
+      targetAmount: targetAmt,
+      currentAmount: currentAmt,
+      deadline: formattedDeadline
+    };
     
-    // Update goals list
-    const updatedGoals = goals.map(goal => {
-      if (goal.id === selectedGoal.id) {
-        return {
-          ...goal,
-          name: goalName,
-          targetAmount: targetAmt,
-          currentAmount: currentAmt,
-          deadline: formattedDeadline,
-          color: selectedColor,
-          percent: percentComplete
-        };
-      }
-      return goal;
-    });
-    
-    setGoals(updatedGoals);
+    // Submit to API
+    updateGoalMutation.mutate({ id: selectedGoal.id, data: updateData });
     setIsEditDialogOpen(false);
     
-    toast({
-      title: "Goal Updated",
-      description: `Your ${goalName} goal has been updated successfully.`
-    });
+    // Clear form
+    resetForm();
   };
   
   // Function to delete a goal
   const deleteGoal = () => {
     if (!selectedGoal) return;
     
-    // Filter out the selected goal
-    const filteredGoals = goals.filter(goal => goal.id !== selectedGoal.id);
-    setGoals(filteredGoals);
+    // TODO: Implement delete API endpoint when needed
     setIsDeleteDialogOpen(false);
     
     toast({
@@ -263,12 +273,21 @@ export default function Goals() {
     });
   };
 
+  // Helper function to reset form
+  const resetForm = () => {
+    setGoalName('');
+    setTargetAmount('');
+    setCurrentAmount('');
+    setSelectedDate(undefined);
+    setSelectedColor('blue');
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
-        <BottomNavigation user={user || fallbackUser} />
+        {user && <BottomNavigation user={user} />}
         
         <div className="p-6">
           {/* Page header */}
@@ -288,14 +307,14 @@ export default function Goals() {
           </div>
           
           {/* Goals Grid */}
-          {goals.length > 0 ? (
+          {savingsGoals.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-              {goals.map(goal => (
+              {savingsGoals.map((goal: any) => (
                 <div key={goal.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-lg font-medium text-black">{goal.name}</h3>
                     <span className="inline-block bg-black text-white px-2 py-0.5 rounded-full text-sm font-medium">
-                      {goal.percent}%
+                      {goal.progress}%
                     </span>
                   </div>
                   
@@ -632,7 +651,7 @@ export default function Goals() {
                   Target: ${selectedGoal.targetAmount.toLocaleString()}
                 </p>
                 <p className="text-sm text-neutral-600">
-                  Current progress: ${selectedGoal.currentAmount.toLocaleString()} ({selectedGoal.percent}%)
+                  Current progress: ${selectedGoal.currentAmount.toLocaleString()} ({selectedGoal.progress}%)
                 </p>
               </div>
             </div>

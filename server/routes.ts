@@ -1834,6 +1834,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create savings goal
+  app.post("/api/savings-goals", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { name, targetAmount, currentAmount, deadline } = req.body;
+      
+      // Validate required fields
+      if (!name || !targetAmount) {
+        return res.status(400).json({ message: "Name and target amount are required" });
+      }
+      
+      const goalData = {
+        userId: user.id,
+        name,
+        targetAmount: parseFloat(targetAmount),
+        currentAmount: parseFloat(currentAmount || '0'),
+        deadline: deadline || null
+      };
+      
+      const newGoal = await storage.createSavingsGoal(goalData);
+      
+      res.status(201).json({
+        id: newGoal.id,
+        name: newGoal.name,
+        currentAmount: newGoal.currentAmount || 0,
+        targetAmount: newGoal.targetAmount || 0,
+        deadline: newGoal.deadline,
+        progress: newGoal.targetAmount > 0 ? Math.round(((newGoal.currentAmount || 0) / newGoal.targetAmount) * 100) : 0,
+        color: 'blue' // Default color
+      });
+    } catch (error) {
+      console.error("Error creating savings goal:", error);
+      res.status(500).json({ message: "Failed to create savings goal" });
+    }
+  });
+
+  // Update savings goal
+  app.put("/api/savings-goals/:id", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const goalId = parseInt(req.params.id);
+      const { name, targetAmount, currentAmount, deadline } = req.body;
+      
+      // Validate required fields
+      if (!name || !targetAmount) {
+        return res.status(400).json({ message: "Name and target amount are required" });
+      }
+      
+      const updateData = {
+        name,
+        targetAmount: parseFloat(targetAmount),
+        currentAmount: parseFloat(currentAmount || '0'),
+        deadline: deadline || null
+      };
+      
+      const updatedGoal = await storage.updateSavingsGoal(goalId, updateData);
+      
+      if (!updatedGoal) {
+        return res.status(404).json({ message: "Savings goal not found" });
+      }
+      
+      res.json({
+        id: updatedGoal.id,
+        name: updatedGoal.name,
+        currentAmount: updatedGoal.currentAmount || 0,
+        targetAmount: updatedGoal.targetAmount || 0,
+        deadline: updatedGoal.deadline,
+        progress: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0,
+        color: 'blue' // Default color
+      });
+    } catch (error) {
+      console.error("Error updating savings goal:", error);
+      res.status(500).json({ message: "Failed to update savings goal" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
