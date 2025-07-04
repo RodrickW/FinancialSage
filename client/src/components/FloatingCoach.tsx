@@ -104,18 +104,15 @@ export default function FloatingCoach() {
       {/* Chat Icon Button with tooltip */}
       {!isOpen && (
         <div className="relative group">
-          <Button 
+          <button 
             onClick={() => setIsOpen(true)}
-            className="h-14 w-14 rounded-full shadow-lg bg-app-gradient text-white p-0 flex items-center justify-center"
+            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 cursor-pointer"
           >
             <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded py-1 px-2 w-max opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               Ask Money Mind Coach
             </div>
-            <div className="flex flex-col items-center">
-              <MoneyMindLogo className="h-6 w-6" />
-              <span className="text-[10px] font-bold mt-0.5">Coach</span>
-            </div>
-          </Button>
+            <MoneyMindLogo className="h-14 w-14 rounded-full" />
+          </button>
           
           {/* First-time intro notification */}
           {showIntroMessage && (
