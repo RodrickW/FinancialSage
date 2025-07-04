@@ -175,7 +175,7 @@ function App() {
         });
         setIsLoggedIn(response.ok);
       } catch (error) {
-        console.error('Login check failed:', error);
+        // Silently handle network errors to prevent console spam
         setIsLoggedIn(false);
       }
     };
