@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { logout, redirectToLogin } from '@/lib/auth';
 import { ChessCrownLogo } from '@/components/Logo';
 import { NotificationDrawer } from '@/components/ui/notification-drawer';
+import { useQuery } from '@tanstack/react-query';
 
 interface TopNavProps {
   title: string;
@@ -12,6 +13,12 @@ interface TopNavProps {
 export default function TopNav({ title, isPremium = false }: TopNavProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Get user profile to check admin status
+  const { data: user } = useQuery({
+    queryKey: ['/api/users/profile'],
+    retry: false,
+  });
   
   return (
     <header className="bg-white border-b border-gray-200 text-black py-4 px-6">
@@ -93,10 +100,12 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
               <span className="material-icons mr-3">feedback</span>
               Feedback
             </a>
-            <a href="/admin" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
-              <span className="material-icons mr-3">admin_panel_settings</span>
-              Admin
-            </a>
+            {user?.isAdmin && (
+              <a href="/admin" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
+                <span className="material-icons mr-3">admin_panel_settings</span>
+                Admin
+              </a>
+            )}
             <a href="/install" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">get_app</span>
               Install App

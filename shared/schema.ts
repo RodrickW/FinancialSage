@@ -25,6 +25,9 @@ export const users = pgTable("users", {
   hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
   hasSeenTour: boolean("has_seen_tour").default(false),
   loginCount: integer("login_count").default(0),
+  
+  // Admin access
+  isAdmin: boolean("is_admin").default(false),
 });
 
 // Connected account schema (bank accounts via Plaid)

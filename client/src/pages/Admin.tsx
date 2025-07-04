@@ -25,6 +25,27 @@ export default function Admin() {
     retry: false,
   });
 
+  // Handle admin access denied
+  if (error && error.message.includes('403')) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center text-red-600">Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 mb-4">
+              You don't have permission to access the admin panel. Only administrators can view user feedback.
+            </p>
+            <a href="/dashboard" className="text-blue-600 hover:underline">
+              Return to Dashboard
+            </a>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const getRatingStars = (rating: number | null) => {
     if (!rating) return null;
     return (

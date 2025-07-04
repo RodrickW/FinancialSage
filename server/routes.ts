@@ -118,6 +118,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: 'Unauthorized' });
   };
 
+  // Admin middleware
+  const requireAdmin = async (req: any, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = req.user as User;
+    if (!user.isAdmin) {
+      logSecurityEvent('ADMIN_ACCESS_DENIED', user.id, { endpoint: req.path });
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    next();
+  };
+
   // Create demo user if it doesn't exist
   try {
     const existingUser = await storage.getUserByUsername('demo');
@@ -1574,10 +1589,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/feedback", requireAuth, async (req, res) => {
+  app.get("/api/feedback", requireAuth, requireAdmin, async (req, res) => {
     try {
-      // For now, allow all authenticated users to view feedback
-      // You can add admin checks later if needed
+      // Only admin users can view all feedback
       const allFeedback = await storage.getFeedback();
       res.json(allFeedback);
     } catch (error) {
