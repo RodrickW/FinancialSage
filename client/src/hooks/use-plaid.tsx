@@ -79,12 +79,20 @@ export function usePlaidAuth(onConnectionSuccess?: () => void) {
         throw new Error(data.error || 'Failed to exchange token');
       }
       
-      // Invalidate accounts query to fetch the new accounts
-      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      // Small delay to ensure database updates are complete
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // Refresh all financial data after new account connection
+      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
+      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
+      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
+      queryClient.refetchQueries({ queryKey: ['/api/spending-trends'] });
+      queryClient.refetchQueries({ queryKey: ['/api/savings-goals'] });
+      queryClient.refetchQueries({ queryKey: ['/api/budgets'] });
       
       toast({
         title: 'Success',
-        description: 'Your account has been connected successfully!',
+        description: 'Your account has been connected successfully! All data is being updated.',
         variant: 'default',
       });
       

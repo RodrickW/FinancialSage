@@ -178,11 +178,13 @@ export default function Budget() {
 
   // Update budget categories with analyzed spending
   const updateBudgetWithAnalysis = (analysis: SpendingAnalysis[]) => {
+    console.log('Updating budget with analysis:', analysis);
     const updatedGroups = defaultBudgetGroups.map(group => ({
       ...group,
       categories: group.categories.map(category => {
         const spending = analysis.find(a => a.categoryId === category.id);
         const actualSpent = spending ? Math.abs(spending.amount) : 0;
+        console.log(`Category ${category.id}: ${spending ? `found spending of $${actualSpent}` : 'no spending found'}`);
         return {
           ...category,
           actualSpent,
@@ -190,6 +192,7 @@ export default function Budget() {
         };
       })
     }));
+    console.log('Updated budget groups:', updatedGroups);
     setBudgetData(updatedGroups);
   };
 

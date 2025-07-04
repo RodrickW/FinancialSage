@@ -60,13 +60,21 @@ export default function Accounts() {
     mutationFn: async (accountId: number) => {
       return await apiRequest('DELETE', `/api/accounts/${accountId}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+    onSuccess: async () => {
+      // Small delay to ensure database cleanup is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Refresh all financial data after account disconnection
+      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
+      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
+      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
+      queryClient.refetchQueries({ queryKey: ['/api/spending-trends'] });
+      queryClient.refetchQueries({ queryKey: ['/api/savings-goals'] });
+      queryClient.refetchQueries({ queryKey: ['/api/budgets'] });
+      
       toast({
         title: "Account Disconnected",
-        description: "Your account has been successfully disconnected.",
+        description: "Your account has been successfully disconnected. All data has been updated.",
       });
       setDisconnectDialogOpen(false);
       setAccountToDisconnect(null);
