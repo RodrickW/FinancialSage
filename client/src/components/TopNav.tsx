@@ -93,6 +93,10 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
               <span className="material-icons mr-3">feedback</span>
               Feedback
             </a>
+            <a href="/admin" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
+              <span className="material-icons mr-3">admin_panel_settings</span>
+              Admin
+            </a>
             <a href="/install" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">get_app</span>
               Install App

@@ -28,6 +28,7 @@ import SubscriptionCancel from "@/pages/SubscriptionCancel";
 import Feedback from "@/pages/Feedback";
 import CancelTrial from "@/pages/CancelTrial";
 import InstallApp from "@/pages/InstallApp";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -139,6 +140,9 @@ function Router() {
       </Route>
       <Route path="/feedback">
         {(params) => <ProtectedRoute component={Feedback} params={params} />}
+      </Route>
+      <Route path="/admin">
+        {(params) => <ProtectedRoute component={Admin} params={params} />}
       </Route>
       <Route path="/install">
         {(params) => <ProtectedRoute component={InstallApp} params={params} />}

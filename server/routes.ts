@@ -1804,13 +1804,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savingsGoals = await storage.getSavingsGoals(user.id);
       
       // Transform data to match the expected interface for the component
-      const formattedGoals = savingsGoals.map(goal => ({
+      const formattedGoals = savingsGoals.map((goal, index) => ({
         id: goal.id,
         name: goal.name,
         currentAmount: goal.currentAmount || 0,
         targetAmount: goal.targetAmount || 0,
         progress: goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0,
-        color: goal.color || 'blue'
+        color: ['blue', 'green', 'purple'][index % 3] // Assign colors in rotation
       }));
       
       res.json(formattedGoals);
