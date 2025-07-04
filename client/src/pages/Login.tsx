@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +20,7 @@ const loginSchema = z.object({
   password: z.string().min(1, {
     message: 'Password is required',
   }),
+  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -33,8 +35,18 @@ export default function Login() {
     defaultValues: {
       username: '',
       password: '',
+      rememberMe: false,
     },
   });
+
+  // Load saved username on component mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('mindMyMoney_savedUsername');
+    if (savedUsername) {
+      form.setValue('username', savedUsername);
+      form.setValue('rememberMe', true);
+    }
+  }, [form]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -45,11 +57,21 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password
+        }),
         credentials: 'include'
       });
       
       if (response.ok) {
+        // Handle remember me functionality
+        if (data.rememberMe) {
+          localStorage.setItem('mindMyMoney_savedUsername', data.username);
+        } else {
+          localStorage.removeItem('mindMyMoney_savedUsername');
+        }
+
         toast({
           title: 'Login successful',
           description: 'Welcome to Money Mind!',
@@ -141,6 +163,25 @@ export default function Login() {
                       <Input type="password" placeholder="Enter password" {...field} />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rememberMe"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-normal">
+                        Remember my username
+                      </FormLabel>
+                    </div>
                   </FormItem>
                 )}
               />
