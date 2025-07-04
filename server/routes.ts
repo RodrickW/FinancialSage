@@ -1600,6 +1600,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI spending analysis endpoint for comprehensive budget categorization
+  app.post('/api/ai/analyze-spending', requireAuth, async (req, res) => {
+    try {
+      const { transactions } = req.body;
+      const user = req.user as User;
+      
+      if (!transactions || !Array.isArray(transactions)) {
+        return res.status(400).json({ message: 'Transactions array is required' });
+      }
+
+      // Define comprehensive budget category mapping for AI analysis
+      const budgetCategories = {
+        "tithe": ["tithe", "church", "religious", "donation", "offering"],
+        "charitable_giving": ["charity", "donation", "goodwill", "salvation army", "united way"],
+        "emergency_fund": ["savings", "emergency", "money market"],
+        "retirement": ["401k", "roth", "retirement", "pension", "ira"],
+        "college_fund": ["college", "tuition", "education", "student"],
+        "mortgage_rent": ["mortgage", "rent", "housing", "apartment", "lease"],
+        "utilities": ["electric", "electricity", "water", "sewer", "trash", "utility"],
+        "phone": ["phone", "cell", "mobile", "verizon", "att", "tmobile"],
+        "internet": ["internet", "wifi", "broadband", "cable internet"],
+        "cable": ["cable", "streaming", "netflix", "hulu", "spotify", "disney"],
+        "car_payment": ["car payment", "auto loan", "vehicle", "honda", "toyota", "ford"],
+        "auto_insurance": ["auto insurance", "car insurance", "geico", "progressive", "state farm"],
+        "gas": ["gas", "fuel", "gasoline", "shell", "exxon", "chevron", "bp"],
+        "maintenance": ["auto repair", "car wash", "oil change", "tire", "mechanic"],
+        "groceries": ["grocery", "food", "walmart", "target", "kroger", "safeway", "whole foods"],
+        "restaurants": ["restaurant", "dining", "fast food", "starbucks", "mcdonald", "pizza"],
+        "clothing": ["clothing", "clothes", "shirt", "shoes", "department store"],
+        "personal_care": ["haircut", "salon", "beauty", "cosmetics", "pharmacy"],
+        "health_fitness": ["gym", "fitness", "doctor", "medical", "health", "hospital"],
+        "entertainment": ["movie", "theater", "concert", "entertainment", "games"],
+        "miscellaneous": ["amazon", "online", "purchase", "shopping"],
+        "travel": ["hotel", "flight", "vacation", "travel", "airbnb"],
+        "credit_cards": ["credit card", "visa", "mastercard", "amex"],
+        "student_loans": ["student loan", "education loan", "navient"],
+        "other_debt": ["loan", "debt", "payment", "finance"]
+      };
+
+      // Use AI to categorize transactions
+      const prompt = `
+Analyze these financial transactions and categorize them into the following comprehensive budget categories based on Dave Ramsey's EveryDollar system. 
+
+Available categories:
+${Object.keys(budgetCategories).join(', ')}
+
+Transactions to analyze:
+${transactions.map(t => `${t.description || t.merchant_name || 'Unknown'}: $${Math.abs(t.amount)}`).slice(0, 20).join('\n')}
+
+For each transaction, determine the most appropriate category based on the description/merchant. Return a JSON object with this structure:
+{
+  "categorizedSpending": [
+    {"categoryId": "groceries", "amount": 150.50},
+    {"categoryId": "gas", "amount": 45.20}
+  ]
+}
+
+Group similar transactions together and sum the amounts for each category. Only include categories that have actual spending.
+`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: "You are a financial analyst expert at categorizing transactions into budget categories. Respond only with valid JSON."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.3
+      });
+
+      const analysisResult = JSON.parse(response.choices[0].message.content || '{"categorizedSpending": []}');
+      
+      console.log('AI Spending Analysis Result:', analysisResult);
+      
+      res.json(analysisResult);
+      
+    } catch (error) {
+      console.error('Error analyzing spending:', error);
+      res.status(500).json({ message: 'Failed to analyze spending' });
+    }
+  });
+
   // Handle successful trial signup return from Stripe
   app.get("/subscription/success", async (req, res) => {
     const sessionId = req.query.session_id as string;

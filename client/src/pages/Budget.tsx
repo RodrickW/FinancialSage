@@ -7,779 +7,458 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { apiRequest } from '@/lib/queryClient';
 import { 
-  CircleDollarSign, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  ShoppingCart, 
   Home, 
   Car, 
   Utensils, 
-  Gift, 
-  PiggyBank, 
-  Wrench, 
+  ShoppingCart,
+  Zap,
+  Phone,
   Wifi,
-  Check
+  Heart,
+  GraduationCap,
+  PiggyBank,
+  Gift,
+  Coffee,
+  Gamepad2,
+  Plane,
+  DollarSign,
+  CreditCard,
+  FileText,
+  Shield,
+  Wrench,
+  Baby,
+  TrendingUp,
+  Banknote,
+  Plus,
+  Edit3,
+  Target,
+  Wallet
 } from 'lucide-react';
 
-// Budget category interface
+// Comprehensive budget category structure based on Dave Ramsey's EveryDollar
+interface BudgetGroup {
+  name: string;
+  categories: BudgetCategory[];
+}
+
 interface BudgetCategory {
-  id: number;
+  id: string;
   name: string;
   icon: JSX.Element;
-  color: string;
-  allocated: number;
-  spent: number;
+  plannedAmount: number;
+  actualSpent: number;
   remaining: number;
-  percentUsed: number;
+}
+
+interface SpendingAnalysis {
+  categoryId: string;
+  amount: number;
 }
 
 export default function Budget() {
   const [currentMonth, setCurrentMonth] = useState('');
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [budgetData, setBudgetData] = useState<BudgetGroup[]>([]);
   const { toast } = useToast();
-  
-  // Add category dialog state
-  const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
-  const [aiRecommendationsDialogOpen, setAiRecommendationsDialogOpen] = useState(false);
-  const [aiRecommendationsLoading, setAiRecommendationsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Form state for adding a new category
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryIcon, setNewCategoryIcon] = useState('shopping');
-  const [newCategoryColor, setNewCategoryColor] = useState('blue');
-  const [newCategoryBudget, setNewCategoryBudget] = useState('');
-  const [newCategorySpent, setNewCategorySpent] = useState('0');
-  
-  // Format the current month
-  useEffect(() => {
-    const options: Intl.DateTimeFormatOptions = {
-      month: 'long',
-      year: 'numeric',
-    };
-    setCurrentMonth(new Date().toLocaleDateString('en-US', options));
-  }, []);
-  
-  // Get user data
-  const { data: userData } = useQuery({
-    queryKey: ['/api/users/profile'],
-  });
-  
-  // Fetch budget recommendations from AI
-  const { data: budgetRecommendations, isLoading: budgetLoading } = useQuery({
-    queryKey: ['/api/ai/budget-recommendations'],
+  // Get user profile
+  const { data: user } = useQuery<UserProfile>({
+    queryKey: ['/api/users/profile']
   });
 
-  // Get interview data and personalized plan from Money Mind coach
-  const { data: interviewData, isLoading: interviewLoading } = useQuery({
-    queryKey: ['/api/ai/interview/latest']
+  // Get user's actual spending data
+  const { data: transactions = [] } = useQuery({
+    queryKey: ['/api/transactions']
   });
-  
-  // Only use real user data from API
-  const user = userData;
-  
-  // Calculate total budget
-  const [totalBudget, setTotalBudget] = useState(0);
-  const [totalSpent, setTotalSpent] = useState(0);
-  const [totalRemaining, setTotalRemaining] = useState(0);
-  
-  // Available icons and colors for selection
-  const iconOptions = [
-    { value: 'shopping', label: 'Shopping', icon: <ShoppingCart className="h-4 w-4" /> },
-    { value: 'home', label: 'Housing', icon: <Home className="h-4 w-4" /> },
-    { value: 'food', label: 'Food', icon: <Utensils className="h-4 w-4" /> },
-    { value: 'car', label: 'Transportation', icon: <Car className="h-4 w-4" /> },
-    { value: 'entertainment', label: 'Entertainment', icon: <Gift className="h-4 w-4" /> },
-    { value: 'savings', label: 'Savings', icon: <PiggyBank className="h-4 w-4" /> },
-    { value: 'utilities', label: 'Utilities', icon: <Wifi className="h-4 w-4" /> },
-    { value: 'maintenance', label: 'Maintenance', icon: <Wrench className="h-4 w-4" /> },
+
+  // Define comprehensive budget categories based on Dave Ramsey's EveryDollar
+  const defaultBudgetGroups: BudgetGroup[] = [
+    {
+      name: "Giving",
+      categories: [
+        { id: "tithe", name: "Tithe", icon: <Heart className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "charitable_giving", name: "Charitable Giving", icon: <Gift className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Saving",
+      categories: [
+        { id: "emergency_fund", name: "Emergency Fund", icon: <Shield className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "retirement", name: "Retirement", icon: <TrendingUp className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "college_fund", name: "College Fund", icon: <GraduationCap className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Housing",
+      categories: [
+        { id: "mortgage_rent", name: "Mortgage/Rent", icon: <Home className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "utilities", name: "Utilities", icon: <Zap className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "phone", name: "Phone", icon: <Phone className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "internet", name: "Internet", icon: <Wifi className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "cable", name: "Cable/Streaming", icon: <Gamepad2 className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Transportation",
+      categories: [
+        { id: "car_payment", name: "Car Payment", icon: <Car className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "auto_insurance", name: "Auto Insurance", icon: <Shield className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "gas", name: "Gas & Fuel", icon: <Zap className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "maintenance", name: "Maintenance & Repairs", icon: <Wrench className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Food",
+      categories: [
+        { id: "groceries", name: "Groceries", icon: <ShoppingCart className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "restaurants", name: "Restaurants", icon: <Utensils className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Personal",
+      categories: [
+        { id: "clothing", name: "Clothing", icon: <ShoppingCart className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "personal_care", name: "Personal Care", icon: <Heart className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "health_fitness", name: "Health & Fitness", icon: <Heart className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Lifestyle",
+      categories: [
+        { id: "entertainment", name: "Entertainment", icon: <Gamepad2 className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "miscellaneous", name: "Miscellaneous", icon: <DollarSign className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "travel", name: "Travel", icon: <Plane className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    },
+    {
+      name: "Debt",
+      categories: [
+        { id: "credit_cards", name: "Credit Cards", icon: <CreditCard className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "student_loans", name: "Student Loans", icon: <GraduationCap className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 },
+        { id: "other_debt", name: "Other Debt", icon: <FileText className="w-4 h-4" />, plannedAmount: 0, actualSpent: 0, remaining: 0 }
+      ]
+    }
   ];
-  
-  const colorOptions = [
-    { value: 'black', label: 'Black', class: 'bg-black' },
-    { value: 'gray', label: 'Gray', class: 'bg-gray-600' },
-    { value: 'dark-gray', label: 'Dark Gray', class: 'bg-gray-800' },
-    { value: 'light-gray', label: 'Light Gray', class: 'bg-gray-400' },
-  ];
-  
-  // Use only real budget data from API
-  const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
-  
-  // Update totals whenever budget categories change
-  useEffect(() => {
-    const allocated = budgetCategories.reduce((sum, category) => sum + category.allocated, 0);
-    const spent = budgetCategories.reduce((sum, category) => sum + category.spent, 0);
-    
-    setTotalBudget(allocated);
-    setTotalSpent(spent);
-    setTotalRemaining(allocated - spent);
-  }, [budgetCategories]);
-  
-  // Handle adjusting a budget category
-  const handleAdjustBudget = (category: BudgetCategory) => {
-    setSelectedCategory(category);
-    setNewBudgetAmount(category.allocated.toString());
-    setAdjustDialogOpen(true);
-  };
-  
-  // Handle adding a new budget category
-  const handleAddCategory = () => {
-    if (!newCategoryName || !newCategoryBudget) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide a category name and budget amount",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const budget = parseFloat(newCategoryBudget);
-    const spent = parseFloat(newCategorySpent || '0');
-    
-    if (isNaN(budget) || budget <= 0) {
-      toast({
-        title: "Invalid Budget",
-        description: "Please enter a valid budget amount",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (isNaN(spent) || spent < 0) {
-      toast({
-        title: "Invalid Spent Amount",
-        description: "Please enter a valid spent amount",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Calculate the remaining and percent used
-    const remaining = budget - spent;
-    const percentUsed = spent > 0 ? Math.round((spent / budget) * 100) : 0;
-    
-    // Find the selected icon
-    const selectedIconOption = iconOptions.find(option => option.value === newCategoryIcon);
-    
-    // Find the selected color
-    const selectedColorOption = colorOptions.find(option => option.value === newCategoryColor);
-    
-    // Create new category
-    const newCategory: BudgetCategory = {
-      id: Date.now(), // Use timestamp as a simple unique ID
-      name: newCategoryName,
-      icon: selectedIconOption?.icon || <ShoppingCart className="h-5 w-5" />,
-      color: `bg-${selectedColorOption?.value || 'blue'}-500`,
-      allocated: budget,
-      spent: spent,
-      remaining: remaining,
-      percentUsed: percentUsed
-    };
-    
-    // Add new category to the list
-    setBudgetCategories([...budgetCategories, newCategory]);
-    
-    // Close the dialog and reset form
-    setAddCategoryDialogOpen(false);
-    setNewCategoryName('');
-    setNewCategoryIcon('shopping');
-    setNewCategoryColor('blue');
-    setNewCategoryBudget('');
-    setNewCategorySpent('0');
-    
-    toast({
-      title: "Category Added",
-      description: `${newCategoryName} has been added to your budget`,
-    });
-  };
-  
-  // Handle getting AI budget recommendations based on real spending data
-  const handleGetAiRecommendations = async () => {
-    setAiRecommendationsLoading(true);
-    
-    try {
-      const response = await fetch('/api/ai/create-budget', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create AI budget');
-      }
-      
-      const data = await response.json();
-      
-      if (data.success && data.budgetPlan) {
-        // Close dialog first
-        setAiRecommendationsDialogOpen(false);
-        
-        // Show success message
-        toast({
-          title: "Money Mind Created Your Budget!",
-          description: data.message,
-        });
-        
-        // Refresh the page to show new budget categories
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        throw new Error('Failed to process AI budget');
-      }
-      
-    } catch (error) {
-      console.error('Error creating AI budget:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create AI budget. Please ensure you have connected accounts with transaction data.",
-        variant: "destructive",
-      });
-    } finally {
-      setAiRecommendationsLoading(false);
-    }
-  };
 
-  // Function to determine progress bar color
-  const getProgressColor = (percentUsed: number): string => {
-    if (percentUsed >= 100) return '[&>div]:bg-red-500';
-    if (percentUsed >= 85) return '[&>div]:bg-yellow-500';
-    return '[&>div]:bg-blue-500';
-  };
-
-  // State for adjust dialog
-  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
-  const [newBudgetAmount, setNewBudgetAmount] = useState('');
-  
-  // Function to save budget adjustment
-  const saveBudgetAdjustment = () => {
-    if (!selectedCategory) return;
-    
-    const amount = parseFloat(newBudgetAmount);
-    if (isNaN(amount) || amount <= 0) {
+  // AI mutation to analyze spending and categorize transactions
+  const analyzeMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/ai/analyze-spending", {
+        transactions: transactions.slice(0, 50) // Last 50 transactions for analysis
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      updateBudgetWithAnalysis(data.categorizedSpending);
       toast({
-        title: "Invalid Budget",
-        description: "Please enter a valid budget amount",
+        title: "Spending Analysis Complete",
+        description: "Your budget has been updated with your actual spending patterns."
+      });
+      setIsAnalyzing(false);
+    },
+    onError: () => {
+      toast({
+        title: "Analysis Failed",
+        description: "Unable to analyze your spending patterns.",
         variant: "destructive"
       });
-      return;
+      setIsAnalyzing(false);
     }
-    
-    // Update the budget category
-    const updatedCategories = budgetCategories.map(cat => {
-      if (cat.id === selectedCategory.id) {
-        const newRemaining = amount - cat.spent;
-        const newPercentUsed = cat.spent > 0 ? Math.round((cat.spent / amount) * 100) : 0;
-        
+  });
+
+  // Update budget categories with analyzed spending
+  const updateBudgetWithAnalysis = (analysis: SpendingAnalysis[]) => {
+    const updatedGroups = defaultBudgetGroups.map(group => ({
+      ...group,
+      categories: group.categories.map(category => {
+        const spending = analysis.find(a => a.categoryId === category.id);
+        const actualSpent = spending ? Math.abs(spending.amount) : 0;
         return {
-          ...cat,
-          allocated: amount,
-          remaining: newRemaining,
-          percentUsed: newPercentUsed
+          ...category,
+          actualSpent,
+          remaining: category.plannedAmount - actualSpent
         };
-      }
-      return cat;
-    });
+      })
+    }));
+    setBudgetData(updatedGroups);
+  };
+
+  // Handle category amount editing
+  const handleEditCategory = (categoryId: string, currentAmount: number) => {
+    setEditingCategory(categoryId);
+    setEditAmount(currentAmount.toString());
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveAmount = () => {
+    if (!editingCategory) return;
     
-    setBudgetCategories(updatedCategories);
-    setAdjustDialogOpen(false);
-    
+    const amount = parseFloat(editAmount);
+    if (isNaN(amount) || amount < 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid positive number.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedGroups = budgetData.map(group => ({
+      ...group,
+      categories: group.categories.map(category => {
+        if (category.id === editingCategory) {
+          return {
+            ...category,
+            plannedAmount: amount,
+            remaining: amount - category.actualSpent
+          };
+        }
+        return category;
+      })
+    }));
+
+    setBudgetData(updatedGroups);
+    setIsEditDialogOpen(false);
+    setEditingCategory(null);
+    setEditAmount('');
+
     toast({
       title: "Budget Updated",
-      description: `The budget for ${selectedCategory.name} has been updated.`,
+      description: "Category amount has been updated successfully."
     });
   };
-  
-  // Load AI budget recommendations and convert them to budget categories
+
+  // Initialize with default categories
   useEffect(() => {
-    if (budgetRecommendations?.recommendations) {
-      try {
-        console.log("Budget recommendations received:", budgetRecommendations);
-        
-        // Convert AI recommendations to budget categories
-        const aiBasedCategories: BudgetCategory[] = budgetRecommendations.recommendations.map((rec: any, index: number) => {
-          const icons = [
-            <Home className="h-4 w-4" />,
-            <ShoppingCart className="h-4 w-4" />,
-            <PiggyBank className="h-4 w-4" />,
-            <Gift className="h-4 w-4" />
-          ];
-          
-          const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
-          
-          return {
-            id: Date.now() + index,
-            name: rec.category,
-            icon: icons[index % icons.length],
-            color: colors[index % colors.length],
-            allocated: rec.recommendedBudget,
-            spent: rec.currentSpending,
-            remaining: rec.recommendedBudget - rec.currentSpending,
-            percentUsed: rec.currentSpending > 0 ? Math.round((rec.currentSpending / rec.recommendedBudget) * 100) : 0
-          };
-        });
-        
-        setBudgetCategories(aiBasedCategories);
-        
-        // Update totals
-        const newTotalBudget = aiBasedCategories.reduce((sum, cat) => sum + cat.allocated, 0);
-        const newTotalSpent = aiBasedCategories.reduce((sum, cat) => sum + cat.spent, 0);
-        const newTotalRemaining = newTotalBudget - newTotalSpent;
-        
-        setTotalBudget(newTotalBudget);
-        setTotalSpent(newTotalSpent);
-        setTotalRemaining(newTotalRemaining);
-        
-      } catch (error) {
-        console.error("Error processing budget recommendations:", error);
-      }
+    if (budgetData.length === 0) {
+      setBudgetData(defaultBudgetGroups);
     }
-  }, [budgetRecommendations]);
-  
+  }, []);
+
+  // Set current month
+  useEffect(() => {
+    const now = new Date();
+    setCurrentMonth(now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
+  }, []);
+
+  // Calculate totals
+  const totalPlanned = budgetData.reduce((total, group) => 
+    total + group.categories.reduce((groupTotal, category) => groupTotal + category.plannedAmount, 0), 0
+  );
+
+  const totalSpent = budgetData.reduce((total, group) => 
+    total + group.categories.reduce((groupTotal, category) => groupTotal + category.actualSpent, 0), 0
+  );
+
+  const totalRemaining = totalPlanned - totalSpent;
+
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
-        <BottomNavigation user={userData} />
+        {user && <BottomNavigation user={user} />}
         
         <div className="p-6">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-black">Budget</h1>
-            <p className="text-gray-600">Manage your spending for {currentMonth}</p>
-          </div>
-
-          {/* Money Mind's Personalized Plan from Interview */}
-          {interviewData?.hasInterview && interviewData?.interview?.personalizedPlan && (
-            <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-md">
-              <CardHeader className="pb-3">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-sm font-bold">MM</span>
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                      Your Personalized Financial Plan
-                    </CardTitle>
-                    <p className="text-sm text-blue-700">Based on your Money Mind interview</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Plan Overview */}
-                  {interviewData.interview.personalizedPlan.planOverview && (
-                    <div className="bg-white/60 p-4 rounded-lg">
-                      <h4 className="font-medium text-blue-900 mb-2">Your Financial Plan</h4>
-                      <p className="text-sm text-blue-800">{interviewData.interview.personalizedPlan.planOverview}</p>
-                    </div>
-                  )}
-
-                  {/* Budget Categories from Plan */}
-                  {interviewData.interview.personalizedPlan.budgetPlan?.budgetCategories && (
-                    <div className="bg-white/60 p-4 rounded-lg">
-                      <h4 className="font-medium text-blue-900 mb-3">Recommended Budget Categories</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {interviewData.interview.personalizedPlan.budgetPlan.budgetCategories.map((category: any, index: number) => (
-                          <div key={index} className="bg-white p-3 rounded border border-blue-100">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="font-medium text-blue-900">{category.category}</span>
-                              <span className="text-sm font-bold text-blue-700">${category.amount}</span>
-                            </div>
-                            <p className="text-xs text-blue-600">{category.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Steps */}
-                  {interviewData.interview.personalizedPlan.actionSteps && (
-                    <div className="bg-white/60 p-4 rounded-lg">
-                      <h4 className="font-medium text-blue-900 mb-2">Next Steps</h4>
-                      <ul className="space-y-1">
-                        {interviewData.interview.personalizedPlan.actionSteps.map((step: string, index: number) => (
-                          <li key={index} className="text-sm text-blue-800 flex items-start">
-                            <Check className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                            {step}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Overall Budget Summary */}
-          <Card className="mb-6 bg-white border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold flex items-center text-black">
-                    <CircleDollarSign className="mr-2 h-5 w-5 text-gray-600" />
-                    Total Budget
-                  </h2>
-                  <p className="text-3xl font-bold mt-1 text-black">${totalBudget.toLocaleString()}</p>
-                </div>
-                
-                <div className="flex space-x-6">
-                  <div>
-                    <p className="text-sm text-gray-600">Spent</p>
-                    <p className="text-lg font-medium flex items-center text-black">
-                      <ArrowUpRight className="h-4 w-4 mr-1" />
-                      ${totalSpent.toLocaleString()}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-gray-600">Remaining</p>
-                    <p className="text-lg font-medium flex items-center text-black">
-                      <ArrowDownRight className="h-4 w-4 mr-1" />
-                      ${totalRemaining.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <Progress 
-                value={(totalSpent / totalBudget) * 100} 
-                className="h-2 bg-gray-200"
-              />
-              
-              <div className="flex justify-between mt-1 text-xs text-gray-600">
-                <span>0%</span>
-                <span>50%</span>
-                <span>100%</span>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* AI Budget Message */}
-          <div className="bg-black p-6 rounded-xl mb-6 text-white shadow-md">
-            <div className="flex">
-              <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4 shadow-inner">
-                <span className="material-icons text-2xl">psychology</span>
-              </div>
-              <div>
-                <h3 className="font-medium text-lg">Money Mind's Budget Recommendations</h3>
-                <p className="text-gray-200 mt-1">
-                  Based on your spending patterns, I've created personalized budget categories for you.
-                  These recommendations will help you reach your financial goals faster.
-                </p>
-                <p className="text-xs mt-2 text-gray-300">
-                  Note: Connect your bank account to get more accurate recommendations.
-                </p>
-              </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-black">Budget Tracker</h1>
+              <p className="text-gray-600">{currentMonth} • Real Spending Analysis</p>
             </div>
-          </div>
-          
-          {/* Budget Categories */}
-          <h2 className="text-xl font-semibold mb-4 text-black">Budget Categories</h2>
-          
-          {budgetLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {budgetCategories.map((category) => (
-                <Card key={category.id} className="overflow-hidden bg-white shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
-                  <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3 bg-white border border-gray-300 text-black shadow-sm">
-                        {category.icon}
-                      </div>
-                      <div>
-                        <CardTitle className="text-base text-black">{category.name}</CardTitle>
-                        <p className="text-sm text-gray-600">${category.allocated.toLocaleString()} allocated</p>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleAdjustBudget(category)}
-                      className="h-8 px-2 hover:bg-gray-100 hover:text-black transition-colors border-gray-300"
-                    >
-                      Adjust
-                    </Button>
-                  </CardHeader>
-                  
-                  <CardContent className="p-4 pt-0">
-                    <div className="mt-3">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm text-black">${category.spent.toFixed(2)} spent</span>
-                        <div className="flex items-center space-x-2">
-                          <Badge 
-                            variant={category.percentUsed >= 100 ? "destructive" : "outline"}
-                            className={category.percentUsed >= 100 ? "bg-black text-white" : 
-                                      category.percentUsed >= 85 ? "bg-gray-600 text-white" : 
-                                      "bg-gray-200 text-black"}
-                          >
-                            {category.percentUsed}%
-                          </Badge>
-                          <span className="text-sm text-right text-black">${category.remaining.toFixed(2)} left</span>
-                        </div>
-                      </div>
-                      
-                      <Progress 
-                        value={category.percentUsed} 
-                        className={`h-2 bg-neutral-100 ${getProgressColor(category.percentUsed)}`}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-          
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center mt-8 gap-4">
+            
             <Button 
-              onClick={() => setAddCategoryDialogOpen(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200"
+              onClick={() => {
+                setIsAnalyzing(true);
+                analyzeMutation.mutate();
+              }}
+              disabled={isAnalyzing || transactions.length === 0}
+              className="mt-4 md:mt-0 bg-blue-600 text-white hover:bg-blue-700"
             >
-              <span className="material-icons mr-2 text-sm">add</span>
-              Add Category
-            </Button>
-            <Button 
-              onClick={handleGetAiRecommendations}
-              disabled={aiRecommendationsLoading}
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
-            >
-              {aiRecommendationsLoading ? (
+              {isAnalyzing ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                  Creating Budget...
+                  Analyzing Spending...
                 </>
               ) : (
                 <>
-                  <PiggyBank className="mr-2 h-4 w-4" />
-                  Create AI Budget
+                  <Target className="w-4 h-4 mr-2" />
+                  Analyze My Spending
                 </>
               )}
             </Button>
           </div>
+
+          {/* Budget Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Planned</p>
+                    <p className="text-2xl font-bold text-green-600">${totalPlanned.toLocaleString()}</p>
+                  </div>
+                  <Target className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Spent</p>
+                    <p className="text-2xl font-bold text-red-600">${totalSpent.toLocaleString()}</p>
+                  </div>
+                  <Wallet className="w-8 h-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Remaining</p>
+                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ${totalRemaining.toLocaleString()}
+                    </p>
+                  </div>
+                  <PiggyBank className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Budget Categories */}
+          <div className="space-y-6">
+            {budgetData.map((group, groupIndex) => (
+              <Card key={group.name}>
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-800">
+                    {group.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {group.categories.map((category) => {
+                      const progressPercentage = category.plannedAmount > 0 
+                        ? Math.min((category.actualSpent / category.plannedAmount) * 100, 100)
+                        : 0;
+                      
+                      const isOverBudget = category.actualSpent > category.plannedAmount && category.plannedAmount > 0;
+                      
+                      return (
+                        <div key={category.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className="text-gray-600">
+                              {category.icon}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-gray-800">{category.name}</span>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm text-gray-600">
+                                    ${category.actualSpent.toLocaleString()} / ${category.plannedAmount.toLocaleString()}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditCategory(category.id, category.plannedAmount)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <Edit3 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              {category.plannedAmount > 0 && (
+                                <div className="space-y-1">
+                                  <Progress 
+                                    value={progressPercentage}
+                                    className={`h-2 ${isOverBudget ? 'bg-red-100' : 'bg-gray-200'}`}
+                                  />
+                                  <div className="flex justify-between text-xs">
+                                    <span className={isOverBudget ? 'text-red-600' : 'text-gray-500'}>
+                                      {progressPercentage.toFixed(0)}% used
+                                    </span>
+                                    <span className={`${category.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      ${Math.abs(category.remaining).toLocaleString()} {category.remaining >= 0 ? 'left' : 'over'}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Information Card */}
+          <Card className="mt-8 bg-blue-50 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-3">
+                <Target className="w-6 h-6 text-blue-600 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-blue-800 mb-2">How This Works</h3>
+                  <ul className="space-y-1 text-sm text-blue-700">
+                    <li>• Set your planned amounts for each category</li>
+                    <li>• Click "Analyze My Spending" to automatically populate actual spending</li>
+                    <li>• AI categorizes your real transactions into budget categories</li>
+                    <li>• Track your progress and see where you're over or under budget</li>
+                    <li>• Visit the Coach section for personalized financial recommendations</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
-      
-      {/* Add Category Dialog */}
-      <Dialog open={addCategoryDialogOpen} onOpenChange={setAddCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+
+      {/* Edit Category Amount Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center text-blue-700">
-              <span className="material-icons mr-2 text-blue-500">add</span>
-              Add Budget Category
-            </DialogTitle>
-            <DialogDescription>
-              Create a new budget category to track your spending.
-            </DialogDescription>
+            <DialogTitle>Edit Budget Amount</DialogTitle>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="category-name">Category Name</Label>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="amount">Planned Amount</Label>
               <Input
-                id="category-name"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="e.g., Entertainment, Subscriptions"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Category Icon</Label>
-              <Select value={newCategoryIcon} onValueChange={setNewCategoryIcon}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select an icon" />
-                </SelectTrigger>
-                <SelectContent>
-                  {iconOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex items-center">
-                        <span className="mr-2">{option.icon}</span>
-                        <span>{option.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Category Color</Label>
-              <Select value={newCategoryColor} onValueChange={setNewCategoryColor}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a color" />
-                </SelectTrigger>
-                <SelectContent>
-                  {colorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex items-center">
-                        <span className={`w-4 h-4 rounded-full mr-2 ${option.class}`}></span>
-                        <span>{option.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="budget-amount">Budget Amount ($)</Label>
-              <Input
-                id="budget-amount"
+                id="amount"
                 type="number"
-                value={newCategoryBudget}
-                onChange={(e) => setNewCategoryBudget(e.target.value)}
-                placeholder="e.g., 200"
-                min="0"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="spent-amount">Current Spent Amount ($)</Label>
-              <Input
-                id="spent-amount"
-                type="number"
-                value={newCategorySpent}
-                onChange={(e) => setNewCategorySpent(e.target.value)}
-                placeholder="e.g., 50"
-                min="0"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                placeholder="0.00"
+                className="mt-1"
               />
             </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddCategoryDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleAddCategory}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600"
-            >
-              Add Category
+            <Button onClick={handleSaveAmount}>
+              Save Amount
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Budget Adjustment Dialog */}
-      <Dialog open={adjustDialogOpen} onOpenChange={setAdjustDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-blue-700">
-              <span className="material-icons mr-2 text-blue-500">edit</span>
-              Adjust Budget
-            </DialogTitle>
-            <DialogDescription>
-              Update the budget allocation for {selectedCategory?.name}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-blue-700">Current Allocation:</span>
-                <span className="text-lg">${selectedCategory?.allocated.toLocaleString()}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-blue-700">Current Spending:</span>
-                <span className="text-lg text-red-500">${selectedCategory?.spent.toLocaleString()}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-blue-700">Remaining:</span>
-                <span className={`text-lg ${(selectedCategory?.remaining || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  ${selectedCategory?.remaining.toLocaleString()}
-                </span>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="budgetAmount">New Budget Amount ($)</Label>
-                <Input
-                  id="budgetAmount"
-                  type="number"
-                  value={newBudgetAmount}
-                  onChange={(e) => setNewBudgetAmount(e.target.value)}
-                  placeholder="Enter amount"
-                  min="0"
-                  step="10"
-                  className="w-full"
-                />
-              </div>
-              
-              {selectedCategory && parseFloat(newBudgetAmount) < selectedCategory.spent && (
-                <div className="p-3 bg-yellow-50 text-yellow-800 rounded-md text-sm">
-                  <span className="material-icons align-bottom mr-1 text-sm">warning</span>
-                  The new budget amount is less than your current spending. You may need to reduce spending in this category.
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAdjustDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={saveBudgetAdjustment}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600"
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* AI Recommendations Dialog */}
-      <Dialog open={aiRecommendationsDialogOpen} onOpenChange={setAiRecommendationsDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-blue-700">
-              <PiggyBank className="mr-2 h-5 w-5 text-purple-500" />
-              Money Mind AI Budget Creation
-            </DialogTitle>
-            <DialogDescription>
-              Analyzing your actual spending patterns from connected accounts to create personalized budget categories.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-8 flex flex-col items-center justify-center">
-            <div className="relative w-20 h-20 mb-4">
-              <div className="absolute inset-0 rounded-full border-t-4 border-b-4 border-purple-500 animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <PiggyBank className="h-8 w-8 text-purple-500" />
-              </div>
-            </div>
-            <p className="text-center text-purple-700">
-              Money Mind is analyzing your Wells Fargo transaction data...
-            </p>
-            <div className="mt-6 space-y-2 w-full">
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2" />
-                <p className="text-sm text-green-700">Reviewing transaction history</p>
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2" />
-                <p className="text-sm text-green-700">Categorizing spending patterns</p>
-              </div>
-              <div className="flex items-center">
-                <div className="h-4 w-4 border-t border-r border-purple-500 rounded-full animate-spin mr-2"></div>
-                <p className="text-sm text-purple-700">Creating personalized budget categories</p>
-              </div>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
