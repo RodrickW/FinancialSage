@@ -73,6 +73,11 @@ export default function Budget() {
   const { data: budgetRecommendations, isLoading: budgetLoading } = useQuery({
     queryKey: ['/api/ai/budget-recommendations'],
   });
+
+  // Get interview data and personalized plan from Money Mind coach
+  const { data: interviewData, isLoading: interviewLoading } = useQuery({
+    queryKey: ['/api/ai/interview/latest']
+  });
   
   // Only use real user data from API
   const user = userData;
@@ -291,12 +296,46 @@ export default function Budget() {
     });
   };
   
-  // Load AI budget recommendations (mock implementation for now)
+  // Load AI budget recommendations and convert them to budget categories
   useEffect(() => {
-    if (budgetRecommendations) {
+    if (budgetRecommendations?.recommendations) {
       try {
         console.log("Budget recommendations received:", budgetRecommendations);
-        // Here we would implement the real mapping from API data
+        
+        // Convert AI recommendations to budget categories
+        const aiBasedCategories: BudgetCategory[] = budgetRecommendations.recommendations.map((rec: any, index: number) => {
+          const icons = [
+            <Home className="h-4 w-4" />,
+            <ShoppingCart className="h-4 w-4" />,
+            <PiggyBank className="h-4 w-4" />,
+            <Gift className="h-4 w-4" />
+          ];
+          
+          const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
+          
+          return {
+            id: Date.now() + index,
+            name: rec.category,
+            icon: icons[index % icons.length],
+            color: colors[index % colors.length],
+            allocated: rec.recommendedBudget,
+            spent: rec.currentSpending,
+            remaining: rec.recommendedBudget - rec.currentSpending,
+            percentUsed: rec.currentSpending > 0 ? Math.round((rec.currentSpending / rec.recommendedBudget) * 100) : 0
+          };
+        });
+        
+        setBudgetCategories(aiBasedCategories);
+        
+        // Update totals
+        const newTotalBudget = aiBasedCategories.reduce((sum, cat) => sum + cat.allocated, 0);
+        const newTotalSpent = aiBasedCategories.reduce((sum, cat) => sum + cat.spent, 0);
+        const newTotalRemaining = newTotalBudget - newTotalSpent;
+        
+        setTotalBudget(newTotalBudget);
+        setTotalSpent(newTotalSpent);
+        setTotalRemaining(newTotalRemaining);
+        
       } catch (error) {
         console.error("Error processing budget recommendations:", error);
       }
@@ -316,6 +355,69 @@ export default function Budget() {
             <h1 className="text-2xl font-bold text-black">Budget</h1>
             <p className="text-gray-600">Manage your spending for {currentMonth}</p>
           </div>
+
+          {/* Money Mind's Personalized Plan from Interview */}
+          {interviewData?.hasInterview && interviewData?.interview?.personalizedPlan && (
+            <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-md">
+              <CardHeader className="pb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm font-bold">MM</span>
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                      Your Personalized Financial Plan
+                    </CardTitle>
+                    <p className="text-sm text-blue-700">Based on your Money Mind interview</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Plan Overview */}
+                  {interviewData.interview.personalizedPlan.planOverview && (
+                    <div className="bg-white/60 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">Your Financial Plan</h4>
+                      <p className="text-sm text-blue-800">{interviewData.interview.personalizedPlan.planOverview}</p>
+                    </div>
+                  )}
+
+                  {/* Budget Categories from Plan */}
+                  {interviewData.interview.personalizedPlan.budgetPlan?.budgetCategories && (
+                    <div className="bg-white/60 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-3">Recommended Budget Categories</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {interviewData.interview.personalizedPlan.budgetPlan.budgetCategories.map((category: any, index: number) => (
+                          <div key={index} className="bg-white p-3 rounded border border-blue-100">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-medium text-blue-900">{category.category}</span>
+                              <span className="text-sm font-bold text-blue-700">${category.amount}</span>
+                            </div>
+                            <p className="text-xs text-blue-600">{category.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Steps */}
+                  {interviewData.interview.personalizedPlan.actionSteps && (
+                    <div className="bg-white/60 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">Next Steps</h4>
+                      <ul className="space-y-1">
+                        {interviewData.interview.personalizedPlan.actionSteps.map((step: string, index: number) => (
+                          <li key={index} className="text-sm text-blue-800 flex items-start">
+                            <Check className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                            {step}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           {/* Overall Budget Summary */}
           <Card className="mb-6 bg-white border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300">

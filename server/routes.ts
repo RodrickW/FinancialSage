@@ -1172,8 +1172,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Interview responses are required' });
       }
       
-      // For now, we'll store the interview in the insights table
-      // In a real application, you might want a dedicated interview_responses table
+      // Get user's financial data to create personalized plan
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id);
+      
+      // Generate AI-powered personalized budget plan based on interview responses
+      const { createPersonalizedBudget } = await import('./openai');
+      const personalizedPlan = await createPersonalizedBudget({
+        userResponses: responses,
+        accounts,
+        transactions,
+        userId: user.id,
+        userName: user.firstName || user.username
+      });
+      
+      // Store the interview with the generated plan
       const interviewInsight = await storage.createInsight({
         userId: user.id,
         type: 'interview',
@@ -1182,6 +1195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: JSON.stringify({
           responses,
           completedAt,
+          personalizedPlan,
           summary: {
             goals: responses['financial-goals'] || [],
             situation: responses['current-situation'] || '',
@@ -1196,11 +1210,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: 'Interview responses saved successfully',
-        interviewId: interviewInsight.id 
+        interviewId: interviewInsight.id,
+        personalizedPlan 
       });
     } catch (error) {
       console.error('Error saving interview responses:', error);
       res.status(500).json({ message: 'Failed to save interview responses' });
+    }
+  });
+
+  // Get latest interview data and personalized plan
+  app.get('/api/ai/interview/latest', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Get all insights of type 'interview' for this user, ordered by creation date
+      const insights = await storage.getInsights(user.id);
+      const interviewInsights = insights.filter(insight => insight.type === 'interview');
+      
+      if (interviewInsights.length === 0) {
+        return res.json({ hasInterview: false });
+      }
+      
+      // Get the most recent interview
+      const latestInterview = interviewInsights.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0];
+      
+      const content = JSON.parse(latestInterview.content);
+      
+      res.json({
+        hasInterview: true,
+        interview: {
+          id: latestInterview.id,
+          completedAt: content.completedAt,
+          responses: content.responses,
+          personalizedPlan: content.personalizedPlan,
+          summary: content.summary
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching interview data:', error);
+      res.status(500).json({ message: 'Failed to fetch interview data' });
     }
   });
 
