@@ -1797,6 +1797,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get savings goals
+  app.get("/api/savings-goals", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const savingsGoals = await storage.getSavingsGoals(user.id);
+      
+      // Transform data to match the expected interface for the component
+      const formattedGoals = savingsGoals.map(goal => ({
+        id: goal.id,
+        name: goal.name,
+        currentAmount: goal.currentAmount || 0,
+        targetAmount: goal.targetAmount || 0,
+        progress: goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0,
+        color: goal.color || 'blue'
+      }));
+      
+      res.json(formattedGoals);
+    } catch (error) {
+      console.error("Error fetching savings goals:", error);
+      res.status(500).json({ message: "Failed to fetch savings goals" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
