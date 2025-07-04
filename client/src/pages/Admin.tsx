@@ -2,8 +2,10 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, MessageSquare, User, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Star, MessageSquare, User, Clock, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import { Link } from 'wouter';
 
 interface FeedbackItem {
   id: number;
@@ -77,6 +79,16 @@ export default function Admin() {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
+          
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Feedback Management</h1>
             <p className="text-gray-600">Review and manage user feedback</p>
@@ -106,6 +118,16 @@ export default function Admin() {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
+          
           <Card className="border-red-200">
             <CardContent className="p-6 text-center">
               <p className="text-red-600">Failed to load feedback. Please try again.</p>
@@ -119,6 +141,16 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link href="/dashboard">
+            <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Feedback Management</h1>
