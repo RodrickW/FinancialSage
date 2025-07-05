@@ -33,7 +33,7 @@ export const users = pgTable("users", {
 // Connected account schema (bank accounts via Plaid)
 export const accounts = pgTable("accounts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   accountName: text("account_name").notNull(),
   accountType: text("account_type").notNull(), // checking, savings, credit
   accountNumber: text("account_number").notNull(), // masked account number
@@ -48,8 +48,8 @@ export const accounts = pgTable("accounts", {
 // Transaction schema
 export const transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  accountId: integer("account_id").notNull().references(() => accounts.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  accountId: integer("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
   amount: doublePrecision("amount").notNull(),
   category: text("category").notNull(),
   description: text("description").notNull(),
@@ -61,7 +61,7 @@ export const transactions = pgTable("transactions", {
 // Budget schema
 export const budgets = pgTable("budgets", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   category: text("category").notNull(),
   amount: doublePrecision("amount").notNull(),
   period: text("period").notNull(), // monthly, weekly, etc.
@@ -73,7 +73,7 @@ export const budgets = pgTable("budgets", {
 // Financial insights schema for AI recommendations
 export const insights = pgTable("insights", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: text("type").notNull(), // spending, saving, investing, etc.
   title: text("title").notNull(),
   description: text("description").notNull(),
@@ -85,7 +85,7 @@ export const insights = pgTable("insights", {
 // Credit score schema
 export const creditScores = pgTable("credit_scores", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   score: integer("score").notNull(),
   rating: text("rating").notNull(), // poor, fair, good, excellent
   reportDate: timestamp("report_date").defaultNow().notNull(),
@@ -95,7 +95,7 @@ export const creditScores = pgTable("credit_scores", {
 // Savings goal schema
 export const savingsGoals = pgTable("savings_goals", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   targetAmount: doublePrecision("target_amount").notNull(),
   currentAmount: doublePrecision("current_amount").notNull().default(0),
@@ -106,7 +106,7 @@ export const savingsGoals = pgTable("savings_goals", {
 // Feedback schema for user feedback collection
 export const feedback = pgTable("feedback", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: text("type").notNull(), // 'bug', 'feature', 'general'
   title: text("title").notNull(),
   message: text("message").notNull(),
