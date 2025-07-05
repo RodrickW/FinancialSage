@@ -78,9 +78,9 @@ export default function Login() {
           variant: 'default',
         });
         
-        // Navigate to home (dashboard) after successful login
+        // Force page reload to ensure authentication state is properly updated
         setTimeout(() => {
-          navigate('/');
+          window.location.href = '/';
         }, 500);
       } else {
         const errorData = await response.json();
