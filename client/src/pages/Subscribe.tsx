@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 
 const plans = [
   {
-    name: "Standard",
+    name: "Mind My Money Standard",
     price: "$9.99",
     period: "month",
     description: "Complete financial management with AI coaching",
@@ -25,30 +25,13 @@ const plans = [
       "Advanced spending analytics",
       "Budget tracking & planning",
       "Goal setting & tracking",
+      "Real-time transaction sync",
+      "Personalized insights",
       "Email support"
     ],
     planType: "standard",
-    popular: false,
-    available: true
-  },
-  {
-    name: "Premium",
-    price: "Coming Soon",
-    period: "",
-    description: "Enhanced features and priority support",
-    features: [
-      "Everything in Standard",
-      "Credit score monitoring",
-      "Credit improvement recommendations",
-      "Advanced AI coaching & insights", 
-      "Investment recommendations",
-      "Priority support",
-      "Advanced analytics & reports",
-      "Custom financial planning"
-    ],
-    planType: "premium",
     popular: true,
-    available: false
+    available: true
   }
 ];
 
@@ -127,13 +110,13 @@ export default function Subscribe() {
                 Unlock Your Financial Potential
               </h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Start with our Standard plan - Premium features coming soon
+                Start your 30-day free trial with complete financial management
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="flex justify-center max-w-2xl mx-auto">
               {plans.map((plan, index) => (
-                <Card key={index} className={`relative ${plan.popular && !plan.available ? 'border-gray-300 opacity-75' : plan.popular ? 'border-teal-200 shadow-lg scale-105' : 'border-gray-200'}`}>
+                <Card key={index} className="relative w-full max-w-md border-teal-200 shadow-lg">
                   {plan.popular && plan.available && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white">
@@ -206,12 +189,12 @@ export default function Subscribe() {
                 </div>
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-500 mr-2" />
-                  Secure payment
+                  Secure payment required
                 </div>
               </div>
               
               <p className="text-gray-500">
-                Your trial will begin immediately. You'll be charged after 30 days unless you cancel.
+                A payment method is required to start your trial. You'll be charged $9.99/month after 30 days unless you cancel.
                 <br />
                 <a href="/cancel-trial" className="text-blue-600 hover:underline text-sm">
                   Need to cancel? Click here
