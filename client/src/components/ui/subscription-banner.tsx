@@ -79,9 +79,15 @@ export function SubscriptionBanner() {
   // Don't show if user is already premium (includes demo users and paid subscribers)
   if (subscriptionStatus?.isPremium) return null;
   
-  // Don't show if user has started trial (regardless of current trial status)
-  // This ensures the banner disappears after successful trial signup
-  if (subscriptionStatus?.hasStartedTrial) return null;
+  // For users on trial, only show banner when trial is ending soon (7 days or less)
+  if (subscriptionStatus?.isOnFreeTrial && subscriptionStatus?.trialDaysLeft > 7) {
+    return null;
+  }
+  
+  // Don't show if user has started trial but it's not currently active
+  if (subscriptionStatus?.hasStartedTrial && !subscriptionStatus?.isOnFreeTrial) {
+    return null;
+  }
 
   return (
     <div className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3 px-4 shadow-md">
