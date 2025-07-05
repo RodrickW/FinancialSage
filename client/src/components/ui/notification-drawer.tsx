@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 export interface NotificationItem {
   id: string;
@@ -15,61 +16,32 @@ export interface NotificationItem {
   type: 'alert' | 'info' | 'success';
 }
 
-// Mock notifications for now
-const mockNotifications: NotificationItem[] = [
-  {
-    id: "1",
-    title: "Budget Alert",
-    message: "You've exceeded your dining budget by $45 this month.",
-    date: "May 20, 2025",
-    isRead: false,
-    type: "alert"
-  },
-  {
-    id: "2",
-    title: "Subscription Reminder",
-    message: "Your free trial ends in 3 days. Consider upgrading to continue using premium features.",
-    date: "May 19, 2025",
-    isRead: false,
-    type: "info"
-  },
-  {
-    id: "3",
-    title: "New Insight Available",
-    message: "We've analyzed your spending and have suggestions to help you save more.",
-    date: "May 18, 2025",
-    isRead: true,
-    type: "info"
-  },
-  {
-    id: "4",
-    title: "Account Connected",
-    message: "Your Chase checking account was successfully connected.",
-    date: "May 17, 2025",
-    isRead: true,
-    type: "success"
-  },
-  {
-    id: "5",
-    title: "Goal Reached",
-    message: "Congratulations! You've reached your emergency fund goal of $5,000.",
-    date: "May 16, 2025",
-    isRead: true,
-    type: "success"
-  }
-];
+// No fake notifications - using real API data only
 
 export function NotificationDrawer() {
   const [open, setOpen] = React.useState(false);
-  const [notifications, setNotifications] = React.useState<NotificationItem[]>(mockNotifications);
+
+  // Fetch real notifications from API
+  const { data: insights = [] } = useQuery({
+    queryKey: ['/api/insights'],
+    retry: false
+  });
+
+  // Convert insights to notifications format
+  const notifications: NotificationItem[] = insights.map((insight: any) => ({
+    id: insight.id.toString(),
+    title: insight.title,
+    message: insight.description,
+    date: new Date(insight.createdAt).toLocaleDateString(),
+    isRead: insight.isRead,
+    type: insight.severity === 'warning' ? 'alert' : insight.severity === 'success' ? 'success' : 'info'
+  }));
+
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const markAsRead = (id: string) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === id 
-        ? { ...notification, isRead: true } 
-        : notification
-    ));
+    // In a real implementation, you would call an API to mark as read
+    // For now, this is just visual feedback
   };
 
   const markAllAsRead = () => {

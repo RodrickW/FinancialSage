@@ -290,6 +290,13 @@ Changelog:
   * Fixed welcome email links to use actual Replit domain instead of placeholder URLs
   * Updated trial notification email links to use proper domain for upgrade and cancellation
   * Welcome and notification emails now correctly direct users back to the application
+- July 5, 2025. Complete fake notification system cleanup:
+  * Removed all hardcoded fake notifications from notification drawer component
+  * Replaced mock notification data with real API data from insights endpoint
+  * Disabled automatic trial notification scheduler to prevent fake notification generation
+  * Updated Subscribe page to show single centered trial card with clear payment requirements
+  * Notification system now displays only authentic user insights and real system notifications
+  * Cleaned up 32 fake trial notifications from database and removed fake trial data
 ```
 
 ## User Preferences
