@@ -176,9 +176,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const sanitizedBody = sanitizeInput(req.body);
-      const result = insertUserSchema.safeParse(sanitizedBody);
+      console.log('Registration attempt with data:', JSON.stringify(sanitizedBody, null, 2));
+      
+      // Create registration schema with only required fields
+      const registrationSchema = insertUserSchema.pick({
+        username: true,
+        password: true,
+        firstName: true,
+        lastName: true,
+        email: true
+      });
+      
+      const result = registrationSchema.safeParse(sanitizedBody);
       
       if (!result.success) {
+        console.error('Registration validation failed:', result.error.issues);
         logSecurityEvent('INVALID_REGISTRATION_ATTEMPT', undefined, {
           errors: result.error.issues,
           submittedData: sanitizedBody
@@ -196,11 +208,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(result.data.password, saltRounds);
       
+      // Create complete user object with defaults
       const userWithHashedPassword = {
-        ...result.data,
-        password: hashedPassword
+        username: result.data.username,
+        password: hashedPassword,
+        firstName: result.data.firstName,
+        lastName: result.data.lastName,
+        email: result.data.email,
+        // Set default values for subscription fields
+        isPremium: false,
+        premiumTier: null,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        subscriptionStatus: 'inactive',
+        trialEndsAt: null,
+        hasStartedTrial: false,
+        hasCompletedOnboarding: false,
+        hasSeenTour: false,
+        loginCount: 0,
+        isAdmin: false
       };
       
+      console.log('Creating user with data:', JSON.stringify(userWithHashedPassword, null, 2));
       const user = await storage.createUser(userWithHashedPassword);
       
       logSecurityEvent('USER_REGISTERED', user.id, {
