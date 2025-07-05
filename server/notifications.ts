@@ -174,13 +174,13 @@ function generateTrialEmailContent(user: any, daysRemaining: number) {
     `}
     
     <div style="text-align: center; margin: 24px 0;">
-      <a href="${process.env.APP_URL}/subscribe" 
+      <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/subscribe" 
          style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
         Upgrade Now
       </a>
     </div>
     
-    <p><small>Or <a href="${process.env.APP_URL}/cancel-trial">cancel your trial</a> if you're not ready to continue.</small></p>
+    <p><small>Or <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/cancel-trial">cancel your trial</a> if you're not ready to continue.</small></p>
     
     <p>Best regards,<br>The Mind My Money Team</p>
   `;

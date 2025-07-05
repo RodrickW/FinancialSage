@@ -283,6 +283,13 @@ Changelog:
   * Added explicit default values for all optional subscription and onboarding fields
   * Improved error logging to help diagnose registration issues
   * Registration process now works properly for new user signups
+- July 5, 2025. Welcome email link fixes and session authentication improvements:
+  * Fixed session configuration issues preventing user login access to dashboard
+  * Changed session cookies from SameSite=none to SameSite=lax for better browser compatibility
+  * Updated session handling to use httpOnly=true and saveUninitialized=false for security
+  * Fixed welcome email links to use actual Replit domain instead of placeholder URLs
+  * Updated trial notification email links to use proper domain for upgrade and cancellation
+  * Welcome and notification emails now correctly direct users back to the application
 ```
 
 ## User Preferences

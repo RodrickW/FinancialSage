@@ -71,7 +71,7 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
       </div>
       
       <div style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.APP_URL || 'https://your-app.replit.app'}/admin" 
+        <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/admin" 
            style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
           View Admin Dashboard
         </a>
@@ -140,7 +140,7 @@ export async function sendWelcomeEmail(user: any): Promise<boolean> {
       </div>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${process.env.APP_URL || 'https://your-app.replit.app'}/dashboard" 
+        <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}" 
            style="background: #059669; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-size: 16px;">
           Go to Dashboard
         </a>
@@ -148,7 +148,7 @@ export async function sendWelcomeEmail(user: any): Promise<boolean> {
       
       <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <h4 style="margin-top: 0; color: #0277bd;">Need Help?</h4>
-        <p style="margin-bottom: 0;">Visit our <a href="${process.env.APP_URL}/feedback" style="color: #0277bd;">feedback page</a> or reply to this email if you have any questions.</p>
+        <p style="margin-bottom: 0;">Visit our <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/feedback" style="color: #0277bd;">feedback page</a> or reply to this email if you have any questions.</p>
       </div>
       
       <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
@@ -168,7 +168,7 @@ export async function sendWelcomeEmail(user: any): Promise<boolean> {
     2. Explore AI Coaching: Chat with Money Mind for personalized financial advice
     3. Start Your Free Trial: Unlock all premium features for 30 days
     
-    Visit your dashboard: ${process.env.APP_URL || 'https://your-app.replit.app'}/dashboard
+    Visit your dashboard: https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}
     
     Need help? Visit our feedback page or reply to this email.
     
