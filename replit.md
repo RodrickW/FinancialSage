@@ -277,6 +277,12 @@ Changelog:
   * Fixed login redirect issue where users got stuck on login page after successful authentication
   * Changed login redirect from /dashboard to / to prevent authentication timing conflicts
   * Users now properly navigate to dashboard after successful login completion
+- July 5, 2025. Registration validation and error handling improvements:
+  * Fixed "registration failed, please try again" error by correcting schema validation
+  * Enhanced registration endpoint to only validate required fields (username, password, firstName, lastName, email)
+  * Added explicit default values for all optional subscription and onboarding fields
+  * Improved error logging to help diagnose registration issues
+  * Registration process now works properly for new user signups
 ```
 
 ## User Preferences
