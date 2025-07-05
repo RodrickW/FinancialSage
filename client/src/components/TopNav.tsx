@@ -106,6 +106,10 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
                 Admin
               </a>
             )}
+            <a href="/cancel-trial" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
+              <span className="material-icons mr-3">cancel</span>
+              Manage Subscription
+            </a>
             <a href="/install" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">get_app</span>
               Install App

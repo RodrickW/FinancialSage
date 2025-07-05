@@ -98,15 +98,24 @@ export function SubscriptionBanner() {
               : "Full access to all features - secure payment required."}
           </p>
         </div>
-        <div>
+        <div className="flex gap-3">
           {subscriptionStatus?.isOnFreeTrial ? (
-            <Button 
-              variant="secondary" 
-              className="bg-white text-teal-700 hover:bg-white/90 hover:text-teal-800"
-              onClick={() => setLocation("/subscribe")}
-            >
-              Upgrade Now
-            </Button>
+            <>
+              <Button 
+                variant="secondary" 
+                className="bg-white text-teal-700 hover:bg-white/90 hover:text-teal-800"
+                onClick={() => setLocation("/subscribe")}
+              >
+                Upgrade Now
+              </Button>
+              <Button 
+                variant="outline" 
+                className="border-white text-white hover:bg-white hover:text-teal-700"
+                onClick={() => setLocation("/cancel-trial")}
+              >
+                Cancel Trial
+              </Button>
+            </>
           ) : (
             <Button 
               variant="secondary" 
