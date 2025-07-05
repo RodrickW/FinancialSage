@@ -10,20 +10,19 @@ class TaskScheduler {
   start() {
     console.log('Starting task scheduler...');
     
-    // Check for trial notifications every day at 9 AM
-    // For development, we'll check every 6 hours
-    const trialCheckInterval = setInterval(async () => {
-      console.log('Running daily trial notification check...');
-      await checkTrialNotifications();
-    }, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
+    // Trial notifications temporarily disabled to prevent fake notifications
+    // const trialCheckInterval = setInterval(async () => {
+    //   console.log('Running daily trial notification check...');
+    //   await checkTrialNotifications();
+    // }, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
+    // 
+    // this.intervals.push(trialCheckInterval);
     
-    this.intervals.push(trialCheckInterval);
-    
-    // Also run immediately on startup for testing
-    setTimeout(async () => {
-      console.log('Running initial trial notification check...');
-      await checkTrialNotifications();
-    }, 5000); // 5 seconds after startup
+    // Disabled initial trial check to prevent fake notifications
+    // setTimeout(async () => {
+    //   console.log('Running initial trial notification check...');
+    //   await checkTrialNotifications();
+    // }, 5000); // 5 seconds after startup
   }
   
   stop() {
