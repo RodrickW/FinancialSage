@@ -261,6 +261,16 @@ Changelog:
   * Enhanced Admin page with proper error handling for non-admin access attempts
   * Set Mr.Waddle as admin user with secure access to feedback management system
   * Feedback data now private and accessible only to designated administrators
+- July 5, 2025. Database budget persistence and subscription management implementation:
+  * Created database-backed budget persistence system with API endpoints to save/load budget data
+  * Modified Budget page to merge saved spending data with default categories for seamless experience
+  * Enhanced spending analysis to automatically save categorized results to database
+  * Budget data now persists after logout and shows previous analysis results
+  * Fixed subscription cancellation endpoint (/api/cancel-trial) and added proper routing
+  * Added TrialAlert component that shows trial countdown when 7 days or less remaining
+  * Implemented seamless subscription management with user-friendly cancellation flow
+  * Trial alerts appear at top of all authenticated pages with upgrade prompts
+  * Complete subscription lifecycle management ready for production use
 ```
 
 ## User Preferences

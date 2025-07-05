@@ -1909,7 +1909,7 @@ Group similar transactions together and sum the amounts for each category. Only 
   });
 
   // Trial cancellation endpoint
-  app.post('/api/cancel-subscription', requireAuth, async (req, res) => {
+  app.post('/api/cancel-trial', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       

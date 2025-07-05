@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import FloatingCoach from "@/components/FloatingCoach";
 import { SubscriptionBanner } from "@/components/ui/subscription-banner";
+import TrialAlert from "@/components/TrialAlert";
 
 // Import pages
 import Landing from "@/pages/Landing";
@@ -150,6 +151,9 @@ function Router() {
       <Route path="/subscribe">
         {(params) => <ProtectedRoute component={Subscribe} params={params} />}
       </Route>
+      <Route path="/cancel-trial">
+        {(params) => <ProtectedRoute component={CancelTrial} params={params} />}
+      </Route>
       <Route path="/cancel-subscription">
         {(params) => <ProtectedRoute component={CancelTrial} params={params} />}
       </Route>
@@ -196,6 +200,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        {isLoggedIn && <TrialAlert />}
         {isLoggedIn && <SubscriptionBanner />}
         <Router />
         {isLoggedIn && <FloatingCoach />}
