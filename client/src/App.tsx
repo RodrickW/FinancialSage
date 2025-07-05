@@ -46,9 +46,12 @@ function HomeRoute() {
         
         if (response.ok) {
           setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }

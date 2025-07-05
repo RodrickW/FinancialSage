@@ -78,9 +78,9 @@ export default function Login() {
           variant: 'default',
         });
         
-        // Force page reload to ensure authentication state is properly updated
+        // Navigate to dashboard after successful login
         setTimeout(() => {
-          window.location.href = '/';
+          navigate('/');
         }, 500);
       } else {
         const errorData = await response.json();
