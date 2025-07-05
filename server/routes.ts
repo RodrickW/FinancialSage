@@ -55,14 +55,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'mindmymoneysecret',
     resave: false,
-    saveUninitialized: true, // Enable for mobile compatibility
+    saveUninitialized: false, // Set to false to avoid empty sessions
     store: new MemoryStoreSession({
       checkPeriod: 86400000 // Prune expired entries every 24h
     }),
     cookie: {
-      secure: false, // False for development on Replit
-      httpOnly: false, // Allow client-side access for mobile
-      sameSite: 'none', // Required for cross-origin requests
+      secure: false, // False for development
+      httpOnly: true, // Secure cookies
+      sameSite: 'lax', // Better browser compatibility
       maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
     },
     name: 'connect.sid' // Explicit session name
