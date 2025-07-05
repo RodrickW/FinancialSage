@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { User } from "@shared/schema";
-import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget } from "./openai";
+import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget, generateFinancialHealthReport } from "./openai";
 import OpenAI from "openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { servePlaidSDK } from "./plaid-proxy";
@@ -1287,7 +1287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         budgets: budgets.map(b => ({
           category: b.category,
-          limit: b.limit,
+          limit: b.amount,
           spent: b.spent,
           remaining: b.remaining
         })),
@@ -1334,24 +1334,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userName: user.firstName || user.username
       });
       
-      // Store the interview with the generated plan
+      // Store the interview completion as an insight
       const interviewInsight = await storage.createInsight({
         userId: user.id,
         type: 'interview',
-        title: 'Financial Goals Interview',
-        description: `Interview completed on ${new Date().toLocaleDateString()}`,
-        content: JSON.stringify({
-          responses,
-          completedAt,
-          personalizedPlan,
-          summary: {
-            goals: responses['financial-goals'] || [],
-            situation: responses['current-situation'] || '',
-            income: responses['monthly-income'] || 0,
-            challenge: responses['biggest-challenge'] || '',
-            riskTolerance: responses['risk-tolerance'] || ''
-          }
-        }),
+        title: 'Financial Goals Interview Completed',
+        description: `Financial goals interview completed on ${new Date().toLocaleDateString()}. Your personalized financial plan has been generated and is ready to view.`,
         severity: 'info'
       });
       
@@ -1380,21 +1368,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ hasInterview: false });
       }
       
-      // Get the most recent interview
+      // Return basic interview completion info
       const latestInterview = interviewInsights.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )[0];
-      
-      const content = JSON.parse(latestInterview.content);
       
       res.json({
         hasInterview: true,
         interview: {
           id: latestInterview.id,
-          completedAt: content.completedAt,
-          responses: content.responses,
-          personalizedPlan: content.personalizedPlan,
-          summary: content.summary
+          completedAt: latestInterview.createdAt,
+          title: latestInterview.title,
+          description: latestInterview.description
         }
       });
     } catch (error) {
