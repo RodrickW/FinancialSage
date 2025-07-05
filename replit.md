@@ -271,6 +271,12 @@ Changelog:
   * Implemented seamless subscription management with user-friendly cancellation flow
   * Trial alerts appear at top of all authenticated pages with upgrade prompts
   * Complete subscription lifecycle management ready for production use
+- July 5, 2025. Trial banner visibility fix and login redirect resolution:
+  * Fixed subscription banner to only show when trial expires in 7 days or less (not for all trial users)
+  * Added "Cancel Trial" button to subscription banner alongside "Upgrade Now" for trial users
+  * Fixed login redirect issue where users got stuck on login page after successful authentication
+  * Changed login redirect from /dashboard to / to prevent authentication timing conflicts
+  * Users now properly navigate to dashboard after successful login completion
 ```
 
 ## User Preferences

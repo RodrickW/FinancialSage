@@ -78,9 +78,9 @@ export default function Login() {
           variant: 'default',
         });
         
-        // Navigate to dashboard after successful login
+        // Navigate to home (dashboard) after successful login
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate('/');
         }, 500);
       } else {
         const errorData = await response.json();
