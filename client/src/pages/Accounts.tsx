@@ -62,7 +62,7 @@ export default function Accounts() {
   // Disconnect account mutation
   const disconnectAccountMutation = useMutation({
     mutationFn: async (accountId: number) => {
-      return await apiRequest('DELETE', `/api/accounts/${accountId}`);
+      return await apiRequest('DELETE', `/api/accounts/${accountId}`, null);
     },
     onSuccess: async () => {
       // Small delay to ensure database cleanup is complete

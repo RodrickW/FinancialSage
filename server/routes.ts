@@ -696,8 +696,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete/disconnect account
-  app.delete('/api/accounts/:id', requireAuth, async (req, res) => {
+  // Delete/disconnect account - with content type override
+  app.delete('/api/accounts/:id', 
+    // Skip JSON parsing for DELETE requests
+    (req, res, next) => {
+      // Skip body parsing for DELETE
+      next();
+    },
+    requireAuth, 
+    async (req, res) => {
     try {
       const accountId = parseInt(req.params.id);
       const user = req.user as User;

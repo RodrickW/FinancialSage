@@ -14,15 +14,15 @@ export async function apiRequest(
 ): Promise<Response> {
   const headers: Record<string, string> = {};
   
-  // Always include Content-Type for POST/PUT/PATCH requests
-  if (method !== 'GET' && method !== 'DELETE') {
+  // Always include Content-Type for all requests except GET
+  if (method !== 'GET') {
     headers["Content-Type"] = "application/json";
   }
   
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: data !== null && data !== undefined ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 
