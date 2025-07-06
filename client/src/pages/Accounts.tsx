@@ -21,6 +21,10 @@ export default function Accounts() {
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
   const [accountToDisconnect, setAccountToDisconnect] = useState<{ id: number; name: string } | null>(null);
   
+  // State for account details dialog
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null);
+  
   // Get the user data
   const { data: userData } = useQuery({
     queryKey: ['/api/users/profile'],
@@ -142,10 +146,11 @@ export default function Accounts() {
   
   // Show account details
   const handleViewDetails = (accountId: number) => {
-    toast({
-      title: "View account details",
-      description: `Viewing details for account #${accountId}`
-    });
+    const account = accounts.find((acc: ConnectedAccount) => acc.id === accountId);
+    if (account) {
+      setSelectedAccount(account);
+      setDetailsDialogOpen(true);
+    }
   };
 
   // Handle disconnect account - show confirmation dialog
@@ -341,6 +346,103 @@ export default function Accounts() {
                   Disconnect Account
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Details Dialog */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <span className="material-icons mr-2 text-primary">account_balance</span>
+              Account Details
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedAccount && (
+            <div className="space-y-4">
+              {/* Account Header */}
+              <div className="flex items-center p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg">
+                <div className={`w-12 h-12 ${accountTypes[selectedAccount.accountType as keyof typeof accountTypes]?.color || 'bg-primary-50 text-primary-500'} rounded-lg flex items-center justify-center mr-4`}>
+                  <span className="material-icons text-lg">
+                    {accountTypes[selectedAccount.accountType as keyof typeof accountTypes]?.icon || 'account_balance'}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedAccount.accountName}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedAccount.institutionName}</p>
+                </div>
+              </div>
+
+              {/* Account Information */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-medium text-muted-foreground">Account Number</span>
+                  <span className="text-sm font-mono">{selectedAccount.accountNumber}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-medium text-muted-foreground">Account Type</span>
+                  <span className="text-sm capitalize">{selectedAccount.accountType}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-medium text-muted-foreground">Current Balance</span>
+                  <span className="text-sm font-semibold">{formatCurrency(selectedAccount.balance)}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-medium text-muted-foreground">Institution</span>
+                  <span className="text-sm">{selectedAccount.institutionName}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-medium text-muted-foreground">Connection Status</span>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span className="text-sm text-green-600">Connected</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-xs text-muted-foreground mb-3">Quick Actions</p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => {
+                      setDetailsDialogOpen(false);
+                      refreshBalancesMutation.mutate();
+                    }}
+                  >
+                    <span className="material-icons text-sm mr-1">sync</span>
+                    Refresh Balance
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    onClick={() => {
+                      setDetailsDialogOpen(false);
+                      handleDisconnectAccount(selectedAccount.id, selectedAccount.accountName);
+                    }}
+                  >
+                    <span className="material-icons text-sm mr-1">link_off</span>
+                    Disconnect
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="pt-4">
+            <Button variant="outline" onClick={() => setDetailsDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
