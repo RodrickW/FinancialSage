@@ -65,9 +65,23 @@ export default function ResetPassword() {
     setIsLoading(true);
     
     try {
-      // In a production app, this would make an actual API call with the token
-      // For this demo, we'll simulate a successful response
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: token,
+          password: data.password,
+        }),
+        credentials: 'include',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Password reset failed');
+      }
       
       setIsSuccess(true);
       
@@ -79,11 +93,11 @@ export default function ResetPassword() {
       
       // Redirect to login after a short delay
       setTimeout(() => navigate('/login'), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password reset error:', error);
       toast({
         title: 'Password reset failed',
-        description: 'Something went wrong. Please try again.',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {

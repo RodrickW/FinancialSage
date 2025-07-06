@@ -346,23 +346,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Email is required' });
       }
       
-      const token = await generatePasswordResetToken(email);
-      
-      if (!token) {
-        // Don't reveal if the user exists for security reasons
-        return res.status(200).json({ 
-          message: 'If an account with that email exists, a password reset link has been sent' 
-        });
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Please enter a valid email address' });
       }
       
-      // In a real app, we would send an email with the reset link
-      // For this demo, we're just logging it to the console
-      
-      return res.status(200).json({ 
-        message: 'If an account with that email exists, a password reset link has been sent',
-        // For demo purposes only, we'll return the token
-        token: token 
-      });
+      try {
+        const token = await generatePasswordResetToken(email);
+        
+        // Always return the same message for security (don't reveal if user exists)
+        return res.status(200).json({ 
+          message: 'If an account with that email exists, a password reset link has been sent to your email address.' 
+        });
+      } catch (emailError) {
+        console.error('Email sending error:', emailError);
+        // Still return success message to avoid revealing user existence
+        return res.status(200).json({ 
+          message: 'If an account with that email exists, a password reset link has been sent to your email address.' 
+        });
+      }
     } catch (error) {
       console.error('Forgot password error:', error);
       return res.status(500).json({ message: 'Internal server error' });

@@ -38,22 +38,35 @@ export default function ForgotPassword() {
     setIsLoading(true);
     
     try {
-      // In a production app, this would make an actual API call
-      // For this demo, we'll simulate a successful response
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+        }),
+        credentials: 'include',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send reset email');
+      }
       
       setIsSubmitted(true);
       
       toast({
         title: 'Password reset email sent',
-        description: 'Check your inbox for instructions to reset your password',
+        description: result.message || 'Check your inbox for instructions to reset your password',
         variant: 'default',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password reset error:', error);
       toast({
         title: 'Reset request failed',
-        description: 'Something went wrong. Please try again.',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
