@@ -25,6 +25,7 @@ export interface IStorage {
   getAccountTransactions(accountId: number, limit?: number): Promise<Transaction[]>;
   getTransactionsByDateRange(userId: number, startDate: Date, endDate: Date): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  getTransactionByPlaidId(plaidTransactionId: string): Promise<Transaction | undefined>;
   
   // Budget operations
   getBudgets(userId: number): Promise<Budget[]>;
@@ -180,6 +181,14 @@ export class DatabaseStorage implements IStorage {
       .values(transaction)
       .returning();
     return newTransaction;
+  }
+
+  async getTransactionByPlaidId(plaidTransactionId: string): Promise<Transaction | undefined> {
+    const [transaction] = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.plaidTransactionId, plaidTransactionId));
+    return transaction;
   }
   
   // Budget operations

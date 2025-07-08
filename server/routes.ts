@@ -806,13 +806,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let newTransactionsCount = 0;
       for (const plaidTransaction of accountTransactions) {
-        // Check if transaction already exists to avoid duplicates
+        // Check if transaction already exists to avoid duplicates using Plaid transaction ID
+        const plaidTransactionId = plaidTransaction.transaction_id;
+        const existingByPlaidId = await storage.getTransactionByPlaidId(plaidTransactionId);
+        
+        // Also check by description, amount, and date as fallback
         const existingTransactions = await storage.getAccountTransactions(accountId, 1000);
-        const exists = existingTransactions.some(existing => 
+        const existsByContent = existingTransactions.some(existing => 
           existing.description === plaidTransaction.name && 
-          existing.amount === plaidTransaction.amount &&
-          new Date(existing.date).getTime() === new Date(plaidTransaction.date).getTime()
+          Math.abs(parseFloat(existing.amount.toString()) - (-plaidTransaction.amount)) < 0.01 &&
+          new Date(existing.date).toDateString() === new Date(plaidTransaction.date).toDateString()
         );
+        
+        const exists = existingByPlaidId || existsByContent;
         
         if (!exists) {
           const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, accountId);
@@ -963,25 +969,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           console.log(`${account.institutionName} - Found ${accountTransactions.length} transactions in date range`);
           
-          // Create a map for super fast duplicate checking
+          // Create sets for super fast duplicate checking using both Plaid ID and content
+          const existingPlaidIds = new Set();
           const existingTransactionMap = new Map();
+          
           existingTransactions.forEach(tx => {
+            if (tx.plaidTransactionId) {
+              existingPlaidIds.add(tx.plaidTransactionId);
+            }
             const key = `${tx.description}-${Math.round(parseFloat(tx.amount.toString()) * 100)}-${new Date(tx.date).toDateString()}`;
             existingTransactionMap.set(key, true);
           });
 
           for (const plaidTransaction of accountTransactions) {
-            // Create same key format for comparison
+            const plaidTransactionId = plaidTransaction.transaction_id;
             const transactionKey = `${plaidTransaction.name}-${Math.round(plaidTransaction.amount * 100)}-${new Date(plaidTransaction.date).toDateString()}`;
             
-            if (!existingTransactionMap.has(transactionKey)) {
+            // Check both Plaid ID and content-based duplicates
+            const isDuplicate = existingPlaidIds.has(plaidTransactionId) || existingTransactionMap.has(transactionKey);
+            
+            if (!isDuplicate) {
               const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
-              await storage.createTransaction(transactionData);
-              totalNewTransactions++;
-              console.log(`${account.institutionName} - Added new transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
               
-              // Add to map to prevent duplicates within this sync batch
-              existingTransactionMap.set(transactionKey, true);
+              try {
+                await storage.createTransaction(transactionData);
+                totalNewTransactions++;
+                console.log(`${account.institutionName} - Added new transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
+                
+                // Add to sets to prevent duplicates within this sync batch
+                existingPlaidIds.add(plaidTransactionId);
+                existingTransactionMap.set(transactionKey, true);
+              } catch (error: any) {
+                if (error.code === '23505') { // Unique constraint violation
+                  console.log(`${account.institutionName} - Skipped duplicate transaction (database constraint): ${plaidTransaction.name}`);
+                } else {
+                  throw error;
+                }
+              }
             } else {
               console.log(`${account.institutionName} - Skipped duplicate transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
             }
