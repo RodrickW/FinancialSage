@@ -117,10 +117,14 @@ export function formatPlaidAccountData(plaidAccount: any, userId: number, instit
 
 // Helper function to format Plaid transaction data to our schema
 export function formatPlaidTransactionData(plaidTransaction: any, userId: number, accountId: number) {
+  // Plaid amounts: positive = money leaving account (debit), negative = money entering account (credit)
+  // We flip the sign so: negative = spending (debit), positive = income (credit)
+  const correctedAmount = -plaidTransaction.amount;
+  
   return {
     userId,
     accountId,
-    amount: plaidTransaction.amount,
+    amount: correctedAmount,
     category: plaidTransaction.category ? plaidTransaction.category[0] : 'Other',
     description: plaidTransaction.name,
     date: new Date(plaidTransaction.date),
