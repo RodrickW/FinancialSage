@@ -95,30 +95,7 @@ export default function Accounts() {
     },
   });
 
-  // Wells Fargo debug mutation - for balance issues
-  const wellsFargoDebugMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('POST', '/api/debug/wells-fargo-balance');
-    },
-    onSuccess: (data) => {
-      console.log('Wells Fargo debug result:', data);
-      // Refresh accounts data after debug
-      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
-      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
-      toast({
-        title: "Wells Fargo Debug Complete",
-        description: data.message || `Balance updated: $${data.oldBalance} → $${data.newBalance}`,
-      });
-    },
-    onError: (error: any) => {
-      console.error('Wells Fargo debug error:', error);
-      toast({
-        title: "Debug Error",
-        description: error.message || "Failed to debug Wells Fargo balance",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   // Full sync mutation - refreshes balances and syncs recent transactions
   const fullSyncMutation = useMutation({
@@ -247,24 +224,7 @@ export default function Accounts() {
                 )}
               </Button>
               
-              <Button 
-                variant="outline" 
-                onClick={() => wellsFargoDebugMutation.mutate()}
-                disabled={wellsFargoDebugMutation.isPending}
-                className="bg-gradient-to-r from-red-600 to-orange-600 text-white border-none hover:from-red-700 hover:to-orange-700"
-              >
-                {wellsFargoDebugMutation.isPending ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    Debugging...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-icons mr-2">bug_report</span>
-                    Fix Wells Fargo Balance
-                  </>
-                )}
-              </Button>
+
             </div>
           </div>
           

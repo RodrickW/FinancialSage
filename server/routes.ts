@@ -669,6 +669,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/accounts', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+      
+      // Trigger balance refresh for this user when they visit accounts page
+      // This runs in background without blocking the response
+      const { refreshUserBalances } = await import('./balanceSync');
+      refreshUserBalances(user.id).catch(error => {
+        console.error('Background balance refresh failed:', error);
+      });
+      
       const accounts = await storage.getAccounts(user.id);
       res.json(accounts);
     } catch (error) {
@@ -2221,97 +2229,7 @@ Group similar transactions together and sum the amounts for each category. Only 
     }
   });
 
-  // Debug Wells Fargo balance endpoint
-  app.post('/api/debug/wells-fargo-balance', requireAuth, async (req, res) => {
-    try {
-      const user = req.user as User;
-      
-      // Get Wells Fargo account specifically
-      const accounts = await storage.getAccounts(user.id);
-      const wellsFargoAccount = accounts.find(acc => 
-        acc.institutionName?.toLowerCase().includes('wells fargo') || 
-        acc.accountName?.toLowerCase().includes('wells fargo')
-      );
-      
-      if (!wellsFargoAccount) {
-        return res.json({ error: 'Wells Fargo account not found' });
-      }
-      
-      console.log('Wells Fargo Debug - Current stored account:', {
-        id: wellsFargoAccount.id,
-        name: wellsFargoAccount.accountName,
-        institution: wellsFargoAccount.institutionName,
-        currentBalance: wellsFargoAccount.balance,
-        plaidAccountId: wellsFargoAccount.plaidAccountId,
-        hasAccessToken: !!wellsFargoAccount.plaidAccessToken,
-        lastUpdated: wellsFargoAccount.updatedAt
-      });
-      
-      if (!wellsFargoAccount.plaidAccessToken) {
-        return res.json({ error: 'No Plaid access token for Wells Fargo account' });
-      }
-      
-      // Force refresh from Plaid
-      try {
-        console.log('Wells Fargo Debug - Fetching fresh data from Plaid...');
-        const plaidData = await getAccounts(wellsFargoAccount.plaidAccessToken);
-        
-        console.log('Wells Fargo Debug - Plaid response accounts:', plaidData.accounts.map(acc => ({
-          account_id: acc.account_id,
-          name: acc.name,
-          official_name: acc.official_name,
-          balance: acc.balances.current,
-          available: acc.balances.available
-        })));
-        
-        // Find the matching account
-        const plaidAccount = plaidData.accounts.find(
-          acc => acc.account_id === wellsFargoAccount.plaidAccountId
-        );
-        
-        if (plaidAccount) {
-          const oldBalance = wellsFargoAccount.balance;
-          const newBalance = plaidAccount.balances.current;
-          
-          console.log(`Wells Fargo Debug - Balance comparison: stored=$${oldBalance}, plaid=$${newBalance}`);
-          
-          // Force update the balance
-          await storage.updateAccount(wellsFargoAccount.id, {
-            balance: newBalance
-          });
-          
-          console.log(`Wells Fargo Debug - Balance updated: $${oldBalance} → $${newBalance}`);
-          
-          res.json({
-            message: 'Wells Fargo balance debug complete',
-            oldBalance,
-            newBalance,
-            plaidAccount: {
-              account_id: plaidAccount.account_id,
-              name: plaidAccount.name,
-              current_balance: plaidAccount.balances.current,
-              available_balance: plaidAccount.balances.available
-            }
-          });
-          
-        } else {
-          res.json({ error: 'Wells Fargo account not found in Plaid response' });
-        }
-        
-      } catch (plaidError: any) {
-        console.error('Wells Fargo Debug - Plaid API error:', plaidError);
-        res.json({ 
-          error: 'Plaid API error', 
-          details: plaidError.message,
-          errorCode: plaidError.response?.data?.error_code
-        });
-      }
-      
-    } catch (error) {
-      console.error('Wells Fargo Debug - General error:', error);
-      res.status(500).json({ error: 'Debug failed', details: error.message });
-    }
-  });
+
 
   // Delete savings goal endpoint
   app.delete('/api/savings-goals/:id', requireAuth, async (req, res) => {

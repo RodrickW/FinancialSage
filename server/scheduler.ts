@@ -1,4 +1,5 @@
 import { checkTrialNotifications } from './notifications';
+import { refreshAllAccountBalances } from './balanceSync';
 
 /**
  * Simple scheduler that runs daily tasks
@@ -9,6 +10,20 @@ class TaskScheduler {
   
   start() {
     console.log('Starting task scheduler...');
+    
+    // Run balance refresh every 10 minutes for all users
+    const balanceInterval = setInterval(async () => {
+      console.log('Running scheduled balance refresh for all users...');
+      await refreshAllAccountBalances();
+    }, 10 * 60 * 1000); // 10 minutes
+
+    this.intervals.push(balanceInterval);
+    
+    // Run initial balance refresh after 30 seconds
+    setTimeout(async () => {
+      console.log('Running initial balance refresh...');
+      await refreshAllAccountBalances();
+    }, 30 * 1000); // 30 seconds after startup
     
     // Trial notifications temporarily disabled to prevent fake notifications
     // const trialCheckInterval = setInterval(async () => {
