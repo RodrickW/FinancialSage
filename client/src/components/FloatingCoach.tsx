@@ -49,27 +49,11 @@ export default function FloatingCoach() {
     setIsLoading(true);
     
     try {
-      // In a real implementation, this would call the API
-      // For now, we'll simulate a response after a delay
-      setTimeout(() => {
-        // Simulate AI response
-        let aiResponse;
-        
-        if (message.toLowerCase().includes('credit score')) {
-          aiResponse = "To improve your credit score: 1) Pay bills on time 2) Reduce credit card balances 3) Don't close old accounts 4) Limit new credit applications 5) Check your credit report for errors.";
-        } else if (message.toLowerCase().includes('retirement')) {
-          aiResponse = "A good rule of thumb is to save 15% of your income for retirement. The earlier you start, the better, due to compound interest. Consider maximizing employer matches in your 401(k) first.";
-        } else if (message.toLowerCase().includes('emergency fund')) {
-          aiResponse = "A good emergency fund typically covers 3-6 months of essential expenses. If your income is variable or you have dependents, consider aiming for the higher end of that range.";
-        } else if (message.toLowerCase().includes('debt') && message.toLowerCase().includes('invest')) {
-          aiResponse = "Generally, pay off high-interest debt (like credit cards) first, then build an emergency fund, then invest while paying down lower-interest debt. Always capture any employer 401(k) match regardless.";
-        } else {
-          aiResponse = "Based on your financial profile, I'd recommend focusing on building your emergency fund first, then tackling high-interest debt, and finally increasing your retirement contributions. Would you like more specific advice on any of these areas?";
-        }
-        
-        setConversation(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-        setIsLoading(false);
-      }, 1500);
+      // Call the real AI coaching API for personalized responses using actual financial data
+      const { getFinancialCoaching } = await import('@/lib/queryClient');
+      const aiResponse = await getFinancialCoaching(message);
+      setConversation(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      setIsLoading(false);
       
     } catch (error) {
       toast({
