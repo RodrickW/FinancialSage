@@ -317,6 +317,13 @@ Changelog:
   * Applied consistent color scheme across individual categories, summary cards, and progress indicators
   * Improved visual feedback for financial planning with intuitive red (spent) and blue (remaining) color system
   * User confirmed implementation successful - budget colors and reset functionality working correctly
+- July 8, 2025. Transaction amount display fix and AI coaching enhancement:
+  * Fixed transaction amount signs in Plaid data formatting - now correctly shows spending as negative (red) and income as positive (green)
+  * Updated AI coaching system to properly interpret transaction amounts for accurate financial analysis
+  * Added "Connect Account" button to Accounts page with same functionality as Dashboard version
+  * Enhanced real-time sync capabilities with manual refresh options via "Sync All Accounts" button
+  * Confirmed transaction categorization and spending analysis working correctly with authentic bank data
+  * System now provides accurate financial insights based on properly formatted transaction amounts
 ```
 
 ## User Preferences
