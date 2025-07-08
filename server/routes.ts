@@ -2221,6 +2221,27 @@ Group similar transactions together and sum the amounts for each category. Only 
     }
   });
 
+  // Delete savings goal endpoint
+  app.delete('/api/savings-goals/:id', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const goalId = parseInt(req.params.id);
+      
+      if (!goalId || isNaN(goalId)) {
+        return res.status(400).json({ error: 'Invalid goal ID' });
+      }
+      
+      // Delete the goal for this user
+      await storage.deleteSavingsGoal(goalId, user.id);
+      
+      res.json({ message: 'Savings goal deleted successfully' });
+      
+    } catch (error) {
+      console.error('Error deleting savings goal:', error);
+      res.status(500).json({ message: "Failed to delete savings goal" });
+    }
+  });
+
   // Clean up duplicate transactions endpoint
   app.post('/api/cleanup-duplicates', requireAuth, async (req, res) => {
     try {

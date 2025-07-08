@@ -45,6 +45,7 @@ export interface IStorage {
   getSavingsGoals(userId: number): Promise<SavingsGoal[]>;
   createSavingsGoal(savingsGoal: InsertSavingsGoal): Promise<SavingsGoal>;
   updateSavingsGoal(id: number, data: Partial<InsertSavingsGoal>): Promise<SavingsGoal | undefined>;
+  deleteSavingsGoal(id: number, userId: number): Promise<void>;
   
   // Feedback operations
   getFeedback(): Promise<Feedback[]>;
@@ -293,6 +294,12 @@ export class DatabaseStorage implements IStorage {
       .where(eq(savingsGoals.id, id))
       .returning();
     return updatedSavingsGoal;
+  }
+  
+  async deleteSavingsGoal(id: number, userId: number): Promise<void> {
+    await db
+      .delete(savingsGoals)
+      .where(and(eq(savingsGoals.id, id), eq(savingsGoals.userId, userId)));
   }
 
   // Feedback operations

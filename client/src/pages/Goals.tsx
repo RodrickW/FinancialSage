@@ -263,16 +263,28 @@ export default function Goals() {
   };
   
   // Function to delete a goal
-  const deleteGoal = () => {
+  const deleteGoal = async () => {
     if (!selectedGoal) return;
     
-    // TODO: Implement delete API endpoint when needed
-    setIsDeleteDialogOpen(false);
-    
-    toast({
-      title: "Goal Deleted",
-      description: `Your ${selectedGoal.name} goal has been deleted.`
-    });
+    try {
+      await apiRequest('DELETE', `/api/savings-goals/${selectedGoal.id}`);
+      setIsDeleteDialogOpen(false);
+      
+      // Refresh the goals list
+      queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      
+      toast({
+        title: "Goal Deleted",
+        description: `Your ${selectedGoal.name} goal has been deleted.`
+      });
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      toast({
+        title: "Delete Failed",
+        description: "Unable to delete the goal. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Helper function to reset form
