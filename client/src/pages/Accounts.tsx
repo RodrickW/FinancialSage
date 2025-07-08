@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { UserProfile, ConnectedAccount } from '@/types';
+import { PlaidLinkButton } from '@/components/PlaidLink';
 
 // Removed all mock data imports - using real API data only
 
@@ -181,6 +182,25 @@ export default function Accounts() {
               <p className="text-neutral-500">Manage your linked financial accounts</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
+              <TrialGate feature="Bank Connection" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode}>
+                <PlaidLinkButton 
+                  className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
+                  onSuccess={() => {
+                    toast({
+                      title: "Account connected successfully!",
+                      description: "Your new account has been added and is syncing.",
+                      variant: "default",
+                    });
+                    // Refresh accounts data
+                    queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+                    queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+                  }}
+                >
+                  <span className="material-icons text-sm mr-1">add</span>
+                  Connect Account
+                </PlaidLinkButton>
+              </TrialGate>
+              
               <Button 
                 variant="outline" 
                 onClick={() => fullSyncMutation.mutate()}
