@@ -26,6 +26,10 @@ export default function Accounts() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null);
   
+  // State for diagnosis dialog
+  const [diagnosisDialogOpen, setDiagnosisDialogOpen] = useState(false);
+  const [diagnosisData, setDiagnosisData] = useState<any>(null);
+  
   // Get the user data
   const { data: userData } = useQuery({
     queryKey: ['/api/users/profile'],
@@ -299,22 +303,8 @@ export default function Accounts() {
                           onClick={async () => {
                             try {
                               const response = await apiRequest('POST', '/api/plaid/diagnose-account', { accountId: account.id });
-                              
-                              let message = `Account Diagnosis for ${account.accountName}:\n\n`;
-                              message += `Connection: ${response.connectionStatus}\n`;
-                              if (response.availableBalance !== undefined) {
-                                message += `Current Balance: $${response.availableBalance}\n`;
-                              }
-                              message += `Transaction Access: ${response.transactionAccess || 'Unknown'}\n`;
-                              
-                              if (response.recommendations?.length > 0) {
-                                message += `\nRecommendations:\n`;
-                                response.recommendations.forEach((rec: string, index: number) => {
-                                  message += `${index + 1}. ${rec}\n`;
-                                });
-                              }
-                              
-                              alert(message);
+                              setDiagnosisData(response);
+                              setDiagnosisDialogOpen(true);
                             } catch (error) {
                               toast({
                                 title: "Diagnosis Failed",
@@ -497,6 +487,106 @@ export default function Accounts() {
 
           <DialogFooter className="pt-4">
             <Button variant="outline" onClick={() => setDetailsDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Diagnosis Dialog */}
+      <Dialog open={diagnosisDialogOpen} onOpenChange={setDiagnosisDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-blue-700">
+              <span className="material-icons mr-2 text-blue-500">bug_report</span>
+              Account Diagnosis
+            </DialogTitle>
+            <DialogDescription>
+              Connection status and troubleshooting information
+            </DialogDescription>
+          </DialogHeader>
+          
+          {diagnosisData && (
+            <div className="py-4 space-y-4">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-800 mb-2">Account Information</h4>
+                <div className="space-y-1 text-sm">
+                  <div><strong>Institution:</strong> {diagnosisData.accountInfo?.institution || 'Unknown'}</div>
+                  <div><strong>Account:</strong> {diagnosisData.accountInfo?.name || 'Unknown'}</div>
+                  <div><strong>Connection Status:</strong> 
+                    <span className={`ml-1 px-2 py-1 rounded text-xs ${
+                      diagnosisData.connectionStatus === 'Connected' ? 'bg-green-100 text-green-800' : 
+                      diagnosisData.connectionStatus === 'Error' ? 'bg-red-100 text-red-800' : 
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {diagnosisData.connectionStatus || 'Unknown'}
+                    </span>
+                  </div>
+                  <div><strong>Transaction Access:</strong> 
+                    <span className={`ml-1 px-2 py-1 rounded text-xs ${
+                      diagnosisData.transactionAccess === 'Available' ? 'bg-green-100 text-green-800' : 
+                      diagnosisData.transactionAccess === 'Limited' ? 'bg-red-100 text-red-800' : 
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {diagnosisData.transactionAccess || 'Unknown'}
+                    </span>
+                  </div>
+                  {diagnosisData.availableBalance !== undefined && diagnosisData.availableBalance !== null && (
+                    <div><strong>Plaid Balance:</strong> ${diagnosisData.availableBalance.toLocaleString()}</div>
+                  )}
+                  {diagnosisData.recentTransactionCount !== undefined && (
+                    <div><strong>Recent Transactions:</strong> {diagnosisData.recentTransactionCount} found</div>
+                  )}
+                </div>
+              </div>
+
+              {(diagnosisData.connectionError || diagnosisData.transactionError) && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-red-800 mb-2">Errors Detected</h4>
+                  <div className="space-y-1 text-sm text-red-700">
+                    {diagnosisData.connectionError && (
+                      <div><strong>Connection Error:</strong> {diagnosisData.connectionError}</div>
+                    )}
+                    {diagnosisData.transactionError && (
+                      <div><strong>Transaction Error:</strong> {diagnosisData.transactionError}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {diagnosisData.recommendations?.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">Recommendations</h4>
+                  <ul className="space-y-1 text-sm text-blue-700">
+                    {diagnosisData.recommendations.map((rec: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {diagnosisData.connectionStatus === 'Connected' && 
+               diagnosisData.transactionAccess === 'Available' && 
+               (!diagnosisData.recommendations || diagnosisData.recommendations.length === 0) && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">✓ Account Working Properly</h4>
+                  <p className="text-sm text-green-700">
+                    Your account connection is healthy. If you're not seeing recent transactions, 
+                    this may be normal for your bank's processing schedule.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDiagnosisDialogOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>

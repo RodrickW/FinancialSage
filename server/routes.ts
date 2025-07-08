@@ -2226,7 +2226,7 @@ Group similar transactions together and sum the amounts for each category. Only 
         return res.status(404).json({ message: 'Account not found' });
       }
       
-      const diagnostics = {
+      const diagnostics: any = {
         accountInfo: {
           name: account.accountName,
           institution: account.institutionName,
@@ -2234,7 +2234,9 @@ Group similar transactions together and sum the amounts for each category. Only 
           lastUpdated: account.updatedAt,
           hasAccessToken: !!account.plaidAccessToken
         },
-        recommendations: []
+        recommendations: [],
+        connectionStatus: 'Testing...',
+        transactionAccess: 'Testing...'
       };
       
       // Test Plaid connection
@@ -2277,10 +2279,21 @@ Group similar transactions together and sum the amounts for each category. Only 
             // Navy Federal specific recommendations
             if (account.institutionName?.toLowerCase().includes('navy federal')) {
               diagnostics.recommendations.push(
-                'Navy Federal typically has delayed transaction posting compared to other banks.',
-                'If account was recently connected, allow 24-48 hours for full transaction sync.',
-                'Try manually refreshing in the evening when Navy Federal processes daily updates.'
+                'Navy Federal Credit Union has known delays in transaction posting (24-48 hours is normal).',
+                'Navy Federal processes most updates in the evening - try syncing after 6 PM EST.',
+                'If no updates for 2+ days, your Navy Federal login credentials may need refreshing.',
+                'Consider disconnecting and reconnecting your Navy Federal account if issues persist.'
               );
+              
+              // Check if account hasn't been updated recently
+              const lastUpdate = account.updatedAt ? new Date(account.updatedAt) : null;
+              const daysSinceUpdate = lastUpdate ? Math.floor((Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24)) : null;
+              
+              if (daysSinceUpdate && daysSinceUpdate > 2) {
+                diagnostics.recommendations.unshift(
+                  `⚠️ Account hasn't updated in ${daysSinceUpdate} days - this suggests a connection issue with Navy Federal.`
+                );
+              }
             }
             
           } else {
