@@ -189,7 +189,8 @@ export default function Goals() {
       name: goalName,
       targetAmount: targetAmt,
       currentAmount: currentAmt,
-      deadline: formattedDeadline
+      deadline: formattedDeadline,
+      color: selectedColor
     };
     
     // Submit to API
@@ -249,7 +250,8 @@ export default function Goals() {
       name: goalName,
       targetAmount: targetAmt,
       currentAmount: currentAmt,
-      deadline: formattedDeadline
+      deadline: formattedDeadline,
+      color: selectedColor
     };
     
     // Submit to API

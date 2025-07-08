@@ -100,6 +100,7 @@ export const savingsGoals = pgTable("savings_goals", {
   targetAmount: doublePrecision("target_amount").notNull(),
   currentAmount: doublePrecision("current_amount").notNull().default(0),
   deadline: timestamp("deadline"),
+  color: text("color").notNull().default("blue"),
   icon: text("icon"),
 });
 

@@ -2059,13 +2059,19 @@ Group similar transactions together and sum the amounts for each category. Only 
       const savingsGoals = await storage.getSavingsGoals(user.id);
       
       // Transform data to match the expected interface for the component
-      const formattedGoals = savingsGoals.map((goal, index) => ({
+      const formattedGoals = savingsGoals.map((goal) => ({
         id: goal.id,
         name: goal.name,
         currentAmount: goal.currentAmount || 0,
         targetAmount: goal.targetAmount || 0,
+        deadline: goal.deadline ? new Date(goal.deadline).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No deadline',
+        color: goal.color || 'blue',
         progress: goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0,
-        color: ['blue', 'green', 'purple'][index % 3] // Assign colors in rotation
+        percent: goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0
       }));
       
       res.json(formattedGoals);
@@ -2079,7 +2085,7 @@ Group similar transactions together and sum the amounts for each category. Only 
   app.post("/api/savings-goals", requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
-      const { name, targetAmount, currentAmount, deadline } = req.body;
+      const { name, targetAmount, currentAmount, deadline, color } = req.body;
       
       // Validate required fields
       if (!name || !targetAmount) {
@@ -2091,7 +2097,8 @@ Group similar transactions together and sum the amounts for each category. Only 
         name,
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount || '0'),
-        deadline: deadline ? new Date(deadline) : null
+        deadline: deadline ? new Date(deadline) : null,
+        color: color || 'blue'
       };
       
       const newGoal = await storage.createSavingsGoal(goalData);
@@ -2101,9 +2108,14 @@ Group similar transactions together and sum the amounts for each category. Only 
         name: newGoal.name,
         currentAmount: newGoal.currentAmount || 0,
         targetAmount: newGoal.targetAmount || 0,
-        deadline: newGoal.deadline,
+        deadline: newGoal.deadline ? new Date(newGoal.deadline).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No deadline',
+        color: newGoal.color || 'blue',
         progress: newGoal.targetAmount > 0 ? Math.round(((newGoal.currentAmount || 0) / newGoal.targetAmount) * 100) : 0,
-        color: 'blue' // Default color
+        percent: newGoal.targetAmount > 0 ? Math.round(((newGoal.currentAmount || 0) / newGoal.targetAmount) * 100) : 0
       });
     } catch (error) {
       console.error("Error creating savings goal:", error);
@@ -2116,7 +2128,7 @@ Group similar transactions together and sum the amounts for each category. Only 
     try {
       const user = req.user as User;
       const goalId = parseInt(req.params.id);
-      const { name, targetAmount, currentAmount, deadline } = req.body;
+      const { name, targetAmount, currentAmount, deadline, color } = req.body;
       
       // Validate required fields
       if (!name || !targetAmount) {
@@ -2127,7 +2139,8 @@ Group similar transactions together and sum the amounts for each category. Only 
         name,
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount || '0'),
-        deadline: deadline ? new Date(deadline) : null
+        deadline: deadline ? new Date(deadline) : null,
+        color: color || 'blue'
       };
       
       const updatedGoal = await storage.updateSavingsGoal(goalId, updateData);
@@ -2141,9 +2154,14 @@ Group similar transactions together and sum the amounts for each category. Only 
         name: updatedGoal.name,
         currentAmount: updatedGoal.currentAmount || 0,
         targetAmount: updatedGoal.targetAmount || 0,
-        deadline: updatedGoal.deadline,
+        deadline: updatedGoal.deadline ? new Date(updatedGoal.deadline).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No deadline',
+        color: updatedGoal.color || 'blue',
         progress: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0,
-        color: 'blue' // Default color
+        percent: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0
       });
     } catch (error) {
       console.error("Error updating savings goal:", error);
