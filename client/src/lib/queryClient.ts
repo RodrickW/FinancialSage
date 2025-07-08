@@ -66,5 +66,6 @@ export const queryClient = new QueryClient({
 // Helper function for AI coaching that uses user's actual financial data
 export const getFinancialCoaching = async (question: string): Promise<string> => {
   const response = await apiRequest("POST", "/api/ai/coaching", { question });
-  return response.answer;
+  console.log('API response from coaching endpoint:', response);
+  return response.answer || "Sorry, I couldn't generate a response. Please try again.";
 };
