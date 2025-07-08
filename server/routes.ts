@@ -735,11 +735,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Reset budget data - set spent and remaining to 0 for all user's budget categories
       const userBudgets = await storage.getBudgets(user.id);
+      console.log(`Resetting ${userBudgets.length} budget categories for user ${user.id}`);
       for (const budget of userBudgets) {
-        await storage.updateBudget(budget.id, {
+        const updated = await storage.updateBudget(budget.id, {
           spent: 0,
           remaining: budget.amount // Reset remaining to the planned amount
         });
+        console.log(`Updated budget ${budget.category}: spent=0, remaining=${budget.amount}`);
       }
       
       // Note: Related transactions are automatically cleaned up by foreign key constraints

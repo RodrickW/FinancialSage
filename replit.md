@@ -310,6 +310,12 @@ Changelog:
   * Added account number, type, balance, institution, and connection status to details view
   * Included quick action buttons for balance refresh and account disconnection
   * Enhanced user experience in Accounts section with actual useful functionality
+- July 8, 2025. Budget management improvements and color scheme enhancement:
+  * Implemented automatic budget reset when bank accounts are disconnected (spent → $0, remaining → planned amount)
+  * Enhanced Budget page color coding: spent amounts display in red, remaining amounts in blue to match piggy bank icon
+  * Added comprehensive debug logging for budget reset functionality during account disconnection
+  * Applied consistent color scheme across individual categories, summary cards, and progress indicators
+  * Improved visual feedback for financial planning with intuitive red (spent) and blue (remaining) color system
 ```
 
 ## User Preferences

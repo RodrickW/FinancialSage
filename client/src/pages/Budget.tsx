@@ -356,7 +356,7 @@ export default function Budget() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Remaining</p>
-                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}`}>
                       ${totalRemaining.toLocaleString()}
                     </p>
                   </div>
@@ -395,7 +395,7 @@ export default function Budget() {
                                 <span className="font-medium text-gray-800">{category.name}</span>
                                 <div className="flex items-center space-x-2">
                                   <span className="text-sm">
-                                    <span className="text-red-600 font-medium">${category.actualSpent.toLocaleString()}</span>
+                                    <span className="text-red-600 font-semibold">${category.actualSpent.toLocaleString()}</span>
                                     <span className="text-gray-400"> / </span>
                                     <span className="text-gray-600">${category.plannedAmount.toLocaleString()}</span>
                                   </span>
