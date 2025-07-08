@@ -2070,8 +2070,7 @@ Group similar transactions together and sum the amounts for each category. Only 
           day: 'numeric' 
         }) : 'No deadline',
         color: goal.color || 'blue',
-        progress: goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0,
-        percent: goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0
+        progress: goal.targetAmount > 0 ? Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100) : 0
       }));
       
       res.json(formattedGoals);
@@ -2114,8 +2113,7 @@ Group similar transactions together and sum the amounts for each category. Only 
           day: 'numeric' 
         }) : 'No deadline',
         color: newGoal.color || 'blue',
-        progress: newGoal.targetAmount > 0 ? Math.round(((newGoal.currentAmount || 0) / newGoal.targetAmount) * 100) : 0,
-        percent: newGoal.targetAmount > 0 ? Math.round(((newGoal.currentAmount || 0) / newGoal.targetAmount) * 100) : 0
+        progress: newGoal.targetAmount > 0 ? Math.round(((newGoal.currentAmount || 0) / newGoal.targetAmount) * 100) : 0
       });
     } catch (error) {
       console.error("Error creating savings goal:", error);
@@ -2160,8 +2158,7 @@ Group similar transactions together and sum the amounts for each category. Only 
           day: 'numeric' 
         }) : 'No deadline',
         color: updatedGoal.color || 'blue',
-        progress: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0,
-        percent: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0
+        progress: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0
       });
     } catch (error) {
       console.error("Error updating savings goal:", error);

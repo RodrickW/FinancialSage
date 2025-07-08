@@ -348,7 +348,7 @@ export default function Goals() {
                           goal.color === 'purple' ? 'bg-purple-500' :
                           'bg-primary-500'
                         }`}
-                        style={{ width: `${goal.percent}%` }}
+                        style={{ width: `${goal.progress}%` }}
                       />
                     </div>
                   </div>
