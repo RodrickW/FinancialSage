@@ -324,6 +324,11 @@ Changelog:
   * Enhanced real-time sync capabilities with manual refresh options via "Sync All Accounts" button
   * Confirmed transaction categorization and spending analysis working correctly with authentic bank data
   * System now provides accurate financial insights based on properly formatted transaction amounts
+- July 8, 2025. Password reset SSL certificate fix:
+  * Fixed SSL certificate issue with custom domain (mindmymoneyapp.com) showing replit.app certificate instead of proper domain certificate
+  * Updated password reset emails to use secure Replit domain temporarily until custom domain SSL is resolved
+  * Password reset functionality now works immediately with trusted HTTPS links
+  * Custom domain SSL issue requires Replit platform resolution - working around with secure alternative URLs
 ```
 
 ## User Preferences

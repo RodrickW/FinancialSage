@@ -113,12 +113,11 @@ export async function resetPassword(token: string, newPassword: string): Promise
  * @param firstName User's first name
  */
 async function sendPasswordResetEmail(email: string, resetToken: string, firstName: string): Promise<void> {
-  // Use custom domain if in production, otherwise use Replit domain or localhost for dev
-  const domain = process.env.NODE_ENV === 'production' ? 
-    'https://mindmymoneyapp.com' : 
-    (process.env.REPLIT_DOMAINS ? 
-      `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-      'http://localhost:5000');
+  // Use Replit domain temporarily until SSL certificate is fixed for custom domain
+  const replitDomains = process.env.REPLIT_DOMAINS;
+  const domain = replitDomains ? 
+    `https://${replitDomains.split(',')[0]}` : 
+    'http://localhost:5000';
   const resetUrl = `${domain}/reset-password?token=${resetToken}`;
   
   const emailContent = {
