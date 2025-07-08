@@ -51,7 +51,7 @@ export default function FloatingCoach() {
     try {
       // Call the real AI coaching API for personalized responses using actual financial data
       const { getFinancialCoaching } = await import('@/lib/queryClient');
-      const aiResponse = await getFinancialCoaching(message);
+      const aiResponse = await getFinancialCoaching(userMessage.content);
       setConversation(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       setIsLoading(false);
       
