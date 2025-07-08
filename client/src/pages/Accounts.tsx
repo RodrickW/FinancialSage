@@ -26,9 +26,7 @@ export default function Accounts() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null);
   
-  // State for diagnosis dialog
-  const [diagnosisDialogOpen, setDiagnosisDialogOpen] = useState(false);
-  const [diagnosisData, setDiagnosisData] = useState<any>(null);
+
   
   // Get the user data
   const { data: userData } = useQuery({
@@ -205,52 +203,24 @@ export default function Accounts() {
                 </PlaidLinkButton>
               </TrialGate>
               
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => fullSyncMutation.mutate()}
-                  disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
-                >
-                  {fullSyncMutation.isPending ? (
-                    <>
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                      Syncing All...
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-icons mr-2">sync</span>
-                      Sync All Accounts
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={async () => {
-                    try {
-                      await apiRequest('POST', '/api/cleanup-duplicates');
-                      toast({
-                        title: "Cleanup Complete",
-                        description: "Duplicate transactions have been removed",
-                      });
-                      // Refresh the accounts data
-                      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
-                      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
-                    } catch (error) {
-                      toast({
-                        title: "Cleanup Failed",
-                        description: "Unable to clean up duplicate transactions",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-none hover:from-red-600 hover:to-orange-600"
-                >
-                  <span className="material-icons mr-2">cleaning_services</span>
-                  Remove Duplicates
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => fullSyncMutation.mutate()}
+                disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
+              >
+                {fullSyncMutation.isPending ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    Syncing All...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-icons mr-2">sync</span>
+                    Sync All Accounts
+                  </>
+                )}
+              </Button>
             </div>
           </div>
           
@@ -323,29 +293,6 @@ export default function Accounts() {
                         <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewDetails(account.id)}>
                           <span className="material-icons text-sm mr-1">more_horiz</span>
                           Details
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200" 
-                          onClick={async () => {
-                            try {
-                              const response = await apiRequest('POST', '/api/plaid/diagnose-account', { accountId: account.id });
-                              console.log('Diagnosis response:', response); // Debug log
-                              setDiagnosisData(response);
-                              setDiagnosisDialogOpen(true);
-                            } catch (error) {
-                              console.error('Diagnosis error:', error); // Debug log
-                              toast({
-                                title: "Diagnosis Failed",
-                                description: "Unable to diagnose account connection",
-                                variant: "destructive",
-                              });
-                            }
-                          }}
-                        >
-                          <span className="material-icons text-sm mr-1">bug_report</span>
-                          Diagnose
                         </Button>
                         <Button 
                           variant="outline" 
@@ -523,105 +470,7 @@ export default function Accounts() {
         </DialogContent>
       </Dialog>
 
-      {/* Account Diagnosis Dialog */}
-      <Dialog open={diagnosisDialogOpen} onOpenChange={setDiagnosisDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-blue-700">
-              <span className="material-icons mr-2 text-blue-500">bug_report</span>
-              Account Diagnosis
-            </DialogTitle>
-            <DialogDescription>
-              Connection status and troubleshooting information
-            </DialogDescription>
-          </DialogHeader>
-          
-          {diagnosisData && (
-            <div className="py-4 space-y-4">
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-800 mb-2">Account Information</h4>
-                <div className="space-y-1 text-sm">
-                  <div><strong>Institution:</strong> {diagnosisData?.accountInfo?.institution || diagnosisData?.institution || 'Unknown'}</div>
-                  <div><strong>Account:</strong> {diagnosisData?.accountInfo?.name || diagnosisData?.name || 'Unknown'}</div>
-                  <div><strong>Connection Status:</strong> 
-                    <span className={`ml-1 px-2 py-1 rounded text-xs ${
-                      diagnosisData?.connectionStatus === 'Connected' ? 'bg-green-100 text-green-800' : 
-                      diagnosisData?.connectionStatus === 'Error' ? 'bg-red-100 text-red-800' : 
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {diagnosisData?.connectionStatus || 'Testing...'}
-                    </span>
-                  </div>
-                  <div><strong>Transaction Access:</strong> 
-                    <span className={`ml-1 px-2 py-1 rounded text-xs ${
-                      diagnosisData?.transactionAccess === 'Available' ? 'bg-green-100 text-green-800' : 
-                      diagnosisData?.transactionAccess === 'Limited' ? 'bg-red-100 text-red-800' : 
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {diagnosisData?.transactionAccess || 'Testing...'}
-                    </span>
-                  </div>
-                  {diagnosisData.availableBalance !== undefined && diagnosisData.availableBalance !== null && (
-                    <div><strong>Plaid Balance:</strong> ${diagnosisData.availableBalance.toLocaleString()}</div>
-                  )}
-                  {diagnosisData.recentTransactionCount !== undefined && (
-                    <div><strong>Recent Transactions:</strong> {diagnosisData.recentTransactionCount} found</div>
-                  )}
-                </div>
-              </div>
 
-              {(diagnosisData.connectionError || diagnosisData.transactionError) && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-red-800 mb-2">Errors Detected</h4>
-                  <div className="space-y-1 text-sm text-red-700">
-                    {diagnosisData.connectionError && (
-                      <div><strong>Connection Error:</strong> {diagnosisData.connectionError}</div>
-                    )}
-                    {diagnosisData.transactionError && (
-                      <div><strong>Transaction Error:</strong> {diagnosisData.transactionError}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {diagnosisData.recommendations?.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-800 mb-2">Recommendations</h4>
-                  <ul className="space-y-1 text-sm text-blue-700">
-                    {diagnosisData.recommendations.map((rec: string, index: number) => (
-                      <li key={index} className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {diagnosisData.connectionStatus === 'Connected' && 
-               diagnosisData.transactionAccess === 'Available' && 
-               (!diagnosisData.recommendations || diagnosisData.recommendations.length === 0) && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-green-800 mb-2">✓ Account Working Properly</h4>
-                  <p className="text-sm text-green-700">
-                    Your account connection is healthy. If you're not seeing recent transactions, 
-                    this may be normal for your bank's processing schedule.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setDiagnosisDialogOpen(false)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

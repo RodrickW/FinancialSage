@@ -955,19 +955,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           console.log(`${account.institutionName} - Found ${accountTransactions.length} transactions in date range`);
           
+          // Create a map for super fast duplicate checking
+          const existingTransactionMap = new Map();
+          existingTransactions.forEach(tx => {
+            const key = `${tx.description}-${Math.round(parseFloat(tx.amount.toString()) * 100)}-${new Date(tx.date).toDateString()}`;
+            existingTransactionMap.set(key, true);
+          });
+
           for (const plaidTransaction of accountTransactions) {
-            // Enhanced duplicate detection - check for exact matches
-            const exists = existingTransactions.some(existing => 
-              existing.description === plaidTransaction.name && 
-              Math.abs(parseFloat(existing.amount.toString()) - plaidTransaction.amount) < 0.01 &&
-              new Date(existing.date).toDateString() === new Date(plaidTransaction.date).toDateString()
-            );
+            // Create same key format for comparison
+            const transactionKey = `${plaidTransaction.name}-${Math.round(plaidTransaction.amount * 100)}-${new Date(plaidTransaction.date).toDateString()}`;
             
-            if (!exists) {
+            if (!existingTransactionMap.has(transactionKey)) {
               const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
               await storage.createTransaction(transactionData);
               totalNewTransactions++;
               console.log(`${account.institutionName} - Added new transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
+              
+              // Add to map to prevent duplicates within this sync batch
+              existingTransactionMap.set(transactionKey, true);
             } else {
               console.log(`${account.institutionName} - Skipped duplicate transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
             }
@@ -2227,7 +2233,7 @@ Group similar transactions together and sum the amounts for each category. Only 
           SELECT DISTINCT ON (user_id, description, amount, date) id
           FROM transactions 
           WHERE user_id = $1
-          ORDER BY user_id, description, amount, date, created_at ASC
+          ORDER BY user_id, description, amount, date, id ASC
         ) AND user_id = $1
       `;
       

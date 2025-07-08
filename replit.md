@@ -349,6 +349,7 @@ Changelog:
   * Enhanced duplicate detection logic in sync process to prevent future duplicates
   * Improved transaction matching using exact description, amount, and date comparison
   * System now maintains clean transaction data without duplicates across all financial features
+  * Removed diagnostic and cleanup buttons per user request, focusing on prevention at source rather than cleanup solutions
 ```
 
 ## User Preferences
