@@ -65,7 +65,31 @@ export const queryClient = new QueryClient({
 
 // Helper function for AI coaching that uses user's actual financial data
 export const getFinancialCoaching = async (question: string): Promise<string> => {
-  const response = await apiRequest("POST", "/api/ai/coaching", { question });
-  console.log('API response from coaching endpoint:', response);
-  return response.answer || "Sorry, I couldn't generate a response. Please try again.";
+  try {
+    console.log('Making API request with question:', question);
+    const response = await fetch('/api/ai/coaching', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ question }),
+    });
+    
+    console.log('Raw fetch response:', response);
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Parsed JSON data:', data);
+    
+    return data.answer || "Sorry, I couldn't generate a response. Please try again.";
+  } catch (error) {
+    console.error('Error in getFinancialCoaching:', error);
+    return "Sorry, I couldn't generate a response. Please try again.";
+  }
 };
