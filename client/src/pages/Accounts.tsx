@@ -295,6 +295,41 @@ export default function Accounts() {
                         <Button 
                           variant="outline" 
                           size="sm" 
+                          className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200" 
+                          onClick={async () => {
+                            try {
+                              const response = await apiRequest('POST', '/api/plaid/diagnose-account', { accountId: account.id });
+                              
+                              let message = `Account Diagnosis for ${account.accountName}:\n\n`;
+                              message += `Connection: ${response.connectionStatus}\n`;
+                              if (response.availableBalance !== undefined) {
+                                message += `Current Balance: $${response.availableBalance}\n`;
+                              }
+                              message += `Transaction Access: ${response.transactionAccess || 'Unknown'}\n`;
+                              
+                              if (response.recommendations?.length > 0) {
+                                message += `\nRecommendations:\n`;
+                                response.recommendations.forEach((rec: string, index: number) => {
+                                  message += `${index + 1}. ${rec}\n`;
+                                });
+                              }
+                              
+                              alert(message);
+                            } catch (error) {
+                              toast({
+                                title: "Diagnosis Failed",
+                                description: "Unable to diagnose account connection",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          <span className="material-icons text-sm mr-1">bug_report</span>
+                          Diagnose
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
                           className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" 
                           onClick={() => handleDisconnectAccount(account.id, account.accountName)}
                         >

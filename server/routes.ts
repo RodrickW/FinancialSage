@@ -843,6 +843,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const account of plaidAccounts) {
         try {
+          console.log(`Refreshing balance for ${account.institutionName} account: ${account.accountName}`);
+          
           // Get fresh account data from Plaid
           const plaidData = await getAccounts(account.plaidAccessToken!);
           
@@ -852,17 +854,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (plaidAccount && plaidAccount.balances.current !== null) {
+            const oldBalance = account.balance;
+            const newBalance = plaidAccount.balances.current;
+            
             // Update the account balance
             await storage.updateAccount(account.id, {
-              balance: plaidAccount.balances.current
+              balance: newBalance
             });
             updatedAccountsCount++;
             
-            console.log(`Updated balance for ${account.accountName}: $${plaidAccount.balances.current}`);
+            console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${newBalance}`);
+          } else {
+            console.log(`${account.institutionName} - No balance update available for ${account.accountName}`);
           }
           
-        } catch (accountError) {
-          console.error(`Error refreshing account ${account.id}:`, accountError);
+        } catch (accountError: any) {
+          console.error(`Error refreshing ${account.institutionName} account ${account.accountName}:`, accountError.message);
+          
+          // Check for specific Plaid error codes
+          if (accountError.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
+            console.error(`${account.institutionName} requires user to re-authenticate - login credentials may have expired`);
+          } else if (accountError.response?.data?.error_code === 'TRANSACTIONS_NOT_READY') {
+            console.error(`${account.institutionName} transactions are still processing - try again later`);
+          }
           // Continue with other accounts even if one fails
         }
       }
@@ -898,6 +912,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const account of plaidAccounts) {
         try {
+          console.log(`Full sync for ${account.institutionName} account: ${account.accountName} (last ${days} days)`);
+          
           // 1. Refresh account balance
           const plaidData = await getAccounts(account.plaidAccessToken!);
           const plaidAccount = plaidData.accounts.find(
@@ -905,10 +921,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (plaidAccount && plaidAccount.balances.current !== null) {
+            const oldBalance = account.balance;
+            const newBalance = plaidAccount.balances.current;
+            
             await storage.updateAccount(account.id, {
-              balance: plaidAccount.balances.current
+              balance: newBalance
             });
             updatedBalances++;
+            console.log(`${account.institutionName} - Balance updated: $${oldBalance} → $${newBalance}`);
           }
           
           // 2. Sync recent transactions
@@ -932,6 +952,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check for new transactions
           const existingTransactions = await storage.getAccountTransactions(account.id, 1000);
           
+          console.log(`${account.institutionName} - Found ${accountTransactions.length} transactions in date range`);
+          
           for (const plaidTransaction of accountTransactions) {
             const exists = existingTransactions.some(existing => 
               existing.description === plaidTransaction.name && 
@@ -943,21 +965,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
               await storage.createTransaction(transactionData);
               totalNewTransactions++;
+              console.log(`${account.institutionName} - Added new transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
             }
           }
           
-        } catch (accountError) {
-          console.error(`Error syncing account ${account.accountName}:`, accountError);
+        } catch (accountError: any) {
+          console.error(`Error syncing ${account.institutionName} account ${account.accountName}:`, accountError.message);
+          
+          // Navy Federal specific error handling
+          if (account.institutionName?.toLowerCase().includes('navy federal')) {
+            if (accountError.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
+              console.error('Navy Federal requires re-authentication - user needs to reconnect account');
+            } else if (accountError.response?.data?.error_code === 'TRANSACTIONS_NOT_READY') {
+              console.error('Navy Federal transactions are still processing - this can take 24-48 hours for new connections');
+            } else if (accountError.response?.data?.error_code === 'PRODUCTS_NOT_SUPPORTED') {
+              console.error('Navy Federal may have limited transaction support - check Plaid institution status');
+            }
+          }
         }
       }
       
       console.log(`Full sync completed: ${updatedBalances} balances updated, ${totalNewTransactions} new transactions`);
       
+      // Add specific messaging for Navy Federal users
+      const navyFederalAccounts = plaidAccounts.filter(acc => 
+        acc.institutionName?.toLowerCase().includes('navy federal')
+      );
+      
+      if (navyFederalAccounts.length > 0 && totalNewTransactions === 0) {
+        console.log('Navy Federal sync note: If no new transactions found, this may be normal. Navy Federal can have delayed transaction posting.');
+      }
+      
       res.json({
         message: 'Full sync completed successfully',
         updatedBalances,
         newTransactions: totalNewTransactions,
-        syncedAccounts: plaidAccounts.length
+        syncedAccounts: plaidAccounts.length,
+        note: navyFederalAccounts.length > 0 && totalNewTransactions === 0 ? 
+          'Navy Federal transactions may take 24-48 hours to appear after recent account activity.' : undefined
       });
       
     } catch (error) {
@@ -2163,6 +2208,108 @@ Group similar transactions together and sum the amounts for each category. Only 
     } catch (error) {
       console.error("Error updating savings goal:", error);
       res.status(500).json({ message: "Failed to update savings goal" });
+    }
+  });
+
+  // Diagnostic endpoint for troubleshooting bank sync issues
+  app.post('/api/plaid/diagnose-account', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { accountId } = req.body;
+      
+      if (!accountId) {
+        return res.status(400).json({ message: 'Account ID is required' });
+      }
+      
+      const account = await storage.getAccount(accountId);
+      if (!account || account.userId !== user.id) {
+        return res.status(404).json({ message: 'Account not found' });
+      }
+      
+      const diagnostics = {
+        accountInfo: {
+          name: account.accountName,
+          institution: account.institutionName,
+          type: account.accountType,
+          lastUpdated: account.updatedAt,
+          hasAccessToken: !!account.plaidAccessToken
+        },
+        recommendations: []
+      };
+      
+      // Test Plaid connection
+      try {
+        if (account.plaidAccessToken) {
+          const plaidData = await getAccounts(account.plaidAccessToken);
+          const plaidAccount = plaidData.accounts.find(acc => acc.account_id === account.plaidAccountId);
+          
+          if (plaidAccount) {
+            diagnostics.connectionStatus = 'Connected';
+            diagnostics.availableBalance = plaidAccount.balances.current;
+            diagnostics.lastPlaidUpdate = new Date().toISOString();
+            
+            // Test transaction access
+            try {
+              const today = new Date();
+              const yesterday = new Date(today);
+              yesterday.setDate(today.getDate() - 1);
+              
+              const transactionsResponse = await getTransactions(
+                account.plaidAccessToken,
+                yesterday.toISOString().split('T')[0],
+                today.toISOString().split('T')[0]
+              );
+              
+              diagnostics.transactionAccess = 'Available';
+              diagnostics.recentTransactionCount = transactionsResponse.transactions?.length || 0;
+              
+            } catch (transactionError: any) {
+              diagnostics.transactionAccess = 'Limited';
+              diagnostics.transactionError = transactionError.response?.data?.error_code || transactionError.message;
+              
+              if (transactionError.response?.data?.error_code === 'TRANSACTIONS_NOT_READY') {
+                diagnostics.recommendations.push(
+                  'Transactions are still processing. This is common with Navy Federal and can take 24-48 hours.'
+                );
+              }
+            }
+            
+            // Navy Federal specific recommendations
+            if (account.institutionName?.toLowerCase().includes('navy federal')) {
+              diagnostics.recommendations.push(
+                'Navy Federal typically has delayed transaction posting compared to other banks.',
+                'If account was recently connected, allow 24-48 hours for full transaction sync.',
+                'Try manually refreshing in the evening when Navy Federal processes daily updates.'
+              );
+            }
+            
+          } else {
+            diagnostics.connectionStatus = 'Account Not Found';
+            diagnostics.recommendations.push('Account may need to be reconnected through Plaid Link');
+          }
+        } else {
+          diagnostics.connectionStatus = 'No Access Token';
+          diagnostics.recommendations.push('Account needs to be reconnected');
+        }
+        
+      } catch (connectionError: any) {
+        diagnostics.connectionStatus = 'Error';
+        diagnostics.connectionError = connectionError.response?.data?.error_code || connectionError.message;
+        
+        if (connectionError.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
+          diagnostics.recommendations.push(
+            'Bank requires re-authentication. Please disconnect and reconnect your account.',
+            'This often happens when you change your online banking password.'
+          );
+        }
+      }
+      
+      console.log(`Diagnostics for ${account.institutionName} account:`, diagnostics);
+      res.json(diagnostics);
+      
+    } catch (error) {
+      console.error('Error in account diagnostics:', error);
+      res.status(500).json({ error: 'Failed to diagnose account' });
     }
   });
 
