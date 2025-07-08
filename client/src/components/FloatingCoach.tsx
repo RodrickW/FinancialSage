@@ -39,15 +39,10 @@ export default function FloatingCoach() {
     if (!message.trim()) return;
     
     const messageText = message.trim();
-    console.log('Sending message:', messageText);
     
     // Add user message to conversation
     const userMessage = { role: 'user' as const, content: messageText };
-    setConversation(prev => {
-      const newConversation = [...prev, userMessage];
-      console.log('Updated conversation with user message:', newConversation);
-      return newConversation;
-    });
+    setConversation(prev => [...prev, userMessage]);
     
     // Clear input field
     setMessage('');
@@ -59,13 +54,8 @@ export default function FloatingCoach() {
       // Call the real AI coaching API for personalized responses using actual financial data
       const { getFinancialCoaching } = await import('@/lib/queryClient');
       const aiResponse = await getFinancialCoaching(messageText);
-      console.log('Received AI response:', aiResponse);
       
-      setConversation(prev => {
-        const newConversation = [...prev, { role: 'assistant', content: aiResponse }];
-        console.log('Updated conversation with AI response:', newConversation);
-        return newConversation;
-      });
+      setConversation(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       setIsLoading(false);
       
     } catch (error) {

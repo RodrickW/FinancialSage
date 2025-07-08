@@ -1688,10 +1688,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add a personality to the coach in the prompt
       const answer = await getFinancialCoaching(question, userData);
       
-      console.log('AI Coaching - Generated answer:', answer);
-      console.log('AI Coaching - Answer type:', typeof answer);
-      console.log('AI Coaching - Sending response:', { answer });
-      
       res.json({ answer });
     } catch (error) {
       console.error('Error getting coaching advice:', error);

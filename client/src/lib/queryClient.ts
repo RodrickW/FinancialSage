@@ -66,7 +66,6 @@ export const queryClient = new QueryClient({
 // Helper function for AI coaching that uses user's actual financial data
 export const getFinancialCoaching = async (question: string): Promise<string> => {
   try {
-    console.log('Making API request with question:', question);
     const response = await fetch('/api/ai/coaching', {
       method: 'POST',
       headers: {
@@ -76,17 +75,11 @@ export const getFinancialCoaching = async (question: string): Promise<string> =>
       body: JSON.stringify({ question }),
     });
     
-    console.log('Raw fetch response:', response);
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('Parsed JSON data:', data);
-    
     return data.answer || "Sorry, I couldn't generate a response. Please try again.";
   } catch (error) {
     console.error('Error in getFinancialCoaching:', error);
