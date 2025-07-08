@@ -356,7 +356,7 @@ export default function Budget() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Remaining</p>
-                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                       ${totalRemaining.toLocaleString()}
                     </p>
                   </div>
@@ -394,8 +394,10 @@ export default function Budget() {
                               <div className="flex items-center justify-between mb-2">
                                 <span className="font-medium text-gray-800">{category.name}</span>
                                 <div className="flex items-center space-x-2">
-                                  <span className="text-sm text-gray-600">
-                                    ${category.actualSpent.toLocaleString()} / ${category.plannedAmount.toLocaleString()}
+                                  <span className="text-sm">
+                                    <span className="text-red-600 font-medium">${category.actualSpent.toLocaleString()}</span>
+                                    <span className="text-gray-400"> / </span>
+                                    <span className="text-gray-600">${category.plannedAmount.toLocaleString()}</span>
                                   </span>
                                   <Button
                                     size="sm"
@@ -418,7 +420,7 @@ export default function Budget() {
                                     <span className={isOverBudget ? 'text-red-600' : 'text-gray-500'}>
                                       {progressPercentage.toFixed(0)}% used
                                     </span>
-                                    <span className={`${category.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    <span className={`${category.remaining >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                                       ${Math.abs(category.remaining).toLocaleString()} {category.remaining >= 0 ? 'left' : 'over'}
                                     </span>
                                   </div>

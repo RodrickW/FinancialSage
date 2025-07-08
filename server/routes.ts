@@ -733,8 +733,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: 'Failed to disconnect account' });
       }
       
+      // Reset budget data - set spent and remaining to 0 for all user's budget categories
+      const userBudgets = await storage.getBudgets(user.id);
+      for (const budget of userBudgets) {
+        await storage.updateBudget(budget.id, {
+          spent: 0,
+          remaining: budget.amount // Reset remaining to the planned amount
+        });
+      }
+      
       // Note: Related transactions are automatically cleaned up by foreign key constraints
-      // Budget data and insights will be recalculated on next access
+      // Budget data has been reset and insights will be recalculated on next access
       
       // Log the account disconnection for audit purposes
       console.log(`Account disconnected: ${account.accountName} (ID: ${accountId}) by user ${user.id}`);
