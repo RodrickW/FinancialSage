@@ -38,9 +38,16 @@ export default function FloatingCoach() {
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     
+    const messageText = message.trim();
+    console.log('Sending message:', messageText);
+    
     // Add user message to conversation
-    const userMessage = { role: 'user' as const, content: message };
-    setConversation(prev => [...prev, userMessage]);
+    const userMessage = { role: 'user' as const, content: messageText };
+    setConversation(prev => {
+      const newConversation = [...prev, userMessage];
+      console.log('Updated conversation with user message:', newConversation);
+      return newConversation;
+    });
     
     // Clear input field
     setMessage('');
@@ -51,11 +58,18 @@ export default function FloatingCoach() {
     try {
       // Call the real AI coaching API for personalized responses using actual financial data
       const { getFinancialCoaching } = await import('@/lib/queryClient');
-      const aiResponse = await getFinancialCoaching(userMessage.content);
-      setConversation(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      const aiResponse = await getFinancialCoaching(messageText);
+      console.log('Received AI response:', aiResponse);
+      
+      setConversation(prev => {
+        const newConversation = [...prev, { role: 'assistant', content: aiResponse }];
+        console.log('Updated conversation with AI response:', newConversation);
+        return newConversation;
+      });
       setIsLoading(false);
       
     } catch (error) {
+      console.error('AI coaching error:', error);
       toast({
         title: "Error",
         description: "Failed to get a response. Please try again.",
@@ -166,22 +180,26 @@ export default function FloatingCoach() {
             )}
             
             {/* Conversation messages */}
-            {conversation.map((msg, i) => (
-              <div 
-                key={i} 
-                className={`mb-3 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
-              >
-                <div 
-                  className={`inline-block rounded-lg p-3 max-w-[85%] ${
-                    msg.role === 'user' 
-                      ? 'bg-green-100 text-green-900' 
-                      : 'bg-neutral-100 text-neutral-900'
-                  }`}
-                >
-                  {msg.content}
-                </div>
+            {conversation.length > 0 && (
+              <div>
+                {conversation.map((msg, i) => (
+                  <div 
+                    key={i} 
+                    className={`mb-3 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
+                  >
+                    <div 
+                      className={`inline-block rounded-lg p-3 max-w-[85%] ${
+                        msg.role === 'user' 
+                          ? 'bg-green-100 text-green-900' 
+                          : 'bg-neutral-100 text-neutral-900'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
             
             {/* Loading indicator */}
             {isLoading && (
