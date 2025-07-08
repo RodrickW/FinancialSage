@@ -303,9 +303,11 @@ export default function Accounts() {
                           onClick={async () => {
                             try {
                               const response = await apiRequest('POST', '/api/plaid/diagnose-account', { accountId: account.id });
+                              console.log('Diagnosis response:', response); // Debug log
                               setDiagnosisData(response);
                               setDiagnosisDialogOpen(true);
                             } catch (error) {
+                              console.error('Diagnosis error:', error); // Debug log
                               toast({
                                 title: "Diagnosis Failed",
                                 description: "Unable to diagnose account connection",
@@ -511,24 +513,24 @@ export default function Accounts() {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-800 mb-2">Account Information</h4>
                 <div className="space-y-1 text-sm">
-                  <div><strong>Institution:</strong> {diagnosisData.accountInfo?.institution || 'Unknown'}</div>
-                  <div><strong>Account:</strong> {diagnosisData.accountInfo?.name || 'Unknown'}</div>
+                  <div><strong>Institution:</strong> {diagnosisData?.accountInfo?.institution || diagnosisData?.institution || 'Unknown'}</div>
+                  <div><strong>Account:</strong> {diagnosisData?.accountInfo?.name || diagnosisData?.name || 'Unknown'}</div>
                   <div><strong>Connection Status:</strong> 
                     <span className={`ml-1 px-2 py-1 rounded text-xs ${
-                      diagnosisData.connectionStatus === 'Connected' ? 'bg-green-100 text-green-800' : 
-                      diagnosisData.connectionStatus === 'Error' ? 'bg-red-100 text-red-800' : 
+                      diagnosisData?.connectionStatus === 'Connected' ? 'bg-green-100 text-green-800' : 
+                      diagnosisData?.connectionStatus === 'Error' ? 'bg-red-100 text-red-800' : 
                       'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {diagnosisData.connectionStatus || 'Unknown'}
+                      {diagnosisData?.connectionStatus || 'Testing...'}
                     </span>
                   </div>
                   <div><strong>Transaction Access:</strong> 
                     <span className={`ml-1 px-2 py-1 rounded text-xs ${
-                      diagnosisData.transactionAccess === 'Available' ? 'bg-green-100 text-green-800' : 
-                      diagnosisData.transactionAccess === 'Limited' ? 'bg-red-100 text-red-800' : 
+                      diagnosisData?.transactionAccess === 'Available' ? 'bg-green-100 text-green-800' : 
+                      diagnosisData?.transactionAccess === 'Limited' ? 'bg-red-100 text-red-800' : 
                       'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {diagnosisData.transactionAccess || 'Unknown'}
+                      {diagnosisData?.transactionAccess || 'Testing...'}
                     </span>
                   </div>
                   {diagnosisData.availableBalance !== undefined && diagnosisData.availableBalance !== null && (
