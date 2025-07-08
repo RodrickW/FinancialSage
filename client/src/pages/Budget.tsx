@@ -356,7 +356,7 @@ export default function Budget() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Remaining</p>
-                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}`}>
+                    <p className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-blue-600' : 'text-red-600'}`} style={{color: totalRemaining >= 0 ? '#2563eb' : '#dc2626'}}>
                       ${totalRemaining.toLocaleString()}
                     </p>
                   </div>
@@ -395,7 +395,7 @@ export default function Budget() {
                                 <span className="font-medium text-gray-800">{category.name}</span>
                                 <div className="flex items-center space-x-2">
                                   <span className="text-sm">
-                                    <span className="text-red-600 font-semibold">${category.actualSpent.toLocaleString()}</span>
+                                    <span className="text-red-600 font-semibold" style={{color: '#dc2626'}}>${category.actualSpent.toLocaleString()}</span>
                                     <span className="text-gray-400"> / </span>
                                     <span className="text-gray-600">${category.plannedAmount.toLocaleString()}</span>
                                   </span>
@@ -420,7 +420,7 @@ export default function Budget() {
                                     <span className={isOverBudget ? 'text-red-600' : 'text-gray-500'}>
                                       {progressPercentage.toFixed(0)}% used
                                     </span>
-                                    <span className={`${category.remaining >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                    <span className={`${category.remaining >= 0 ? 'text-blue-600' : 'text-red-600'}`} style={{color: category.remaining >= 0 ? '#2563eb' : '#dc2626'}}>
                                       ${Math.abs(category.remaining).toLocaleString()} {category.remaining >= 0 ? 'left' : 'over'}
                                     </span>
                                   </div>

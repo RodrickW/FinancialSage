@@ -1653,6 +1653,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual budget reset endpoint for testing
+  app.post('/api/budgets/reset', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Reset budget data - set spent and remaining to 0 for all user's budget categories
+      const userBudgets = await storage.getBudgets(user.id);
+      console.log(`Manual reset: ${userBudgets.length} budget categories for user ${user.id}`);
+      for (const budget of userBudgets) {
+        await storage.updateBudget(budget.id, {
+          spent: 0,
+          remaining: budget.amount // Reset remaining to the planned amount
+        });
+        console.log(`Reset budget ${budget.category}: spent=0, remaining=${budget.amount}`);
+      }
+      
+      res.json({ message: 'Budget data reset successfully', categoriesReset: userBudgets.length });
+    } catch (error) {
+      console.error('Error resetting budgets:', error);
+      res.status(500).json({ message: 'Failed to reset budget data' });
+    }
+  });
+
   // Save/update budget data
   app.post('/api/budgets', requireAuth, async (req, res) => {
     try {
