@@ -346,7 +346,9 @@ export default function Goals() {
                           goal.color === 'blue' ? 'bg-blue-500' :
                           goal.color === 'green' ? 'bg-green-500' :
                           goal.color === 'purple' ? 'bg-purple-500' :
-                          'bg-primary-500'
+                          goal.color === 'red' ? 'bg-red-500' :
+                          goal.color === 'orange' ? 'bg-orange-500' :
+                          'bg-blue-500'
                         }`}
                         style={{ width: `${goal.progress}%` }}
                       />
