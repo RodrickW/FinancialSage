@@ -26,7 +26,7 @@ export async function refreshAllAccountBalances() {
         
         for (const account of plaidAccounts) {
           try {
-            // Get fresh account data from Plaid
+            // Get fresh account data from Plaid using balance endpoint for real-time data
             const plaidData = await getAccounts(account.plaidAccessToken!);
             
             // Find the matching account in Plaid response
@@ -34,18 +34,29 @@ export async function refreshAllAccountBalances() {
               acc => acc.account_id === account.plaidAccountId
             );
             
-            if (plaidAccount && plaidAccount.balances.current !== null) {
+            if (plaidAccount) {
               const oldBalance = account.balance;
-              const newBalance = plaidAccount.balances.current;
+              const currentBalance = plaidAccount.balances.current;
+              const availableBalance = plaidAccount.balances.available;
               
-              // Only update if balance actually changed
-              if (oldBalance !== newBalance) {
+              // Log all balance information for debugging
+              console.log(`${account.institutionName} - Balance Details:`, {
+                current: currentBalance,
+                available: availableBalance,
+                stored: oldBalance,
+                accountId: plaidAccount.account_id
+              });
+              
+              // Use available balance if it exists, otherwise use current balance
+              const bestBalance = availableBalance !== null ? availableBalance : currentBalance;
+              
+              if (bestBalance !== null && oldBalance !== bestBalance) {
                 await storage.updateAccount(account.id, {
-                  balance: newBalance
+                  balance: bestBalance
                 });
                 totalAccountsRefreshed++;
                 
-                console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${newBalance}`);
+                console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${bestBalance} (using ${availableBalance !== null ? 'available' : 'current'} balance)`);
               }
             }
             
@@ -91,7 +102,7 @@ export async function refreshUserBalances(userId: number) {
     
     for (const account of plaidAccounts) {
       try {
-        // Get fresh account data from Plaid
+        // Get fresh account data from Plaid using balance endpoint for real-time data
         const plaidData = await getAccounts(account.plaidAccessToken!);
         
         // Find the matching account in Plaid response
@@ -99,17 +110,30 @@ export async function refreshUserBalances(userId: number) {
           acc => acc.account_id === account.plaidAccountId
         );
         
-        if (plaidAccount && plaidAccount.balances.current !== null) {
+        if (plaidAccount) {
           const oldBalance = account.balance;
-          const newBalance = plaidAccount.balances.current;
+          const currentBalance = plaidAccount.balances.current;
+          const availableBalance = plaidAccount.balances.available;
           
-          // Always update to ensure freshest data
-          await storage.updateAccount(account.id, {
-            balance: newBalance
+          // Log all balance information for debugging
+          console.log(`${account.institutionName} - User Balance Details:`, {
+            current: currentBalance,
+            available: availableBalance,
+            stored: oldBalance,
+            accountId: plaidAccount.account_id
           });
-          updatedCount++;
           
-          console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${newBalance}`);
+          // Use available balance if it exists, otherwise use current balance
+          const bestBalance = availableBalance !== null ? availableBalance : currentBalance;
+          
+          if (bestBalance !== null) {
+            await storage.updateAccount(account.id, {
+              balance: bestBalance
+            });
+            updatedCount++;
+            
+            console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${bestBalance} (using ${availableBalance !== null ? 'available' : 'current'} balance)`);
+          }
         }
         
       } catch (accountError: any) {

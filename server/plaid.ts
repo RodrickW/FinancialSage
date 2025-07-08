@@ -66,10 +66,10 @@ export async function exchangePublicToken(publicToken: string) {
   }
 }
 
-// Get user's accounts from Plaid
+// Get user's accounts from Plaid with fresh balance data
 export async function getAccounts(accessToken: string) {
   try {
-    const response = await plaidClient.accountsGet({
+    const response = await plaidClient.accountsBalanceGet({
       access_token: accessToken,
     });
     return response.data;
