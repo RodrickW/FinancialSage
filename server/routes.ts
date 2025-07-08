@@ -10,6 +10,7 @@ import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, for
 import { servePlaidSDK } from "./plaid-proxy";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
 import { registerSubscriptionRoutes } from "./routes-subscription";
+import { pool } from "./db";
 import { generatePasswordResetToken, verifyResetToken, resetPassword } from "./passwordReset";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -955,10 +956,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`${account.institutionName} - Found ${accountTransactions.length} transactions in date range`);
           
           for (const plaidTransaction of accountTransactions) {
+            // Enhanced duplicate detection - check for exact matches
             const exists = existingTransactions.some(existing => 
               existing.description === plaidTransaction.name && 
-              Math.abs(existing.amount - plaidTransaction.amount) < 0.01 &&
-              new Date(existing.date).getTime() === new Date(plaidTransaction.date).getTime()
+              Math.abs(parseFloat(existing.amount.toString()) - plaidTransaction.amount) < 0.01 &&
+              new Date(existing.date).toDateString() === new Date(plaidTransaction.date).toDateString()
             );
             
             if (!exists) {
@@ -966,6 +968,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await storage.createTransaction(transactionData);
               totalNewTransactions++;
               console.log(`${account.institutionName} - Added new transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
+            } else {
+              console.log(`${account.institutionName} - Skipped duplicate transaction: ${plaidTransaction.name} $${plaidTransaction.amount}`);
             }
           }
           
@@ -2208,6 +2212,37 @@ Group similar transactions together and sum the amounts for each category. Only 
     } catch (error) {
       console.error("Error updating savings goal:", error);
       res.status(500).json({ message: "Failed to update savings goal" });
+    }
+  });
+
+  // Clean up duplicate transactions endpoint
+  app.post('/api/cleanup-duplicates', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Find and remove duplicate transactions for this user
+      const duplicateQuery = `
+        DELETE FROM transactions 
+        WHERE id NOT IN (
+          SELECT DISTINCT ON (user_id, description, amount, date) id
+          FROM transactions 
+          WHERE user_id = $1
+          ORDER BY user_id, description, amount, date, created_at ASC
+        ) AND user_id = $1
+      `;
+      
+      const result = await pool.query(duplicateQuery, [user.id]);
+      
+      console.log(`Cleaned up duplicate transactions for user ${user.id}`);
+      
+      res.json({
+        message: 'Duplicate transactions cleaned up successfully',
+        removedCount: result.rowCount || 0
+      });
+      
+    } catch (error) {
+      console.error('Error cleaning up duplicates:', error);
+      res.status(500).json({ error: 'Failed to clean up duplicates' });
     }
   });
 

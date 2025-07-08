@@ -342,6 +342,13 @@ Changelog:
   * Enhanced sync error messages with specific guidance for ITEM_LOGIN_REQUIRED and TRANSACTIONS_NOT_READY errors
   * Added "Diagnose" button to Accounts page for users to troubleshoot sync issues with detailed connection status
   * System now provides specific guidance for Navy Federal's 24-48 hour transaction processing delays
+- July 8, 2025. Duplicate transaction cleanup implementation:
+  * Fixed duplicate transaction issue showing same transactions multiple times in Recent Transactions
+  * Implemented /api/cleanup-duplicates endpoint to remove duplicate transactions using SQL deduplication
+  * Added "Remove Duplicates" button to Accounts page for one-click cleanup of duplicate transactions
+  * Enhanced duplicate detection logic in sync process to prevent future duplicates
+  * Improved transaction matching using exact description, amount, and date comparison
+  * System now maintains clean transaction data without duplicates across all financial features
 ```
 
 ## User Preferences

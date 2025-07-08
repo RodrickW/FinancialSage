@@ -205,24 +205,52 @@ export default function Accounts() {
                 </PlaidLinkButton>
               </TrialGate>
               
-              <Button 
-                variant="outline" 
-                onClick={() => fullSyncMutation.mutate()}
-                disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
-              >
-                {fullSyncMutation.isPending ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    Syncing All...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-icons mr-2">sync</span>
-                    Sync All Accounts
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => fullSyncMutation.mutate()}
+                  disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
+                >
+                  {fullSyncMutation.isPending ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                      Syncing All...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-icons mr-2">sync</span>
+                      Sync All Accounts
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={async () => {
+                    try {
+                      await apiRequest('POST', '/api/cleanup-duplicates');
+                      toast({
+                        title: "Cleanup Complete",
+                        description: "Duplicate transactions have been removed",
+                      });
+                      // Refresh the accounts data
+                      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
+                      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
+                    } catch (error) {
+                      toast({
+                        title: "Cleanup Failed",
+                        description: "Unable to clean up duplicate transactions",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-none hover:from-red-600 hover:to-orange-600"
+                >
+                  <span className="material-icons mr-2">cleaning_services</span>
+                  Remove Duplicates
+                </Button>
+              </div>
             </div>
           </div>
           
