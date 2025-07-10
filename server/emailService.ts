@@ -17,20 +17,51 @@ interface EmailParams {
   html: string;
 }
 
-export async function sendEmail(params: EmailParams): Promise<boolean> {
+export async function sendEmail(params: EmailParams & { headers?: any }): Promise<boolean> {
   if (!process.env.SENDGRID_API_KEY) {
     console.log('Email would be sent:', params.subject);
     return false;
   }
 
   try {
-    await mailService.send({
+    const emailData: any = {
       to: params.to,
-      from: params.from,
+      from: {
+        email: params.from,
+        name: 'Mind My Money'
+      },
       subject: params.subject,
       text: params.text || '',
       html: params.html || '',
-    });
+      // Anti-spam improvements
+      trackingSettings: {
+        clickTracking: {
+          enable: false
+        },
+        openTracking: {
+          enable: false
+        }
+      },
+      // Add authentication headers
+      mailSettings: {
+        bypassListManagement: {
+          enable: false
+        },
+        footer: {
+          enable: false
+        },
+        sandboxMode: {
+          enable: false
+        }
+      }
+    };
+
+    // Add custom headers if provided
+    if (params.headers) {
+      emailData.headers = params.headers;
+    }
+
+    await mailService.send(emailData);
     console.log(`Email sent successfully: ${params.subject}`);
     return true;
   } catch (error) {

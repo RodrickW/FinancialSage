@@ -124,6 +124,13 @@ async function sendPasswordResetEmail(email: string, resetToken: string, firstNa
     to: email,
     from: process.env.FROM_EMAIL!,
     subject: 'Reset Your Mind My Money Password',
+    // Improved email deliverability headers
+    headers: {
+      'Message-ID': `<${Date.now()}-${Math.random()}@mindmymoney.com>`,
+      'List-Unsubscribe': '<mailto:unsubscribe@mindmymoney.com>',
+      'Precedence': 'bulk',
+      'X-Entity-Ref-ID': `password-reset-${Date.now()}`,
+    },
     text: `Hi ${firstName},
 
 You requested to reset your password for your Mind My Money account.
@@ -136,50 +143,109 @@ This link will expire in 1 hour.
 If you didn't request this password reset, please ignore this email.
 
 Best regards,
-The Mind My Money Team`,
+The Mind My Money Team
+
+---
+Mind My Money - Personal Finance Management
+This is an automated security email.`,
     html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Mind My Money</h1>
-        <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Password Reset Request</p>
-      </div>
-      
-      <div style="background: white; padding: 40px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h2 style="color: #333; margin-top: 0;">Hi ${firstName},</h2>
-        
-        <p style="color: #666; font-size: 16px; line-height: 1.6;">
-          You requested to reset your password for your Mind My Money account.
-        </p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" 
-             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                    color: white; 
-                    padding: 15px 30px; 
-                    text-decoration: none; 
-                    border-radius: 5px; 
-                    font-weight: bold; 
-                    display: inline-block;">
-            Reset Your Password
-          </a>
-        </div>
-        
-        <p style="color: #999; font-size: 14px; text-align: center;">
-          This link will expire in 1 hour.
-        </p>
-        
-        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        
-        <p style="color: #999; font-size: 14px;">
-          If you didn't request this password reset, please ignore this email.
-        </p>
-        
-        <p style="color: #999; font-size: 14px;">
-          Best regards,<br>
-          The Mind My Money Team
-        </p>
-      </div>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reset Your Password - Mind My Money</title>
+      <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+      <![endif]-->
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 20px 0;">
+            <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <h1 style="color: white; margin: 0; font-size: 28px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Mind My Money</h1>
+                  <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Password Reset Request</p>
+                </td>
+              </tr>
+              
+              <!-- Content -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${firstName},</h2>
+                  
+                  <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    You requested to reset your password for your Mind My Money account. Click the button below to set a new password.
+                  </p>
+                  
+                  <!-- CTA Button -->
+                  <table role="presentation" style="margin: 30px auto; text-align: center;">
+                    <tr>
+                      <td style="text-align: center;">
+                        <a href="${resetUrl}" 
+                           style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                  color: white; 
+                                  padding: 16px 32px; 
+                                  text-decoration: none; 
+                                  border-radius: 8px; 
+                                  font-weight: 600;
+                                  font-size: 16px;
+                                  display: inline-block;
+                                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                                  text-align: center;
+                                  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
+                          Reset Your Password
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <p style="color: #6b7280; font-size: 14px; text-align: center; margin: 24px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    This link will expire in 1 hour for your security.
+                  </p>
+                  
+                  <!-- Alternative Link -->
+                  <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 24px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    If the button above doesn't work, copy and paste this link into your browser:<br>
+                    <a href="${resetUrl}" style="color: #10b981; word-break: break-all;">${resetUrl}</a>
+                  </p>
+                  
+                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;">
+                  
+                  <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background: #f9fafb; padding: 30px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    Best regards,<br>
+                    <strong>The Mind My Money Team</strong>
+                  </p>
+                  <p style="color: #9ca3af; font-size: 12px; margin: 16px 0 0 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    Mind My Money - Personal Finance Management<br>
+                    This is an automated security email.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
     `
   };
 
