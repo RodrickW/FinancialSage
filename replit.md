@@ -392,6 +392,15 @@ Changelog:
   * Configured TypeScript paths and mobile-specific dependencies for production-ready setup
   * Mobile app connects to same backend APIs ensuring feature parity with web version
   * Web app remains fully intact and operational while mobile capability added
+- July 10, 2025. Password reset email deliverability and functionality fixes:
+  * Fixed password reset button functionality - properly routes to reset password form
+  * Implemented professional HTML email template with table-based layout for better compatibility
+  * Added anti-spam email headers (Message-ID, List-Unsubscribe, Precedence) to prevent spam filtering
+  * Disabled SendGrid tracking features that trigger spam filters (click/open tracking)
+  * Enhanced sender authentication with proper "Mind My Money" branding and verified from address
+  * Added alternative text link in emails for cases where button doesn't render properly
+  * Improved email security messaging with clear 1-hour expiration notice
+  * Password reset system now production-ready with reliable email delivery to inbox
 ```
 
 ## User Preferences
