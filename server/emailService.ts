@@ -74,48 +74,101 @@ export async function sendEmail(params: EmailParams & { headers?: any }): Promis
  * Send new user signup notification to admin
  */
 export async function sendNewUserNotification(user: any): Promise<boolean> {
-  // You need to update these with your actual email addresses
-  // The fromEmail MUST be verified in your SendGrid account
-  const adminEmail = process.env.ADMIN_EMAIL || 'your-email@example.com'; 
-  const fromEmail = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
+  const adminEmail = process.env.ADMIN_EMAIL!; 
+  const fromEmail = process.env.FROM_EMAIL!;
   
-  const subject = `New User Signup: ${user.username}`;
+  const subject = `🎉 New User Signup: ${user.username}`;
   
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #059669; margin-bottom: 20px;">New User Signup Alert</h2>
-      
-      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h3 style="margin-top: 0; color: #333;">User Details</h3>
-        <p><strong>Username:</strong> ${user.username}</p>
-        <p><strong>Email:</strong> ${user.email || 'Not provided'}</p>
-        <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
-        <p><strong>Signup Time:</strong> ${new Date().toLocaleString()}</p>
-        <p><strong>User ID:</strong> ${user.id}</p>
-      </div>
-      
-      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <h4 style="margin-top: 0; color: #0277bd;">Account Status</h4>
-        <p><strong>Premium:</strong> ${user.isPremium ? 'Yes' : 'No'}</p>
-        <p><strong>Trial Started:</strong> ${user.hasStartedTrial ? 'Yes' : 'No'}</p>
-        <p><strong>Subscription Status:</strong> ${user.subscriptionStatus || 'Inactive'}</p>
-      </div>
-      
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/admin" 
-           style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-          View Admin Dashboard
-        </a>
-      </div>
-      
-      <p style="color: #666; font-size: 14px; margin-top: 30px;">
-        This is an automated notification from Mind My Money.
-      </p>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New User Signup - Mind My Money</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 20px 0;">
+            <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <h1 style="color: white; margin: 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Mind My Money</h1>
+                  <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">New User Alert</p>
+                </td>
+              </tr>
+              
+              <!-- Content -->
+              <tr>
+                <td style="padding: 30px;">
+                  <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">🎉 New User Signup</h2>
+                  
+                  <!-- User Details Card -->
+                  <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">User Details</h3>
+                    <table style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Username:</strong></td><td style="padding: 4px 0; color: #333;">${user.username}</td></tr>
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Email:</strong></td><td style="padding: 4px 0; color: #333;">${user.email || 'Not provided'}</td></tr>
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Name:</strong></td><td style="padding: 4px 0; color: #333;">${user.firstName} ${user.lastName}</td></tr>
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Signup Time:</strong></td><td style="padding: 4px 0; color: #333;">${new Date().toLocaleString()}</td></tr>
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>User ID:</strong></td><td style="padding: 4px 0; color: #333;">${user.id}</td></tr>
+                    </table>
+                  </div>
+                  
+                  <!-- Account Status Card -->
+                  <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0277bd;">
+                    <h4 style="margin-top: 0; color: #0277bd; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Account Status</h4>
+                    <table style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Premium:</strong></td><td style="padding: 4px 0; color: #333;">${user.isPremium ? 'Yes' : 'No'}</td></tr>
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Trial Started:</strong></td><td style="padding: 4px 0; color: #333;">${user.hasStartedTrial ? 'Yes' : 'No'}</td></tr>
+                      <tr><td style="padding: 4px 0; color: #666;"><strong>Subscription:</strong></td><td style="padding: 4px 0; color: #333;">${user.subscriptionStatus || 'Inactive'}</td></tr>
+                    </table>
+                  </div>
+                  
+                  <!-- CTA Button -->
+                  <table role="presentation" style="margin: 20px auto; text-align: center;">
+                    <tr>
+                      <td style="text-align: center;">
+                        <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/admin" 
+                           style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                  color: white; 
+                                  padding: 12px 24px; 
+                                  text-decoration: none; 
+                                  border-radius: 6px; 
+                                  font-weight: 600;
+                                  font-size: 14px;
+                                  display: inline-block;
+                                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                                  text-align: center;">
+                          View Admin Dashboard
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #6b7280; font-size: 12px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    Mind My Money - Automated Admin Notification<br>
+                    This email was sent automatically when a new user registered.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `;
   
   const text = `
-    New User Signup Alert
+    🎉 NEW USER SIGNUP - Mind My Money
     
     User Details:
     - Username: ${user.username}
@@ -129,7 +182,11 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
     - Trial Started: ${user.hasStartedTrial ? 'Yes' : 'No'}
     - Subscription Status: ${user.subscriptionStatus || 'Inactive'}
     
-    This is an automated notification from Mind My Money.
+    View Admin Dashboard: https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'your-app.replit.dev'}/admin
+    
+    ---
+    Mind My Money - Automated Admin Notification
+    This email was sent automatically when a new user registered.
   `;
   
   return await sendEmail({
@@ -137,7 +194,12 @@ export async function sendNewUserNotification(user: any): Promise<boolean> {
     from: fromEmail,
     subject,
     text,
-    html
+    html,
+    headers: {
+      'Message-ID': `<new-user-${user.id}-${Date.now()}@mindmymoney.com>`,
+      'List-Unsubscribe': '<mailto:unsubscribe@mindmymoney.com>',
+      'X-Entity-Ref-ID': `new-user-${user.id}`,
+    }
   });
 }
 
