@@ -57,39 +57,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
     }
   });
   
-  // Stripe webhook handler
-  app.post('/api/webhook/stripe', async (req, res) => {
-    let event;
-    
-    try {
-      const sig = req.headers['stripe-signature'];
-      
-      // In a production environment, you'd verify the event
-      // with Stripe's webhook secret
-      if (process.env.STRIPE_WEBHOOK_SECRET && sig) {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-          apiVersion: '2025-04-30.basil',
-        });
-        
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          sig,
-          process.env.STRIPE_WEBHOOK_SECRET
-        );
-      } else {
-        // For development, just parse the body
-        event = req.body;
-      }
-      
-      // Handle the event
-      await handleStripeWebhook(event);
-      
-      res.json({ received: true });
-    } catch (error) {
-      console.error('Webhook error:', error);
-      res.status(400).json({ message: 'Webhook error' });
-    }
-  });
+
 
 
 }

@@ -157,9 +157,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error('Error creating demo user:', error);
   }
   
-  // Register the subscription routes
-  registerSubscriptionRoutes(app, requireAuth);
-
   // Plaid SDK proxy endpoint (before security middleware)
   app.get('/api/plaid-sdk.js', servePlaidSDK);
   
@@ -169,9 +166,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).send('OK');
   });
 
+  // Stripe webhook endpoint (before security middleware) - needs raw body
+  app.post('/api/webhook/stripe', async (req, res) => {
+    console.log('Stripe webhook received');
+    let event;
+    
+    try {
+      const sig = req.headers['stripe-signature'];
+      
+      // Verify webhook signature if secret is configured
+      if (process.env.STRIPE_WEBHOOK_SECRET && sig) {
+        const stripe = (await import('stripe')).default;
+        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: '2023-10-16',
+        });
+        
+        // Get raw body for signature verification
+        const body = req.body;
+        
+        event = stripeInstance.webhooks.constructEvent(
+          body,
+          sig,
+          process.env.STRIPE_WEBHOOK_SECRET
+        );
+        
+        console.log('Webhook signature verified');
+      } else {
+        // For development or if no secret is configured
+        event = req.body;
+        console.log('Webhook processed without signature verification');
+      }
+      
+      console.log('Processing webhook event:', event.type);
+      
+      // Handle the event
+      const { handleStripeWebhook } = await import('./stripe');
+      await handleStripeWebhook(event);
+      
+      console.log('Webhook event processed successfully');
+      res.status(200).json({ received: true });
+      
+    } catch (error) {
+      console.error('Webhook error:', error);
+      
+      if (error instanceof Error && error.message.includes('signature')) {
+        console.error('Webhook signature verification failed');
+        res.status(400).json({ error: 'Invalid signature' });
+      } else {
+        res.status(500).json({ error: 'Webhook processing failed' });
+      }
+    }
+  });
+
   // Apply security middleware to all routes
   app.use('/api/', validateInput);
   app.use('/api/', csrfProtection);
+
+  // Register the subscription routes (after security middleware)
+  registerSubscriptionRoutes(app, requireAuth);
 
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
