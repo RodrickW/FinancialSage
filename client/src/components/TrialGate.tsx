@@ -31,7 +31,7 @@ export default function TrialGate({ feature, children, hasStartedTrial }: TrialG
           Unlock all premium features with our 30-day free trial
         </p>
         <Badge className="mx-auto mt-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white">
-          No Credit Card Required
+          Credit Card Required
         </Badge>
       </CardHeader>
       
@@ -63,7 +63,7 @@ export default function TrialGate({ feature, children, hasStartedTrial }: TrialG
         </Button>
         
         <p className="text-xs text-center text-gray-500 mt-3">
-          Full access for 30 days • Cancel anytime • No commitments
+          Full access for 30 days • Cancel anytime • Payment method required
         </p>
       </CardContent>
     </Card>

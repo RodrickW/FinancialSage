@@ -89,6 +89,11 @@ export function SubscriptionBanner() {
     return null;
   }
 
+  // Don't show subscription banner for users who haven't started trial - let TrialGate handle it
+  if (!subscriptionStatus?.hasStartedTrial && !subscriptionStatus?.isOnFreeTrial) {
+    return null;
+  }
+
   return (
     <div className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3 px-4 shadow-md">
       <div className="flex flex-col md:flex-row items-center justify-between">
@@ -101,7 +106,7 @@ export function SubscriptionBanner() {
           <p className="text-sm text-white/80">
             {subscriptionStatus?.isOnFreeTrial 
               ? "Continue with your Standard subscription after your trial ends." 
-              : "Full access to all features - secure payment required."}
+              : "Full access to all features - credit card required for trial setup."}
           </p>
         </div>
         <div className="flex gap-3">
