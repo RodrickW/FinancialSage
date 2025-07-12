@@ -980,15 +980,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log(`Refreshing transactions for ${account.institutionName} - ${account.accountName}`);
           
-          // Get recent transactions (last 7 days by default)
+          // Get recent transactions (extending range to capture today + future pending transactions)
           const endDate = new Date();
+          endDate.setDate(endDate.getDate() + 1); // Include tomorrow to catch pending transactions
           const startDate = new Date();
-          startDate.setDate(endDate.getDate() - days);
+          startDate.setDate(startDate.getDate() - days);
           
           const startDateStr = startDate.toISOString().split('T')[0];
           const endDateStr = endDate.toISOString().split('T')[0];
           
-          console.log(`Fetching transactions from ${startDateStr} to ${endDateStr}`);
+          console.log(`Fetching transactions from ${startDateStr} to ${endDateStr} (today is ${new Date().toISOString().split('T')[0]})`);
           
           const transactionsResponse = await getTransactions(
             account.plaidAccessToken!,
@@ -1002,6 +1003,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           console.log(`Found ${accountTransactions.length} recent transactions for ${account.institutionName}`);
+          
+          // Debug: Show the dates of the transactions Plaid returned
+          if (accountTransactions.length > 0) {
+            const dates = accountTransactions.map(t => t.date).sort().reverse();
+            console.log(`Transaction dates from Plaid: ${dates.slice(0, 5).join(', ')}${dates.length > 5 ? '...' : ''}`);
+          } else {
+            console.log(`⚠️  No transactions returned by Plaid for date range ${startDateStr} to ${endDateStr}`);
+          }
           
           // Add each new transaction
           let newTransactionsCount = 0;
@@ -1037,10 +1046,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json({
-        message: 'Transaction refresh completed',
+        message: totalNewTransactions > 0 ? 
+          `Added ${totalNewTransactions} new transactions` : 
+          'No new transactions found (bank may not have posted recent transactions yet)',
         newTransactions: totalNewTransactions,
         accountsProcessed: plaidAccounts.length,
-        errors: errors.length > 0 ? errors : null
+        errors: errors.length > 0 ? errors : null,
+        dateRange: `${new Date().getDate() - days} days ago to tomorrow`
       });
       
     } catch (error) {
