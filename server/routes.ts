@@ -960,6 +960,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Force refresh recent transactions (last 7 days) for all accounts
+  app.post('/api/plaid/refresh-transactions', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { days = 7 } = req.body; // Default to last 7 days for recent data
+      
+      const accounts = await storage.getAccounts(user.id);
+      const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
+      
+      if (plaidAccounts.length === 0) {
+        return res.json({ message: 'No Plaid-connected accounts found' });
+      }
+      
+      let totalNewTransactions = 0;
+      let errors = [];
+      
+      for (const account of plaidAccounts) {
+        try {
+          console.log(`Refreshing transactions for ${account.institutionName} - ${account.accountName}`);
+          
+          // Get recent transactions (last 7 days by default)
+          const endDate = new Date();
+          const startDate = new Date();
+          startDate.setDate(endDate.getDate() - days);
+          
+          const startDateStr = startDate.toISOString().split('T')[0];
+          const endDateStr = endDate.toISOString().split('T')[0];
+          
+          console.log(`Fetching transactions from ${startDateStr} to ${endDateStr}`);
+          
+          const transactionsResponse = await getTransactions(
+            account.plaidAccessToken!,
+            startDateStr,
+            endDateStr
+          );
+          
+          // Filter for this account
+          const accountTransactions = transactionsResponse.transactions.filter(
+            t => t.account_id === account.plaidAccountId
+          );
+          
+          console.log(`Found ${accountTransactions.length} recent transactions for ${account.institutionName}`);
+          
+          // Add each new transaction
+          let newTransactionsCount = 0;
+          for (const plaidTransaction of accountTransactions) {
+            try {
+              // Check if already exists by Plaid ID
+              const exists = await storage.getTransactionByPlaidId(plaidTransaction.transaction_id);
+              
+              if (!exists) {
+                const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
+                await storage.createTransaction(transactionData);
+                newTransactionsCount++;
+                console.log(`Added: ${plaidTransaction.merchant_name || plaidTransaction.name} - $${Math.abs(plaidTransaction.amount)}`);
+              }
+            } catch (transactionError: any) {
+              // Handle duplicate constraint violations gracefully
+              if (transactionError.code === '23505') {
+                console.log(`Skipped duplicate: ${plaidTransaction.transaction_id}`);
+              } else {
+                console.error(`Transaction error: ${transactionError.message}`);
+              }
+            }
+          }
+          
+          totalNewTransactions += newTransactionsCount;
+          console.log(`${account.institutionName}: Added ${newTransactionsCount} new transactions`);
+          
+        } catch (accountError: any) {
+          const errorMsg = `${account.institutionName}: ${accountError.message}`;
+          errors.push(errorMsg);
+          console.error(`Error refreshing ${account.institutionName}:`, accountError.message);
+        }
+      }
+      
+      res.json({
+        message: 'Transaction refresh completed',
+        newTransactions: totalNewTransactions,
+        accountsProcessed: plaidAccounts.length,
+        errors: errors.length > 0 ? errors : null
+      });
+      
+    } catch (error) {
+      console.error('Error refreshing transactions:', error);
+      res.status(500).json({ error: 'Failed to refresh transactions' });
+    }
+  });
+
   // Comprehensive sync: refresh balances and sync recent transactions
   app.post('/api/plaid/full-sync', requireAuth, async (req, res) => {
     try {

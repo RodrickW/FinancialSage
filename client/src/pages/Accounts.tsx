@@ -97,6 +97,29 @@ export default function Accounts() {
 
 
 
+  // Transaction refresh mutation - gets latest transactions
+  const refreshTransactionsMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/plaid/refresh-transactions', { days: 7 });
+    },
+    onSuccess: async (response: any) => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
+      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
+      toast({
+        title: "Transactions Updated",
+        description: `Added ${response.newTransactions} new transactions from the last 7 days.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Refresh Failed",
+        description: error.message || "Failed to refresh transactions. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Full sync mutation - refreshes balances and syncs recent transactions
   const fullSyncMutation = useMutation({
     mutationFn: async () => {
@@ -207,8 +230,27 @@ export default function Accounts() {
               
               <Button 
                 variant="outline" 
+                onClick={() => refreshTransactionsMutation.mutate()}
+                disabled={refreshTransactionsMutation.isPending || fullSyncMutation.isPending}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white border-none hover:from-green-700 hover:to-emerald-700"
+              >
+                {refreshTransactionsMutation.isPending ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-icons mr-2">receipt</span>
+                    Refresh Transactions
+                  </>
+                )}
+              </Button>
+
+              <Button 
+                variant="outline" 
                 onClick={() => fullSyncMutation.mutate()}
-                disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending}
+                disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending || refreshTransactionsMutation.isPending}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
               >
                 {fullSyncMutation.isPending ? (
