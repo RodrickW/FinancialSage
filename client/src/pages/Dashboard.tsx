@@ -333,7 +333,7 @@ export default function Dashboard() {
           
           {/* Budget Progress Overview */}
           <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
-            <BudgetProgress budgets={[]} />
+            <BudgetProgress />
           </TrialGate>
         </div>
       </main>
