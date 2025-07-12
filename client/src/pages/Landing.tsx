@@ -291,7 +291,7 @@ export default function Landing() {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <p className="text-sm text-gray-500 mt-3">
-              No credit card • 30-day trial • Cancel anytime
+              Credit card required • 30-day trial • Cancel anytime
             </p>
           </div>
         </div>
