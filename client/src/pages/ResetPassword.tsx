@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
@@ -169,7 +170,7 @@ export default function ResetPassword() {
                     <FormItem>
                       <FormLabel>New Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter new password" type="password" {...field} />
+                        <PasswordInput placeholder="Enter new password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -182,7 +183,7 @@ export default function ResetPassword() {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Confirm new password" type="password" {...field} />
+                        <PasswordInput placeholder="Confirm new password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
