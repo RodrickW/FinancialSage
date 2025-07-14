@@ -427,6 +427,13 @@ Changelog:
   * Added "Edit Budget" button linking directly to Budget page for easy budget management
   * Improved mobile PasswordInput component for React Native consistency
   * Enhanced user experience with intuitive password visibility controls and comprehensive budget overview
+- July 14, 2025. Chase bank connection disclaimer implementation:
+  * Added Chase bank OAuth approval disclaimer to Dashboard homepage for existing users
+  * Added Chase bank connection notice to Register page for new users
+  * Created prominent yellow notice banners with info icon and clear messaging
+  * Disclaimer states: "Chase bank connections are currently unavailable as we await final OAuth approval. All other banks are fully supported."
+  * Users are now properly informed about Chase bank limitations before attempting connection
+  * Prevents user confusion and support tickets regarding Chase bank connection failures
 ```
 
 ## User Preferences

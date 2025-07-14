@@ -224,6 +224,19 @@ export default function Dashboard() {
             </div>
           </div>
           
+          {/* Chase Bank Disclaimer */}
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg mb-6 shadow-sm">
+            <div className="flex items-start">
+              <span className="material-icons text-yellow-600 mr-2 mt-0.5">info</span>
+              <div>
+                <p className="font-medium">Bank Connection Notice</p>
+                <p className="text-sm mt-1">
+                  Note: Chase bank connections are currently unavailable as we await final OAuth approval. All other banks are fully supported.
+                </p>
+              </div>
+            </div>
+          </div>
+          
           {/* Demo Mode Banner */}
           {isDemoMode && (
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg mb-6 shadow-lg">
