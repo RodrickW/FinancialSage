@@ -26,6 +26,14 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
     }).format(amount);
   };
   
+  // Get today's date formatted
+  const today = new Date();
+  const todayFormatted = today.toLocaleDateString('en-US', { 
+    weekday: 'short', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Daily Spending Card */}
@@ -36,7 +44,7 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
               <span className="material-icons text-xs mr-1">today</span>
               Daily Spending
             </p>
-            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.dailySpending || data.monthlySpending / 30)}</h3>
+            <h3 className="text-2xl font-bold text-black tabular-nums mt-1">{formatCurrency(data.dailySpending || 0)}</h3>
           </div>
           <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-inner">
             <span className="material-icons text-white">today</span>
@@ -44,9 +52,9 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
         </div>
         <div className="flex items-center text-sm">
           <span className={`inline-block bg-black text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
-            Today
+            {todayFormatted}
           </span>
-          <span className="text-gray-600 ml-2">spent so far today</span>
+          <span className="text-gray-600 ml-2">spent today</span>
         </div>
       </Card>
       
