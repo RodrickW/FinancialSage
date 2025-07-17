@@ -34,6 +34,28 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
     day: 'numeric' 
   });
   
+  // Get current week date range
+  const getWeekRange = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - dayOfWeek); // Start from Sunday
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Saturday
+    
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    };
+    
+    return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
+  };
+  
+  const weekRange = getWeekRange();
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Daily Spending Card */}
@@ -74,9 +96,9 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
         </div>
         <div className="flex items-center text-sm">
           <span className={`inline-block bg-black text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
-            This week
+            {weekRange}
           </span>
-          <span className="text-gray-600 ml-2">30 days</span>
+          <span className="text-gray-600 ml-2">current week</span>
         </div>
       </Card>
       
