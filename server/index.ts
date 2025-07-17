@@ -65,6 +65,7 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Import storage to create a test user
 import { storage } from "./storage";
+import { testDatabaseConnection } from "./db";
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -97,6 +98,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Test database connection first
+  const dbConnected = await testDatabaseConnection();
+  if (!dbConnected) {
+    console.error('Failed to connect to database, exiting...');
+    process.exit(1);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
