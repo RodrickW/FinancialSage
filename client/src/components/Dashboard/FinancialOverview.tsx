@@ -56,6 +56,11 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
   
   const weekRange = getWeekRange();
   
+  // Get current month name
+  const currentMonth = today.toLocaleDateString('en-US', { 
+    month: 'long' 
+  });
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Daily Spending Card */}
@@ -118,9 +123,9 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
         </div>
         <div className="flex items-center text-sm">
           <span className={`inline-block ${spendingChange <= 0 ? 'bg-black text-white' : 'bg-gray-600 text-white'} px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
-            {spendingChange <= 0 ? '↓ ' : '↑ +'}{Math.abs(spendingChange).toFixed(1)}%
+            {currentMonth}
           </span>
-          <span className="text-gray-600 ml-2">from last month</span>
+          <span className="text-gray-600 ml-2">{spendingChange <= 0 ? '↓ ' : '↑ +'}{Math.abs(spendingChange).toFixed(1)}% from last month</span>
         </div>
       </Card>
       
