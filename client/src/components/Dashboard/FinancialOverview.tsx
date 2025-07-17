@@ -46,7 +46,7 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
           <span className={`inline-block bg-black text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm`}>
             Today
           </span>
-          <span className="text-gray-600 ml-2">average daily spend</span>
+          <span className="text-gray-600 ml-2">spent so far today</span>
         </div>
       </Card>
       
