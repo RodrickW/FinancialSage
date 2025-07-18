@@ -16,6 +16,8 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import * as ConnectRedis from "connect-redis";
+import { redisClient } from "./redis";
 import { validateInput, validateSession, logSecurityEvent, csrfProtection, sanitizeInput } from "./security";
 import Stripe from "stripe";
 
@@ -51,22 +53,39 @@ function isWithinLastMonth(date: Date): boolean {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session
-  const MemoryStoreSession = MemoryStore(session);
+  // Configure session with Redis fallback to memory
+  let sessionStore;
+  
+  try {
+    // Try Redis first for scalability
+    const RedisStore = ConnectRedis(session);
+    sessionStore = new RedisStore({
+      client: redisClient,
+      prefix: 'mindmymoney:sess:',
+      ttl: 7 * 24 * 60 * 60 // 1 week
+    });
+    console.log('✓ Using Redis session store');
+  } catch (error) {
+    // Fallback to memory store
+    const MemoryStoreSession = MemoryStore(session);
+    sessionStore = new MemoryStoreSession({
+      checkPeriod: 86400000 // Prune expired entries every 24h
+    });
+    console.log('⚠ Using memory session store (fallback)');
+  }
+
   app.use(session({
     secret: process.env.SESSION_SECRET || 'mindmymoneysecret',
     resave: false,
-    saveUninitialized: false, // Set to false to avoid empty sessions
-    store: new MemoryStoreSession({
-      checkPeriod: 86400000 // Prune expired entries every 24h
-    }),
+    saveUninitialized: false,
+    store: sessionStore,
     cookie: {
-      secure: false, // False for development
-      httpOnly: true, // Secure cookies
-      sameSite: 'lax', // Better browser compatibility
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
     },
-    name: 'connect.sid' // Explicit session name
+    name: 'connect.sid'
   }));
 
   // Initialize Passport

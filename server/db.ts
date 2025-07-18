@@ -14,13 +14,14 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Create pool with conservative settings for WebSocket stability
+// Create pool with scalable settings for high user load
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 5,
-  connectionTimeoutMillis: 10000,
-  idleTimeoutMillis: 10000,
-  maxUses: 100,
+  max: 25, // Increased for high load
+  min: 5,  // Minimum connections
+  connectionTimeoutMillis: 30000,
+  idleTimeoutMillis: 30000,
+  maxUses: 1000,
   allowExitOnIdle: false,
 });
 

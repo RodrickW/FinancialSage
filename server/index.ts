@@ -41,24 +41,46 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Enhanced rate limiting for high-scale production
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 500, // Increased for legitimate high-volume users
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip static assets and health checks
+  skip: (req) => {
+    return req.path.startsWith('/assets/') || 
+           req.path.startsWith('/static/') || 
+           req.path === '/health' ||
+           req.path === '/api/health';
+  }
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 auth attempts per windowMs
+  max: 10, // Slightly increased for legitimate retry attempts
   message: { error: 'Too many authentication attempts, please try again later.' },
   skipSuccessfulRequests: true,
 });
 
+// Special rate limiter for API endpoints
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute per IP
+  message: { error: 'API rate limit exceeded. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Health check endpoint (no rate limiting)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
+app.use('/api/plaid/', apiLimiter); // Special limit for external API calls
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
