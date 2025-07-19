@@ -70,10 +70,92 @@ export async function createSubscriptionSession(userId: number, planId?: string)
 }
 
 /**
+ * Create a Stripe customer for a user (if they don't have one)
+ * @param userId User ID
+ * @returns Customer ID
+ */
+export async function ensureStripeCustomer(userId: number): Promise<string> {
+  // Get user from database
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // If user already has a Stripe customer ID, return it
+  if (user.stripeCustomerId) {
+    return user.stripeCustomerId;
+  }
+  
+  // Create new Stripe customer
+  const customer = await stripe.customers.create({
+    email: user.email,
+    name: `${user.firstName} ${user.lastName}`,
+    metadata: {
+      userId: userId.toString(),
+      username: user.username
+    }
+  });
+  
+  // Update user with Stripe customer ID
+  await db.update(users)
+    .set({ stripeCustomerId: customer.id })
+    .where(eq(users.id, userId));
+  
+  console.log(`Created Stripe customer ${customer.id} for user ${user.username}`);
+  
+  return customer.id;
+}
+
+/**
+ * Sync all users without Stripe customer IDs to Stripe
+ * @returns Number of users synced
+ */
+export async function syncAllUsersToStripe(): Promise<number> {
+  // Get all users without Stripe customer IDs (excluding demo user)
+  const allUsers = await db.select()
+    .from(users);
+  
+  const realUsers = allUsers.filter(user => user.username !== 'demo' && (!user.stripeCustomerId || user.stripeCustomerId === null));
+  
+  let syncedCount = 0;
+  
+  for (const user of realUsers) {
+    try {
+      await ensureStripeCustomer(user.id);
+      syncedCount++;
+      console.log(`Created Stripe customer for ${user.username}`);
+    } catch (error) {
+      console.error(`Failed to create Stripe customer for user ${user.username}:`, error);
+    }
+  }
+  
+  if (syncedCount > 0) {
+    console.log(`Synced ${syncedCount} users to Stripe`);
+  }
+  return syncedCount;
+}
+
+/**
  * Handle Stripe webhook events
  * @param event Stripe webhook event
  */
 export async function handleStripeWebhook(event: Stripe.Event) {
+  // Special case: sync all users to Stripe
+  if (event.type === 'sync_users') {
+    try {
+      const syncedCount = await syncAllUsersToStripe();
+      if (syncedCount > 0) {
+        console.log(`Synced ${syncedCount} users to Stripe`);
+      } else {
+        console.log('All users are already synced to Stripe');
+      }
+    } catch (error) {
+      console.error('Error during user sync:', error);
+    }
+    return;
+  }
+  
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;

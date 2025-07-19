@@ -244,6 +244,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register the subscription routes (after security middleware)
   registerSubscriptionRoutes(app, requireAuth);
 
+  // Admin endpoint to sync all users to Stripe
+  app.post('/api/admin/sync-users-to-stripe', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { syncAllUsersToStripe } = await import('./stripe');
+      const syncedCount = await syncAllUsersToStripe();
+      
+      res.json({ 
+        message: `Successfully synced ${syncedCount} users to Stripe`,
+        syncedCount 
+      });
+    } catch (error) {
+      console.error('Error syncing users to Stripe:', error);
+      res.status(500).json({ error: 'Failed to sync users to Stripe' });
+    }
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
@@ -320,6 +336,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send welcome email to user (don't block registration if it fails)
       sendWelcomeEmail(user).catch(error => {
         console.error('Failed to send welcome email:', error);
+      });
+
+      // Create Stripe customer immediately after registration (don't block if it fails)
+      const { ensureStripeCustomer } = await import('./stripe');
+      ensureStripeCustomer(user.id).catch(error => {
+        console.error('Failed to create Stripe customer during registration:', error);
       });
       
       res.status(201).json({ message: 'User created successfully' });
