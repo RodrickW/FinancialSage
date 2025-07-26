@@ -465,6 +465,15 @@ Changelog:
   * Modified add-money functionality to automatically track savings and trigger celebration displays
   * Added progress bars and visual milestone indicators with color-coded monthly (green) and yearly (blue) themes
   * System now provides engaging user experience with real-time savings milestone achievements and celebrations
+- July 26, 2025. Mobile app parity for savings tracking implementation:
+  * Fixed database schema by adding missing "goals_saved" column to savingsTracker table
+  * Resolved TanStack Query deprecated onSuccess callback warnings in web application
+  * Created proper TypeScript interfaces for savings tracking data with comprehensive type safety
+  * Updated mobile Goals screen with same year-to-date and monthly savings display as web version
+  * Added getSavingsTracker method to mobile API service for complete feature parity
+  * Enhanced mobile UI with tracking cards showing monthly and yearly progress with milestone indicators
+  * Both web and mobile applications now display prominent savings totals at top of Goals pages
+  * Complete feature parity achieved between web and mobile platforms for savings tracking system
 ```
 
 ## User Preferences

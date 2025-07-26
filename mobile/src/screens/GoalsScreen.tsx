@@ -15,6 +15,21 @@ interface Goal {
   color: string;
 }
 
+interface SavingsTrackingData {
+  monthlyStats: {
+    current: number;
+    monthName: string;
+    nextMilestone?: number;
+    progress?: number;
+  };
+  yearlyStats: {
+    current: number;
+    year: number;
+    nextMilestone?: number;
+    progress?: number;
+  };
+}
+
 interface GoalsScreenProps {
   navigation: any;
 }
@@ -32,6 +47,12 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
   const { data: goals, isLoading, refetch } = useQuery({
     queryKey: ['savingsGoals'],
     queryFn: () => apiService.getSavingsGoals(),
+  });
+
+  // Fetch savings tracking data
+  const { data: trackingData } = useQuery<SavingsTrackingData>({
+    queryKey: ['savingsTracker'],
+    queryFn: () => apiService.getSavingsTracker(),
   });
 
   const colors = [
@@ -101,6 +122,31 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
           style={styles.createButton}
         />
       </View>
+
+      {/* Savings Tracking Summary */}
+      {trackingData && (
+        <View style={styles.trackingContainer}>
+          <Card style={[styles.trackingCard, styles.monthlyCard]}>
+            <Text style={styles.trackingLabel}>This Month ({trackingData.monthlyStats.monthName})</Text>
+            <Text style={styles.trackingAmount}>${trackingData.monthlyStats.current.toFixed(2)}</Text>
+            {trackingData.monthlyStats.nextMilestone && (
+              <Text style={styles.milestoneText}>
+                Next milestone: ${trackingData.monthlyStats.nextMilestone}
+              </Text>
+            )}
+          </Card>
+          
+          <Card style={[styles.trackingCard, styles.yearlyCard]}>
+            <Text style={styles.trackingLabel}>Year-to-Date ({trackingData.yearlyStats.year})</Text>
+            <Text style={styles.trackingAmount}>${trackingData.yearlyStats.current.toFixed(2)}</Text>
+            {trackingData.yearlyStats.nextMilestone && (
+              <Text style={styles.milestoneText}>
+                Next milestone: ${trackingData.yearlyStats.nextMilestone}
+              </Text>
+            )}
+          </Card>
+        </View>
+      )}
 
       {goals?.length === 0 ? (
         <Card style={styles.emptyCard}>
@@ -247,6 +293,42 @@ const styles = StyleSheet.create({
   },
   createButton: {
     marginBottom: 16,
+  },
+  trackingContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  trackingCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  monthlyCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#10b981',
+  },
+  yearlyCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
+  },
+  trackingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  trackingAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  milestoneText: {
+    fontSize: 12,
+    color: '#9ca3af',
+    textAlign: 'center',
   },
   emptyCard: {
     alignItems: 'center',

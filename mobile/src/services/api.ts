@@ -82,6 +82,10 @@ class ApiService {
     return this.request('/api/savings-goals');
   }
 
+  async getSavingsTracker() {
+    return this.request('/api/savings-tracker');
+  }
+
   // AI Coaching
   async getFinancialCoaching(question: string): Promise<{ answer: string }> {
     return this.request('/api/ai/coaching', {
