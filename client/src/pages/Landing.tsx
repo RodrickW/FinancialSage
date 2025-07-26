@@ -82,9 +82,11 @@ export default function Landing() {
 
   const pricingPlans = [
     {
-      name: "Standard",
+      name: "Monthly Plan",
       price: "$9.99",
       period: "month",
+      originalPrice: null,
+      savings: null,
       description: "AI financial coaching and management",
       features: [
         "Bank connections",
@@ -96,26 +98,30 @@ export default function Landing() {
       ],
       cta: "Start 30-Day Free Trial",
       popular: false,
-      available: true
+      available: true,
+      planType: "monthly"
     },
     {
-      name: "Premium",
-      price: "Coming Soon",
-      period: "",
-      description: "Advanced features and priority support",
+      name: "Annual Plan",
+      price: "$95.99",
+      period: "year",
+      originalPrice: "$119.88",
+      savings: "Save $23.89",
+      description: "Same great features with significant savings",
       features: [
-        "Everything in Standard",
-        "Credit monitoring",
-        "Credit improvement tips", 
-        "Advanced AI insights",
-        "Investment guidance",
-        "Priority support",
-        "Advanced reports",
-        "Custom planning"
+        "Bank connections",
+        "AI coaching", 
+        "Spending analytics",
+        "Budget tracking",
+        "Goal tracking",
+        "Email support",
+        "2 months free",
+        "Best value option"
       ],
-      cta: "Coming Soon",
+      cta: "Start 30-Day Free Trial",
       popular: true,
-      available: false
+      available: true,
+      planType: "annual"
     }
   ];
 
@@ -334,7 +340,7 @@ export default function Landing() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               Simple Pricing
             </h2>
-            <p className="text-xl text-gray-600">Standard plan available, Premium coming soon</p>
+            <p className="text-xl text-gray-600">Choose monthly or annual - both include 30-day free trial</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -343,7 +349,7 @@ export default function Landing() {
                 {plan.popular && plan.available && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white">
-                      Available Now
+                      Best Value
                     </Badge>
                   </div>
                 )}
@@ -361,6 +367,17 @@ export default function Landing() {
                       <span className="text-4xl font-bold">{plan.price}</span>
                       {plan.price !== "Free" && plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
                     </div>
+                    {plan.originalPrice && (
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-lg text-gray-400 line-through">{plan.originalPrice}</span>
+                        <Badge className="bg-green-100 text-green-700 text-sm">
+                          {plan.savings}
+                        </Badge>
+                      </div>
+                    )}
+                    {plan.period === "year" && (
+                      <p className="text-sm text-gray-600 mb-2">Only $8.00/month when paid annually</p>
+                    )}
                     <p className="text-gray-600">{plan.description}</p>
                   </div>
                   
@@ -379,7 +396,7 @@ export default function Landing() {
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                     variant={plan.available ? 'default' : 'secondary'}
-                    onClick={() => plan.available && setLocation('/register')}
+                    onClick={() => plan.available && setLocation(`/subscribe?plan=${plan.planType}`)}
                     disabled={!plan.available}
                   >
                     {plan.cta}

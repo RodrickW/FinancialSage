@@ -67,7 +67,7 @@ export default function Subscribe() {
     queryKey: ['/api/users/profile']
   });
 
-  const user = userData;
+  const user = userData as any;
 
   const handleStartTrial = async (planType: string) => {
     setIsLoading(planType);
@@ -121,7 +121,7 @@ export default function Subscribe() {
         </div>
         
         <div className="lg:pl-64 flex-1">
-          <TopNav title="Choose Your Plan" isPremium={false} />
+          <TopNav title="Choose Your Plan" isPremium={user?.isPremium || false} />
           
           <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">
@@ -243,7 +243,7 @@ export default function Subscribe() {
       </div>
       
       <div className="lg:hidden">
-        <BottomNavigation user={user} />
+        <BottomNavigation user={user as any} />
       </div>
     </div>
   );
