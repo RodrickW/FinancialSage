@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Trophy, Star, Sparkles } from 'lucide-react';
+import { CalendarIcon, Trophy, Star, Sparkles, PiggyBank } from 'lucide-react';
 import { format } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,22 @@ interface Goal {
   deadline?: string;
   color: string;
   progress: number;
+}
+
+// Define tracking data interface
+interface SavingsTrackingData {
+  monthlyStats: {
+    current: number;
+    monthName: string;
+    nextMilestone?: number;
+    progress?: number;
+  };
+  yearlyStats: {
+    current: number;
+    year: number;
+    nextMilestone?: number;
+    progress?: number;
+  };
 }
 
 export default function Goals() {
@@ -45,7 +61,6 @@ export default function Goals() {
   const [addAmounts, setAddAmounts] = useState<Record<number, string>>({});
   
   // State for savings tracking
-  const [savingsTracker, setSavingsTracker] = useState<any>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   
   const { toast } = useToast();
@@ -62,11 +77,8 @@ export default function Goals() {
   });
   
   // Fetch savings tracking data
-  const { data: trackingData } = useQuery({
-    queryKey: ['/api/savings-tracker'],
-    onSuccess: (data) => {
-      setSavingsTracker(data);
-    }
+  const { data: trackingData } = useQuery<SavingsTrackingData>({
+    queryKey: ['/api/savings-tracker']
   });
   
   // Create mutation for adding goals
@@ -390,6 +402,51 @@ export default function Goals() {
               Add New Goal
             </Button>
           </div>
+
+          {/* Year-to-Date and Monthly Savings Totals - Prominent Display */}
+          {trackingData && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Current Month Total */}
+              <Card className="bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl flex items-center">
+                    <PiggyBank className="h-6 w-6 mr-3" />
+                    {trackingData.monthlyStats?.monthName} Total
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="text-3xl font-bold">
+                      ${trackingData.monthlyStats?.current || 0}
+                    </div>
+                    <p className="text-green-100 text-sm">
+                      Total saved this month
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Year-to-Date Total */}
+              <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl flex items-center">
+                    <Trophy className="h-6 w-6 mr-3" />
+                    {trackingData.yearlyStats?.year} Year-to-Date
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="text-3xl font-bold">
+                      ${trackingData.yearlyStats?.current || 0}
+                    </div>
+                    <p className="text-blue-100 text-sm">
+                      Total saved this year
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
           {/* Celebration Modal */}
           {showCelebration && trackingData && (
@@ -420,80 +477,7 @@ export default function Goals() {
             </div>
           )}
           
-          {/* Savings Tracking Dashboard */}
-          {trackingData && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Monthly Savings Card */}
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg text-green-800 flex items-center">
-                    <Trophy className="h-5 w-5 mr-2" />
-                    {trackingData.monthlyStats?.monthName} Savings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-end">
-                      <span className="text-2xl font-bold text-green-900">
-                        ${trackingData.monthlyStats?.current || 0}
-                      </span>
-                      {trackingData.monthlyStats?.nextMilestone && (
-                        <span className="text-sm text-green-600">
-                          Next: ${trackingData.monthlyStats.nextMilestone}
-                        </span>
-                      )}
-                    </div>
-                    {trackingData.monthlyStats?.nextMilestone && (
-                      <div className="space-y-2">
-                        <Progress 
-                          value={trackingData.monthlyStats.progress} 
-                          className="h-2"
-                        />
-                        <p className="text-xs text-green-700">
-                          {Math.round(trackingData.monthlyStats.progress)}% to next milestone
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Yearly Savings Card */}
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg text-blue-800 flex items-center">
-                    <Star className="h-5 w-5 mr-2" />
-                    {trackingData.yearlyStats?.year} Total Savings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-end">
-                      <span className="text-2xl font-bold text-blue-900">
-                        ${trackingData.yearlyStats?.current || 0}
-                      </span>
-                      {trackingData.yearlyStats?.nextMilestone && (
-                        <span className="text-sm text-blue-600">
-                          Next: ${trackingData.yearlyStats.nextMilestone}
-                        </span>
-                      )}
-                    </div>
-                    {trackingData.yearlyStats?.nextMilestone && (
-                      <div className="space-y-2">
-                        <Progress 
-                          value={trackingData.yearlyStats.progress} 
-                          className="h-2"
-                        />
-                        <p className="text-xs text-blue-700">
-                          {Math.round(trackingData.yearlyStats.progress)}% to next milestone
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
           
           {/* Goals Grid */}
           {savingsGoals.length > 0 ? (
