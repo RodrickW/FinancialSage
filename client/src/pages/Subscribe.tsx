@@ -29,7 +29,29 @@ const plans = [
       "Personalized insights",
       "Email support"
     ],
-    planType: "standard",
+    planType: "monthly",
+    popular: false,
+    available: true
+  },
+  {
+    name: "Mind My Money Annual",
+    price: "$95.90",
+    originalPrice: "$119.88",
+    period: "year",
+    savings: "2 months free",
+    description: "Complete financial management with AI coaching - Best Value!",
+    features: [
+      "Unlimited bank connections",
+      "Money Mind AI coaching",
+      "Advanced spending analytics",
+      "Budget tracking & planning",
+      "Goal setting & tracking",
+      "Real-time transaction sync",
+      "Personalized insights",
+      "Email support",
+      "Priority customer support"
+    ],
+    planType: "annual",
     popular: true,
     available: true
   }
@@ -114,13 +136,13 @@ export default function Subscribe() {
               </p>
             </div>
 
-            <div className="flex justify-center max-w-2xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {plans.map((plan, index) => (
-                <Card key={index} className="relative w-full max-w-md border-teal-200 shadow-lg">
+                <Card key={index} className={`relative border-2 shadow-lg ${plan.popular ? 'border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50' : 'border-teal-200'}`}>
                   {plan.popular && plan.available && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white">
-                        Available Now
+                      <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-1">
+                        Best Value - {plan.savings}
                       </Badge>
                     </div>
                   )}
@@ -134,9 +156,22 @@ export default function Subscribe() {
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                     <CardDescription>{plan.description}</CardDescription>
-                    <div className="flex items-center mt-4">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
+                    <div className="mt-4">
+                      {plan.originalPrice && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg text-gray-500 line-through">{plan.originalPrice}</span>
+                          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                            Save 20%
+                          </Badge>
+                        </div>
+                      )}
+                      <div className="flex items-center">
+                        <span className="text-4xl font-bold">{plan.price}</span>
+                        {plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
+                      </div>
+                      {plan.period === "year" && (
+                        <p className="text-sm text-gray-600 mt-1">Only $7.99/month when paid annually</p>
+                      )}
                     </div>
                   </CardHeader>
                   
@@ -194,7 +229,9 @@ export default function Subscribe() {
               </div>
               
               <p className="text-gray-500">
-                A payment method is required to start your trial. You'll be charged $9.99/month after 30 days unless you cancel.
+                A payment method is required to start your trial. You'll be charged according to your selected plan after 30 days unless you cancel.
+                <br />
+                Monthly: $9.99/month • Annual: $95.90/year (Save $23.98)
                 <br />
                 <a href="/cancel-trial" className="text-blue-600 hover:underline text-sm">
                   Need to cancel? Click here

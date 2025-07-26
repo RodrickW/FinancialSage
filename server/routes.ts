@@ -2207,23 +2207,31 @@ Group similar transactions together and sum the amounts for each category. Only 
         });
       }
       
+      // Determine the price ID and plan details based on plan type
+      let priceId: string;
+      let planName: string;
+      let unitAmount: number;
+      let interval: 'month' | 'year';
+      
+      if (planType === 'annual') {
+        priceId = process.env.STRIPE_ANNUAL_PRICE_ID || process.env.STRIPE_PREMIUM_PRICE_ID!;
+        planName = 'Mind My Money Annual';
+        unitAmount = 9590; // $95.90 for Annual plan
+        interval = 'year';
+      } else {
+        priceId = process.env.STRIPE_PREMIUM_PRICE_ID!;
+        planName = 'Mind My Money Standard';
+        unitAmount = 999; // $9.99 for Monthly plan
+        interval = 'month';
+      }
+
       // Create Stripe checkout session for trial
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
         line_items: [
           {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: `Mind My Money Standard`,
-              },
-              unit_amount: 999, // $9.99 for Standard plan
-              recurring: {
-                interval: 'month',
-              },
-            },
-            quantity: 1,
+            price: priceId, // Use the actual Stripe price ID instead of price_data
           },
         ],
         mode: 'subscription',

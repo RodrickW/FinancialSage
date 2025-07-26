@@ -18,7 +18,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
  * @param planId Plan ID (optional)
  * @returns Checkout session
  */
-export async function createSubscriptionSession(userId: number, planId?: string) {
+export async function createSubscriptionSession(userId: number, planType?: string) {
   // Get user from database
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   
@@ -26,7 +26,17 @@ export async function createSubscriptionSession(userId: number, planId?: string)
     throw new Error('User not found');
   }
 
-  const priceId = planId || process.env.STRIPE_PREMIUM_PRICE_ID;
+  // Determine the price ID based on plan type
+  let priceId: string;
+  if (planType === 'annual') {
+    priceId = process.env.STRIPE_ANNUAL_PRICE_ID || process.env.STRIPE_PREMIUM_PRICE_ID;
+  } else {
+    priceId = process.env.STRIPE_PREMIUM_PRICE_ID; // Default to monthly
+  }
+  
+  if (!priceId) {
+    throw new Error('Stripe price ID not configured');
+  }
   
   // If user has no Stripe customer ID, create one
   let customerId = user.stripeCustomerId;
