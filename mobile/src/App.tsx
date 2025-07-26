@@ -8,6 +8,7 @@ import { StatusBar, Text, View, ActivityIndicator, StyleSheet } from 'react-nati
 import { useAuth } from '@/hooks/useAuth';
 
 // Screens
+import { LandingScreen } from '@/screens/LandingScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
 import { DashboardScreen } from '@/screens/DashboardScreen';
@@ -18,6 +19,7 @@ import { GoalsScreen } from '@/screens/GoalsScreen';
 
 // Navigation types
 export type AuthStackParamList = {
+  Landing: undefined;
   Login: undefined;
   Register: undefined;
 };
@@ -56,6 +58,7 @@ function AuthStackScreen() {
         headerShown: false,
       }}
     >
+      <AuthStack.Screen name="Landing" component={LandingScreen} />
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
     </AuthStack.Navigator>
