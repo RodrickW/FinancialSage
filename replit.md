@@ -483,6 +483,14 @@ Changelog:
   * Enhanced UI with "Best Value" indicators, original price strikethrough, and monthly equivalent pricing ($8.00/month when paid annually)
   * Updated trial flow and footer messaging to reflect both plan options with total savings calculation ($23.89 annual savings)
   * Both plans maintain 30-day free trial period with seamless plan selection and Stripe checkout integration
+- July 26, 2025. Home page pricing section enhancement with annual subscription integration:
+  * Updated Landing page pricing section to display both Monthly Plan ($9.99/month) and Annual Plan ($95.99/year)
+  * Replaced "Premium Coming Soon" with functional Annual Plan featuring "Best Value" badge and prominent highlighting
+  * Added original price strikethrough ($119.88), savings badge (Save $23.89), and monthly equivalent ($8.00/month when paid annually)
+  * Enhanced pricing cards with savings information display and direct navigation to Subscribe page with plan pre-selection
+  * Updated section description to "Choose monthly or annual - both include 30-day free trial" for clearer value proposition
+  * Fixed TypeScript errors in Subscribe page and ensured seamless user flow from landing page to subscription checkout
+  * Production-ready implementation allows users to select their preferred plan directly from the home page pricing section
 ```
 
 ## User Preferences
