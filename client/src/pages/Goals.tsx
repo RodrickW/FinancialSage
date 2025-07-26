@@ -39,6 +39,9 @@ export default function Goals() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedColor, setSelectedColor] = useState('blue');
   
+  // Add money functionality states
+  const [addAmounts, setAddAmounts] = useState<Record<number, string>>({});
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -89,6 +92,29 @@ export default function Goals() {
       toast({
         title: "Error",
         description: error.message || "Failed to update goal",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Add money mutation for quick savings updates
+  const addMoneyMutation = useMutation({
+    mutationFn: async ({ id, amount }: { id: number; amount: string }) => {
+      return await apiRequest('POST', `/api/savings-goals/${id}/add-money`, { amount });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      toast({
+        title: "Money Added",
+        description: "Your savings have been updated successfully!"
+      });
+      // Clear the input field after successful addition
+      setAddAmounts({});
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add money to goal",
         variant: "destructive"
       });
     }
@@ -296,6 +322,30 @@ export default function Goals() {
     setSelectedColor('blue');
   };
 
+  // Add money to a specific goal
+  const addMoneyToGoal = (goalId: number) => {
+    const amount = addAmounts[goalId];
+    
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid positive amount.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    addMoneyMutation.mutate({ id: goalId, amount });
+  };
+
+  // Update add amount for specific goal
+  const updateAddAmount = (goalId: number, amount: string) => {
+    setAddAmounts(prev => ({
+      ...prev,
+      [goalId]: amount
+    }));
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <TopNav title="Mind My Money" />
@@ -364,6 +414,29 @@ export default function Goals() {
                         }`}
                         style={{ width: `${goal.progress}%` }}
                       />
+                    </div>
+                  </div>
+                  
+                  {/* Quick Add Money Section */}
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        placeholder="Add amount"
+                        value={addAmounts[goal.id] || ''}
+                        onChange={(e) => updateAddAmount(goal.id, e.target.value)}
+                        className="flex-1 text-sm"
+                        min="0"
+                        step="0.01"
+                      />
+                      <Button 
+                        size="sm"
+                        onClick={() => addMoneyToGoal(goal.id)}
+                        disabled={addMoneyMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4"
+                      >
+                        {addMoneyMutation.isPending ? 'Adding...' : 'Add Money'}
+                      </Button>
                     </div>
                   </div>
                   

@@ -2449,6 +2449,59 @@ Group similar transactions together and sum the amounts for each category. Only 
 
 
 
+  // Add money to savings goal
+  app.post("/api/savings-goals/:id/add-money", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const goalId = parseInt(req.params.id);
+      const { amount } = req.body;
+      
+      if (isNaN(goalId)) {
+        return res.status(400).json({ message: "Invalid goal ID" });
+      }
+      
+      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Amount must be a positive number" });
+      }
+      
+      // Get current goal to add money to existing amount
+      const currentGoals = await storage.getSavingsGoals(user.id);
+      const currentGoal = currentGoals.find(goal => goal.id === goalId);
+      
+      if (!currentGoal) {
+        return res.status(404).json({ message: "Savings goal not found" });
+      }
+      
+      const newAmount = (currentGoal.currentAmount || 0) + parseFloat(amount);
+      
+      // Update the goal with new amount
+      const updatedGoal = await storage.updateSavingsGoal(goalId, {
+        currentAmount: newAmount
+      });
+      
+      if (!updatedGoal) {
+        return res.status(404).json({ message: "Failed to update savings goal" });
+      }
+      
+      res.json({
+        id: updatedGoal.id,
+        name: updatedGoal.name,
+        currentAmount: updatedGoal.currentAmount || 0,
+        targetAmount: updatedGoal.targetAmount || 0,
+        deadline: updatedGoal.deadline ? new Date(updatedGoal.deadline).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No deadline',
+        color: updatedGoal.color || 'blue',
+        progress: updatedGoal.targetAmount > 0 ? Math.round(((updatedGoal.currentAmount || 0) / updatedGoal.targetAmount) * 100) : 0
+      });
+    } catch (error) {
+      console.error("Error adding money to savings goal:", error);
+      res.status(500).json({ message: "Failed to add money to savings goal" });
+    }
+  });
+
   // Delete savings goal endpoint
   app.delete('/api/savings-goals/:id', requireAuth, async (req, res) => {
     try {
