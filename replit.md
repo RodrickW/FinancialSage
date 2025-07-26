@@ -474,6 +474,15 @@ Changelog:
   * Enhanced mobile UI with tracking cards showing monthly and yearly progress with milestone indicators
   * Both web and mobile applications now display prominent savings totals at top of Goals pages
   * Complete feature parity achieved between web and mobile platforms for savings tracking system
+- July 26, 2025. Annual subscription option implementation with integrated trial system:
+  * Added annual subscription plan at $95.99/year alongside existing monthly $9.99/month plan
+  * Implemented 20% discount pricing (equivalent to 2 months free) for annual subscribers
+  * Enhanced Subscribe page with side-by-side plan comparison featuring savings badges and visual highlights
+  * Updated backend Stripe integration to handle both monthly and annual plan types with proper price ID selection
+  * Modified start-free-trial endpoint to support plan type selection for both subscription options
+  * Enhanced UI with "Best Value" indicators, original price strikethrough, and monthly equivalent pricing ($8.00/month when paid annually)
+  * Updated trial flow and footer messaging to reflect both plan options with total savings calculation ($23.89 annual savings)
+  * Both plans maintain 30-day free trial period with seamless plan selection and Stripe checkout integration
 ```
 
 ## User Preferences

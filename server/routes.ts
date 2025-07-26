@@ -2216,7 +2216,7 @@ Group similar transactions together and sum the amounts for each category. Only 
       if (planType === 'annual') {
         priceId = process.env.STRIPE_ANNUAL_PRICE_ID || process.env.STRIPE_PREMIUM_PRICE_ID!;
         planName = 'Mind My Money Annual';
-        unitAmount = 9590; // $95.90 for Annual plan
+        unitAmount = 9599; // $95.99 for Annual plan
         interval = 'year';
       } else {
         priceId = process.env.STRIPE_PREMIUM_PRICE_ID!;

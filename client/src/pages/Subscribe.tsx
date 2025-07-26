@@ -35,7 +35,7 @@ const plans = [
   },
   {
     name: "Mind My Money Annual",
-    price: "$95.90",
+    price: "$95.99",
     originalPrice: "$119.88",
     period: "year",
     savings: "2 months free",
@@ -170,7 +170,7 @@ export default function Subscribe() {
                         {plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
                       </div>
                       {plan.period === "year" && (
-                        <p className="text-sm text-gray-600 mt-1">Only $7.99/month when paid annually</p>
+                        <p className="text-sm text-gray-600 mt-1">Only $8.00/month when paid annually</p>
                       )}
                     </div>
                   </CardHeader>
@@ -231,7 +231,7 @@ export default function Subscribe() {
               <p className="text-gray-500">
                 A payment method is required to start your trial. You'll be charged according to your selected plan after 30 days unless you cancel.
                 <br />
-                Monthly: $9.99/month • Annual: $95.90/year (Save $23.98)
+                Monthly: $9.99/month • Annual: $95.99/year (Save $23.89)
                 <br />
                 <a href="/cancel-trial" className="text-blue-600 hover:underline text-sm">
                   Need to cancel? Click here
