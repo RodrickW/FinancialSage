@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback, savingsTracker } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -53,6 +53,12 @@ export interface IStorage {
   getFeedback(): Promise<Feedback[]>;
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
   updateFeedbackStatus(id: number, status: string): Promise<Feedback | undefined>;
+  
+  // Savings tracker operations
+  getSavingsTracker(userId: number, year: number): Promise<SavingsTracker[]>;
+  getCurrentMonthSavings(userId: number): Promise<SavingsTracker | undefined>;
+  getCurrentYearSavings(userId: number): Promise<number>;
+  updateMonthlySavings(userId: number, month: number, year: number, amount: number): Promise<SavingsTracker>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -336,6 +342,77 @@ export class DatabaseStorage implements IStorage {
       .where(eq(feedback.id, id))
       .returning();
     return updatedFeedback;
+  }
+
+  // Savings tracker operations
+  async getSavingsTracker(userId: number, year: number): Promise<SavingsTracker[]> {
+    return await db
+      .select()
+      .from(savingsTracker)
+      .where(and(eq(savingsTracker.userId, userId), eq(savingsTracker.year, year)))
+      .orderBy(savingsTracker.month);
+  }
+
+  async getCurrentMonthSavings(userId: number): Promise<SavingsTracker | undefined> {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    const [tracker] = await db
+      .select()
+      .from(savingsTracker)
+      .where(and(
+        eq(savingsTracker.userId, userId),
+        eq(savingsTracker.month, currentMonth),
+        eq(savingsTracker.year, currentYear)
+      ));
+    
+    return tracker;
+  }
+
+  async getCurrentYearSavings(userId: number): Promise<number> {
+    const currentYear = new Date().getFullYear();
+    const yearTrackers = await this.getSavingsTracker(userId, currentYear);
+    
+    return yearTrackers.reduce((total, tracker) => total + tracker.totalSaved, 0);
+  }
+
+  async updateMonthlySavings(userId: number, month: number, year: number, amount: number): Promise<SavingsTracker> {
+    // First try to update existing record
+    const [existing] = await db
+      .select()
+      .from(savingsTracker)
+      .where(and(
+        eq(savingsTracker.userId, userId),
+        eq(savingsTracker.month, month),
+        eq(savingsTracker.year, year)
+      ));
+
+    if (existing) {
+      const [updated] = await db
+        .update(savingsTracker)
+        .set({ 
+          totalSaved: existing.totalSaved + amount,
+          goalsSaved: existing.goalsSaved + amount,
+          updatedAt: new Date()
+        })
+        .where(eq(savingsTracker.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new record
+      const [created] = await db
+        .insert(savingsTracker)
+        .values({
+          userId,
+          month,
+          year,
+          totalSaved: amount,
+          goalsSaved: amount
+        })
+        .returning();
+      return created;
+    }
   }
 }
 

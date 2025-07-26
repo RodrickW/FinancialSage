@@ -56,6 +56,7 @@ export const transactions = pgTable("transactions", {
   date: timestamp("date").notNull(),
   merchantName: text("merchant_name").notNull(),
   merchantIcon: text("merchant_icon"),
+  plaidTransactionId: text("plaid_transaction_id").unique(), // For duplicate prevention
 });
 
 // Budget schema
@@ -117,6 +118,18 @@ export const feedback = pgTable("feedback", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Savings tracker schema for monthly and yearly progress
+export const savingsTracker = pgTable("savings_tracker", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  month: integer("month").notNull(), // 1-12
+  year: integer("year").notNull(),
+  totalSaved: doublePrecision("total_saved").notNull().default(0),
+  goalsSaved: doublePrecision("goals_saved").notNull().default(0), // Amount saved towards goals
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true });
@@ -126,6 +139,7 @@ export const insertInsightSchema = createInsertSchema(insights).omit({ id: true,
 export const insertCreditScoreSchema = createInsertSchema(creditScores).omit({ id: true, reportDate: true });
 export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({ id: true, currentAmount: true });
 export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true, createdAt: true, updatedAt: true, status: true });
+export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Type definitions
 export type User = typeof users.$inferSelect;
@@ -151,3 +165,6 @@ export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
+
+export type SavingsTracker = typeof savingsTracker.$inferSelect;
+export type InsertSavingsTracker = z.infer<typeof insertSavingsTrackerSchema>;

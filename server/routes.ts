@@ -2483,6 +2483,18 @@ Group similar transactions together and sum the amounts for each category. Only 
         return res.status(404).json({ message: "Failed to update savings goal" });
       }
       
+      // Track monthly and yearly savings
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      
+      await storage.updateMonthlySavings(
+        user.id,
+        currentMonth,
+        currentYear,
+        parseFloat(amount)
+      );
+      
       res.json({
         id: updatedGoal.id,
         name: updatedGoal.name,
@@ -2520,6 +2532,46 @@ Group similar transactions together and sum the amounts for each category. Only 
     } catch (error) {
       console.error('Error deleting savings goal:', error);
       res.status(500).json({ message: "Failed to delete savings goal" });
+    }
+  });
+
+  // Get savings tracking data
+  app.get('/api/savings-tracker', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const currentYear = new Date().getFullYear();
+      
+      // Get current month and year savings
+      const currentMonthSavings = await storage.getCurrentMonthSavings(user.id);
+      const currentYearSavings = await storage.getCurrentYearSavings(user.id);
+      const yearlyTracker = await storage.getSavingsTracker(user.id, currentYear);
+      
+      // Calculate milestones
+      const monthlyMilestones = [50, 100, 250, 500, 1000];
+      const yearlyMilestones = [500, 1000, 2500, 5000, 10000];
+      
+      const currentMonthAmount = currentMonthSavings?.totalSaved || 0;
+      const nextMonthlyMilestone = monthlyMilestones.find(m => m > currentMonthAmount) || null;
+      const nextYearlyMilestone = yearlyMilestones.find(m => m > currentYearSavings) || null;
+      
+      res.json({
+        monthlyStats: {
+          current: currentMonthAmount,
+          monthName: new Date().toLocaleDateString('en-US', { month: 'long' }),
+          nextMilestone: nextMonthlyMilestone,
+          progress: nextMonthlyMilestone ? (currentMonthAmount / nextMonthlyMilestone) * 100 : 100
+        },
+        yearlyStats: {
+          current: currentYearSavings,
+          year: currentYear,
+          nextMilestone: nextYearlyMilestone,
+          progress: nextYearlyMilestone ? (currentYearSavings / nextYearlyMilestone) * 100 : 100,
+          monthlyBreakdown: yearlyTracker
+        }
+      });
+    } catch (error) {
+      console.error('Error getting savings tracker:', error);
+      res.status(500).json({ message: "Failed to get savings tracker data" });
     }
   });
 
