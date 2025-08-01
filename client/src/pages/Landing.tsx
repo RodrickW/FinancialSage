@@ -167,11 +167,11 @@ export default function Landing() {
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
-            Your AI Financial Coach
+            AI-Powered Financial Management System
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Smart budgets, spending insights, and personalized coaching to reach your money goals.
+            Track your money. Set goals. Build a future that works.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
