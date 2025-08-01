@@ -112,12 +112,12 @@ export function LandingScreen({ navigation }: LandingScreenProps) {
             <Logo size={60} showText={false} />
           </View>
           
-          <Text style={styles.heroTitle}>Mind My Money</Text>
+          <Text style={styles.heroTitle}>AI-Powered Financial Management System</Text>
           <Text style={styles.heroSubtitle}>
-            Your AI-Powered Financial Coach
+            Track your money. Set goals. Build a future that works.
           </Text>
           <Text style={styles.heroDescription}>
-            Transform your relationship with money through personalized AI insights, smart budgeting, and goal tracking.
+            Comprehensive financial management with AI-powered insights, smart budgeting, and personalized coaching.
           </Text>
           
           <View style={styles.heroButtons}>
