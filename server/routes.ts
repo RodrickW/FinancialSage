@@ -195,15 +195,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify webhook signature if secret is configured
       if (process.env.STRIPE_WEBHOOK_SECRET && sig) {
-        const stripe = (await import('stripe')).default;
-        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: '2023-10-16',
-        });
-        
         // Get raw body for signature verification
         const body = req.body;
         
-        event = stripeInstance.webhooks.constructEvent(
+        event = stripe.webhooks.constructEvent(
           body,
           sig,
           process.env.STRIPE_WEBHOOK_SECRET
