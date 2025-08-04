@@ -159,39 +159,21 @@ export default function Landing() {
             Track your money. Set goals. Build a future that works.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="text-center mb-12">
             <Button 
               size="lg" 
               onClick={handleNavigateToRegister}
-              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
+              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-12 py-4 shadow-lg"
             >
-              Get Started Free
+              Start Your 30-Day Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => setLocation('/login')}
-              className="border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
-            >
-              View Demo
-            </Button>
+            <p className="text-sm text-gray-500 mt-3">
+              No credit card required • Cancel anytime
+            </p>
           </div>
           
-          <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              30-day free trial
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              Cancel anytime
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              Credit card required
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -271,20 +253,7 @@ export default function Landing() {
             ))}
           </div>
           
-          {/* Add CTA in How It Works */}
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              onClick={() => setLocation('/register')}
-              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4"
-            >
-              Start Your Free Trial
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            <p className="text-sm text-gray-500 mt-3">
-              Credit card required • 30-day trial • Cancel anytime
-            </p>
-          </div>
+
         </div>
       </section>
 
