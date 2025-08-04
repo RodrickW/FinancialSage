@@ -142,6 +142,9 @@ export default function Dashboard() {
   // Check if this is demo mode (only for anonymous marketing preview)
   const isDemoMode = !userData;
   
+  // New users should have access by default (don't show trial gates on first login)
+  const hasDefaultAccess = userData && (!(userData as any)?.hasSeenPaywall);
+  
   // For real users, only use actual API data - no fake data
   const user: UserProfile = userData;
   const financialOverview: FinancialOverviewData = financialData || {
@@ -181,7 +184,7 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">
-                <TrialGate feature="Bank Connection" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                <TrialGate feature="Bank Connection" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   <PlaidLinkButton 
                     className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
                     data-tour="connect-account"
@@ -202,7 +205,7 @@ export default function Dashboard() {
                   </PlaidLinkButton>
                 </TrialGate>
                 
-                <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   <Link href="/accounts">
                     <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
                       <span className="material-icons text-sm mr-1">account_balance_wallet</span>
@@ -212,7 +215,7 @@ export default function Dashboard() {
                 </TrialGate>
                 
                 {/* Money Mind Interview Button */}
-                <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   <Link href="/coach?onboarding=true">
                     <Button variant="outline" className="flex items-center border-green-300 text-green-600 hover:bg-green-50 shadow-md btn-animate card-hover">
                       <span className="material-icons text-sm mr-1">psychology</span>
@@ -259,7 +262,7 @@ export default function Dashboard() {
           
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
-            <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+            <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
               {financialLoading ? (
                 <FinancialOverviewSkeleton />
               ) : (
@@ -279,7 +282,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2 space-y-6">
               {/* Monthly Spending Trends */}
               <div className="stagger-item" data-tour="spending-trends">
-                <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   {spendingTrendsLoading ? (
                     <div className="bg-white rounded-xl p-6 shadow-sm">
                       <div className="animate-pulse">
@@ -307,7 +310,7 @@ export default function Dashboard() {
               
               {/* Recent Transactions */}
               <div className="stagger-item" data-tour="transactions">
-                <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   {transactionsLoading ? (
                     <TransactionsSkeleton />
                   ) : (
@@ -321,7 +324,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               {/* Savings Goals */}
               <div className="stagger-item">
-                <TrialGate feature="Savings Goals" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+                <TrialGate feature="Savings Goals" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   {savingsGoalsLoading ? (
                     <div className="bg-white rounded-xl p-6 shadow-sm">
                       <div className="animate-pulse">
@@ -345,7 +348,7 @@ export default function Dashboard() {
           </div>
           
           {/* Budget Progress Overview */}
-          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode}>
+          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
             <BudgetProgress />
           </TrialGate>
         </div>

@@ -58,6 +58,9 @@ export default function FinancialCoach() {
     enabled: selectedTab === 'health'
   });
 
+  // New users should have access by default (don't show trial gates on first login)
+  const hasDefaultAccess = userData && (!(userData as any)?.hasSeenPaywall);
+  
   const user = userData;
 
   // Check if we should show personalized plan from interview
@@ -587,7 +590,7 @@ Money Mind 💰`);
             </p>
           </div>
           
-          <TrialGate feature="AI Financial Coach" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || !userData}>
+          <TrialGate feature="AI Financial Coach" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || !userData || hasDefaultAccess}>
             {showOnboardingInterview ? (
               <Card className="p-6">
                 <CardHeader>

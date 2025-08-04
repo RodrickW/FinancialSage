@@ -71,6 +71,9 @@ export default function Goals() {
     queryKey: ['/api/users/profile']
   });
   
+  // New users should have access by default (don't show trial gates on first login)
+  const hasDefaultAccess = user && (!(user as any)?.hasSeenPaywall);
+  
   // Fetch real savings goals from API
   const { data: savingsGoals = [] } = useQuery<Goal[]>({
     queryKey: ['/api/savings-goals'],

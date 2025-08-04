@@ -41,6 +41,9 @@ export default function Accounts() {
   // Check if this is demo mode
   const isDemoMode = !userData;
   
+  // New users should have access by default (don't show trial gates on first login)
+  const hasDefaultAccess = userData && (!(userData as any)?.hasSeenPaywall);
+  
   // Only use real user data - no mock fallbacks
   const user = userData;
   const accounts = accountsData || [];
@@ -209,7 +212,7 @@ export default function Accounts() {
               <p className="text-neutral-500">Manage your linked financial accounts</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
-              <TrialGate feature="Bank Connection" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode}>
+              <TrialGate feature="Bank Connection" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode || hasDefaultAccess}>
                 <PlaidLinkButton 
                   className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
                   onSuccess={() => {
