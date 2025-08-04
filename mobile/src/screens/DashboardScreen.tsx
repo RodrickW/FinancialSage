@@ -72,6 +72,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
         <Button
+          title="Premium Features"
+          onPress={() => navigation.navigate('Subscribe')}
+          variant="outline"
+          size="sm"
+          style={styles.quickAction}
+        />
+        <Button
           title="AI Coach"
           onPress={() => navigation.navigate('Coach')}
           style={styles.actionButton}
@@ -183,6 +190,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginBottom: 20,
+  },
+  quickAction: {
+    flex: 1,
   },
   actionButton: {
     flex: 1,

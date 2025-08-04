@@ -114,6 +114,17 @@ class ApiService {
   async cancelTrial() {
     return this.request('/api/cancel-trial', { method: 'POST' });
   }
+
+  async getSubscriptionStatus() {
+    return this.request('/api/subscription/status');
+  }
+
+  async startFreeTrial(planType: 'monthly' | 'annual' = 'monthly') {
+    return this.request('/api/start-free-trial', {
+      method: 'POST',
+      body: { planType },
+    });
+  }
 }
 
 export const apiService = new ApiService();

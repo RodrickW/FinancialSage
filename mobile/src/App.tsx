@@ -16,6 +16,7 @@ import { CoachScreen } from '@/screens/CoachScreen';
 import { AccountsScreen } from '@/screens/AccountsScreen';
 import { BudgetScreen } from '@/screens/BudgetScreen';
 import { GoalsScreen } from '@/screens/GoalsScreen';
+import { SubscribeScreen } from '@/screens/SubscribeScreen';
 
 // Navigation types
 export type AuthStackParamList = {
@@ -30,6 +31,7 @@ export type MainTabParamList = {
   Budget: undefined;
   Coach: undefined;
   Goals: undefined;
+  Subscribe: undefined;
 };
 
 export type RootStackParamList = {
@@ -129,6 +131,14 @@ function MainTabScreen() {
         options={{
           title: 'Goals',
           tabBarLabel: 'Goals',
+        }}
+      />
+      <MainTab.Screen 
+        name="Subscribe" 
+        component={SubscribeScreen}
+        options={{
+          title: 'Subscribe',
+          tabBarLabel: 'Premium',
         }}
       />
     </MainTab.Navigator>
