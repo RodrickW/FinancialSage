@@ -159,18 +159,23 @@ export default function Landing() {
             Track your money. Set goals. Build a future that works.
           </p>
           
-          <div className="text-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button 
               size="lg" 
               onClick={handleNavigateToRegister}
-              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-12 py-4 shadow-lg"
+              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
-              Start Your 30-Day Free Trial
+              Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <p className="text-sm text-gray-500 mt-3">
-              No credit card required • Cancel anytime
-            </p>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setLocation('/login')}
+              className="border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
+            >
+              Login
+            </Button>
           </div>
           
 
