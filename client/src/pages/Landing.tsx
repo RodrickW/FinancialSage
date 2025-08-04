@@ -25,6 +25,15 @@ import { MoneyMindLogo } from '@/components/Logo';
 
 export default function Landing() {
   const [, setLocation] = useLocation();
+  
+  const handleNavigateToRegister = () => {
+    try {
+      console.log('Navigating to register page...');
+      setLocation('/register');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
 
   const features = [
     {
@@ -125,7 +134,7 @@ export default function Landing() {
                 Sign In
               </Button>
               <Button 
-                onClick={() => setLocation('/register')}
+                onClick={handleNavigateToRegister}
                 className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
               >
                 Get Started
@@ -153,7 +162,7 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button 
               size="lg" 
-              onClick={() => setLocation('/register')}
+              onClick={handleNavigateToRegister}
               className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
               Get Started Free
@@ -355,7 +364,7 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg py-4"
-                  onClick={() => setLocation('/register')}
+                  onClick={handleNavigateToRegister}
                 >
                   {mainPlan.cta}
                   <ArrowRight className="ml-2 w-5 h-5" />
