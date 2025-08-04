@@ -16,62 +16,70 @@ const tourSteps: TourStep[] = [
   {
     id: 'welcome',
     title: 'Welcome to Mind My Money! 🎉',
-    description: 'Let\'s take a quick tour to show you how to manage your finances like a pro. This will only take 2 minutes.',
+    description: 'Let\'s take a quick tour of your financial dashboard. This demo shows how the app works with sample data.',
     target: '',
     position: 'top'
   },
   {
-    id: 'connect-account',
-    title: 'Connect Your Bank Account',
-    description: 'Start by connecting your bank account to get real-time transaction data and insights.',
-    target: '[data-tour="connect-account"]',
-    position: 'bottom',
-    spotlight: true
-  },
-  {
     id: 'financial-overview',
     title: 'Your Financial Dashboard',
-    description: 'These cards show your spending patterns - daily, weekly, monthly, and total balance at a glance.',
+    description: 'These cards show your spending patterns - daily, weekly, monthly, and total balance. This is demo data showing what your dashboard will look like.',
     target: '[data-tour="financial-overview"]',
     position: 'bottom',
     spotlight: true
   },
   {
     id: 'spending-trends',
-    title: 'Spending Analysis',
-    description: 'Track your spending by category and see monthly trends to understand where your money goes.',
+    title: 'Smart Spending Analysis',
+    description: 'Track spending by category with interactive charts. See where your money goes and identify trends to make better decisions.',
     target: '[data-tour="spending-trends"]',
     position: 'top',
     spotlight: true
   },
   {
     id: 'transactions',
-    title: 'Recent Transactions',
-    description: 'View and categorize your recent transactions. All data is automatically synced from your connected accounts.',
+    title: 'Transaction History',
+    description: 'View and categorize your transactions automatically. All data syncs in real-time from your connected accounts.',
     target: '[data-tour="transactions"]',
     position: 'top',
     spotlight: true
   },
   {
-    id: 'credit-score',
-    title: 'Credit Score Monitoring (Coming Soon)',
-    description: 'We\'re building credit score tracking and improvement recommendations. This feature will be available soon!',
-    target: '[data-tour="credit-score"]',
-    position: 'left',
-    spotlight: true
-  },
-  {
     id: 'ai-coach',
-    title: 'AI Financial Coach',
-    description: 'Meet your personal AI coach! Ask questions about budgeting, saving, or get personalized financial advice.',
+    title: 'Money Mind AI Coach',
+    description: 'Your personal AI financial advisor! Ask questions about budgeting, saving strategies, or get personalized recommendations.',
     target: '[data-tour="ai-coach"]',
     position: 'top',
     spotlight: true
   },
   {
+    id: 'goals',
+    title: 'Goal Tracking',
+    description: 'Set and track financial goals with progress visualization. The AI helps you stay motivated and on track.',
+    target: '[data-tour="goals"]',
+    position: 'top',
+    spotlight: true
+  },
+  {
+    id: 'budgets',
+    title: 'Smart Budgeting',
+    description: 'AI-generated budgets that adapt to your spending patterns. Get alerts and recommendations to stay on track.',
+    target: '[data-tour="budgets"]',
+    position: 'top',
+    spotlight: true
+  },
+  {
+    id: 'connect-account',
+    title: 'Ready to Get Started?',
+    description: 'Connect your bank account to see your real data instead of this demo. Your financial information is encrypted and secure.',
+    target: '[data-tour="connect-account"]',
+    position: 'bottom',
+    spotlight: true
+  },
+  {
     id: 'complete',
-    title: 'You\'re All Set! ✨',
-    description: 'You\'re ready to take control of your finances. Start by connecting your first account and explore the features.',
+    title: 'Start Your Financial Journey! ✨',
+    description: 'You\'ve seen the demo - now connect your accounts to get personalized insights and AI coaching for your money.',
     target: '',
     position: 'top'
   }

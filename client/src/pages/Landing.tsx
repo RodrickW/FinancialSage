@@ -80,50 +80,26 @@ export default function Landing() {
     }
   ];
 
-  const pricingPlans = [
-    {
-      name: "Monthly Plan",
-      price: "$9.99",
-      period: "month",
-      originalPrice: null,
-      savings: null,
-      description: "AI financial coaching and management",
-      features: [
-        "Bank connections",
-        "AI coaching",
-        "Spending analytics",
-        "Budget tracking",
-        "Goal tracking",
-        "Email support"
-      ],
-      cta: "Start 30-Day Free Trial",
-      popular: false,
-      available: true,
-      planType: "monthly"
-    },
-    {
-      name: "Annual Plan",
-      price: "$95.99",
-      period: "year",
-      originalPrice: "$119.88",
-      savings: "Save $23.89",
-      description: "Same great features with significant savings",
-      features: [
-        "Bank connections",
-        "AI coaching", 
-        "Spending analytics",
-        "Budget tracking",
-        "Goal tracking",
-        "Email support",
-        "2 months free",
-        "Best value option"
-      ],
-      cta: "Start 30-Day Free Trial",
-      popular: true,
-      available: true,
-      planType: "annual"
-    }
-  ];
+  const mainPlan = {
+    name: "Mind My Money",
+    price: "$9.99",
+    period: "month",
+    annualPrice: "$95.99",
+    annualSavings: "Save $23.89 yearly",
+    description: "Complete AI-powered financial management system",
+    features: [
+      "Unlimited bank connections",
+      "Money Mind AI coaching",
+      "Advanced spending analytics",
+      "Smart budget tracking",
+      "Goal setting & tracking",
+      "Real-time transaction sync",
+      "Personalized insights",
+      "Priority email support"
+    ],
+    cta: "Start Your 30-Day Free Trial",
+    available: true
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50">
@@ -180,7 +156,7 @@ export default function Landing() {
               onClick={() => setLocation('/register')}
               className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
-              Start Your 30-Day Free Trial
+              Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button 
@@ -189,7 +165,7 @@ export default function Landing() {
               onClick={() => setLocation('/login')}
               className="border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
             >
-              Login/See Demo
+              View Demo
             </Button>
           </div>
           
@@ -333,100 +309,68 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing Section - Single Card */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 to-emerald-50">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               Simple Pricing
             </h2>
-            <p className="text-xl text-gray-600">Choose monthly or annual - both include 30-day free trial</p>
+            <p className="text-xl text-gray-600">Try free for 30 days, then choose monthly or annual</p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular && !plan.available ? 'border-gray-300 opacity-75' : plan.popular ? 'border-teal-200 shadow-lg scale-105' : 'border-gray-200'}`}>
-                {plan.popular && plan.available && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white">
-                      Best Value
-                    </Badge>
-                  </div>
-                )}
-                {plan.popular && !plan.available && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gray-500 text-white">
-                      Coming Soon
-                    </Badge>
-                  </div>
-                )}
-                <CardContent className="p-8">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                    <div className="flex items-center justify-center mb-2">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.price !== "Free" && plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
+          <div className="max-w-lg mx-auto">
+            <Card className="relative border-teal-200 shadow-xl">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white px-4 py-1">
+                  🎉 30-Day Free Trial
+                </Badge>
+              </div>
+              
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold mb-4">{mainPlan.name}</h3>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-center">
+                      <span className="text-4xl font-bold">{mainPlan.price}</span>
+                      <span className="text-gray-500 ml-2">/{mainPlan.period}</span>
                     </div>
-                    {plan.originalPrice && (
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-lg text-gray-400 line-through">{plan.originalPrice}</span>
-                        <Badge className="bg-green-100 text-green-700 text-sm">
-                          {plan.savings}
-                        </Badge>
-                      </div>
-                    )}
-                    {plan.period === "year" && (
-                      <p className="text-sm text-gray-600 mb-2">Only $8.00/month when paid annually</p>
-                    )}
-                    <p className="text-gray-600">{plan.description}</p>
+                    <div className="text-sm text-gray-600">
+                      or {mainPlan.annualPrice}/year • <span className="text-green-600 font-semibold">{mainPlan.annualSavings}</span>
+                    </div>
                   </div>
                   
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center">
-                        <CheckCircle className={`w-5 h-5 mr-3 flex-shrink-0 ${plan.available ? 'text-green-500' : 'text-gray-400'}`} />
-                        <span className={`${plan.available ? 'text-gray-600' : 'text-gray-400'}`}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button 
-                    className={`w-full ${plan.available 
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white' 
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                    variant={plan.available ? 'default' : 'secondary'}
-                    onClick={() => plan.available && setLocation(`/subscribe?plan=${plan.planType}`)}
-                    disabled={!plan.available}
-                  >
-                    {plan.cta}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                  <p className="text-gray-600">{mainPlan.description}</p>
+                </div>
+                
+                <ul className="space-y-3 mb-8">
+                  {mainPlan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                      <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 text-green-500" />
+                      <span className="text-gray-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button 
+                  className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg py-4"
+                  onClick={() => setLocation('/register')}
+                >
+                  {mainPlan.cta}
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                
+                <p className="text-center text-sm text-gray-500 mt-4">
+                  No credit card required for trial • Cancel anytime
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-teal-600 to-emerald-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Master Your Money?
-          </h2>
-          <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-            Start your 30-day free trial today
-          </p>
-          <Button 
-            size="lg"
-            onClick={() => setLocation('/register')}
-            className="bg-white text-teal-600 hover:bg-gray-50 text-lg px-8 py-4"
-          >
-            Start Free Trial
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6 lg:px-8">
