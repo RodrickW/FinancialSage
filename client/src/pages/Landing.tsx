@@ -68,6 +68,45 @@ export default function Landing() {
     }
   ];
 
+  const plans = [
+    {
+      name: "Monthly Plan",
+      price: "$9.99",
+      period: "month",
+      originalPrice: null,
+      savings: null,
+      description: "Perfect for getting started with AI-powered financial management",
+      features: [
+        "AI Financial Coach",
+        "Bank Account Integration", 
+        "Smart Budget Creation",
+        "Spending Analytics",
+        "Savings Goal Tracking",
+        "Credit Score Monitoring"
+      ],
+      cta: "Start Free Trial",
+      popular: false
+    },
+    {
+      name: "Annual Plan", 
+      price: "$95.99",
+      period: "year",
+      originalPrice: "$119.88",
+      savings: "Save $23.89",
+      description: "Best value! Save 20% with annual billing",
+      features: [
+        "Everything in Monthly",
+        "20% Annual Savings",
+        "Priority Support",
+        "Advanced Analytics",
+        "Export Features",
+        "Early Access to New Features"
+      ],
+      cta: "Start Free Trial",
+      popular: true
+    }
+  ];
+
   const testimonials = [
     {
       name: "Sarah Johnson",
@@ -292,9 +331,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section - Single Card */}
+      {/* Pricing Section - Dual Cards */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 to-emerald-50">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               Simple Pricing
@@ -302,53 +341,76 @@ export default function Landing() {
             <p className="text-xl text-gray-600">Try free for 30 days, then choose monthly or annual</p>
           </div>
           
-          <div className="max-w-lg mx-auto">
-            <Card className="relative border-teal-200 shadow-xl">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white px-4 py-1">
-                  🎉 30-Day Free Trial
-                </Badge>
-              </div>
-              
-              <CardContent className="p-8">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold mb-4">{mainPlan.name}</h3>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-center">
-                      <span className="text-4xl font-bold">{mainPlan.price}</span>
-                      <span className="text-gray-500 ml-2">/{mainPlan.period}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {plans.map((plan, index) => (
+              <Card key={index} className={`relative border-2 transition-all duration-300 hover:shadow-xl ${
+                plan.popular 
+                  ? 'border-teal-300 shadow-xl scale-105' 
+                  : 'border-teal-200 hover:border-teal-300'
+              }`}>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white px-4 py-1">
+                      🏆 Most Popular
+                    </Badge>
+                  </div>
+                )}
+                
+                <CardContent className="p-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold mb-4">{plan.name}</h3>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-center">
+                        <span className="text-4xl font-bold">{plan.price}</span>
+                        <span className="text-gray-500 ml-2">/{plan.period}</span>
+                      </div>
+                      {plan.savings && (
+                        <div className="flex items-center justify-center space-x-2">
+                          <span className="text-sm text-gray-400 line-through">{plan.originalPrice}</span>
+                          <span className="text-sm text-green-600 font-semibold">{plan.savings}</span>
+                        </div>
+                      )}
+                      {plan.period === 'year' && (
+                        <div className="text-sm text-gray-600">
+                          Just $7.99/month when billed annually
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      or {mainPlan.annualPrice}/year • <span className="text-green-600 font-semibold">{mainPlan.annualSavings}</span>
-                    </div>
+                    
+                    <p className="text-gray-600">{plan.description}</p>
                   </div>
                   
-                  <p className="text-gray-600">{mainPlan.description}</p>
-                </div>
-                
-                <ul className="space-y-3 mb-8">
-                  {mainPlan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 text-green-500" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button 
-                  className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg py-4"
-                  onClick={handleNavigateToRegister}
-                >
-                  {mainPlan.cta}
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                
-                <p className="text-center text-sm text-gray-500 mt-4">
-                  No credit card required for trial • Cancel anytime
-                </p>
-              </CardContent>
-            </Card>
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center">
+                        <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 text-green-500" />
+                        <span className="text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Button 
+                    className={`w-full text-lg py-4 ${
+                      plan.popular
+                        ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white'
+                        : 'border-2 border-teal-500 text-teal-600 hover:bg-teal-50'
+                    }`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={handleNavigateToRegister}
+                  >
+                    {plan.cta}
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">
+              🎉 30-day free trial for both plans • No credit card required • Cancel anytime
+            </p>
           </div>
         </div>
       </section>
