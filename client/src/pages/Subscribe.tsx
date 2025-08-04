@@ -15,18 +15,16 @@ import { useQuery } from '@tanstack/react-query';
 
 const plans = [
   {
-    name: "Mind My Money Standard",
+    name: "Monthly Plan",
     price: "$9.99",
     period: "month",
     description: "Complete financial management with AI coaching",
     features: [
-      "Unlimited bank connections",
-      "Money Mind AI coaching",
-      "Advanced spending analytics",
-      "Budget tracking & planning",
-      "Goal setting & tracking",
-      "Real-time transaction sync",
-      "Personalized insights",
+      "Bank connections",
+      "AI coaching",
+      "Spending analytics",
+      "Budget tracking",
+      "Goal tracking",
       "Email support"
     ],
     planType: "monthly",
@@ -34,22 +32,22 @@ const plans = [
     available: true
   },
   {
-    name: "Mind My Money Annual",
+    name: "Annual Plan",
     price: "$95.99",
     originalPrice: "$119.88",
     period: "year",
-    savings: "2 months free",
-    description: "Complete financial management with AI coaching - Best Value!",
+    savings: "Save $23.89",
+    description: "Same great features with significant savings",
+    monthlyEquivalent: "Only $8.00/month when paid annually",
     features: [
-      "Unlimited bank connections",
-      "Money Mind AI coaching",
-      "Advanced spending analytics",
-      "Budget tracking & planning",
-      "Goal setting & tracking",
-      "Real-time transaction sync",
-      "Personalized insights",
+      "Bank connections",
+      "AI coaching", 
+      "Spending analytics",
+      "Budget tracking",
+      "Goal tracking",
       "Email support",
-      "Priority customer support"
+      "2 months free",
+      "Best value option"
     ],
     planType: "annual",
     popular: true,
@@ -157,20 +155,18 @@ export default function Subscribe() {
                     <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                     <CardDescription>{plan.description}</CardDescription>
                     <div className="mt-4">
-                      {plan.originalPrice && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg text-gray-500 line-through">{plan.originalPrice}</span>
-                          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
-                            Save 20%
-                          </Badge>
-                        </div>
-                      )}
                       <div className="flex items-center">
                         <span className="text-4xl font-bold">{plan.price}</span>
                         {plan.price !== "Coming Soon" && <span className="text-gray-500 ml-2">/{plan.period}</span>}
                       </div>
-                      {plan.period === "year" && (
-                        <p className="text-sm text-gray-600 mt-1">Only $8.00/month when paid annually</p>
+                      {plan.originalPrice && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-sm text-gray-500 line-through">{plan.originalPrice}</span>
+                          <span className="text-sm font-medium text-green-600">{plan.savings}</span>
+                        </div>
+                      )}
+                      {plan.monthlyEquivalent && (
+                        <p className="text-sm text-gray-600 mt-1">{plan.monthlyEquivalent}</p>
                       )}
                     </div>
                   </CardHeader>
@@ -188,8 +184,8 @@ export default function Subscribe() {
                   
                   <CardFooter>
                     <Button 
-                      className={`w-full ${plan.available 
-                        ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white' 
+                      className={`w-full py-3 text-base font-medium ${plan.available 
+                        ? 'bg-teal-500 hover:bg-teal-600 text-white' 
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
                       variant={plan.available ? 'default' : 'secondary'}
