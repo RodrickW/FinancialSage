@@ -198,23 +198,39 @@ export default function Landing() {
             Track your money. Set goals. Build a future that works.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col gap-4 justify-center mb-12 max-w-md mx-auto">
             <Button 
               size="lg" 
               onClick={handleNavigateToRegister}
-              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
+              className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
-              Get Started Free
+              Start Your 30-Day Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button 
               size="lg" 
               variant="outline"
               onClick={() => setLocation('/login')}
-              className="border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
+              className="w-full border-2 border-teal-200 text-teal-600 hover:bg-teal-50 text-lg px-8 py-4"
             >
-              Login
+              Login/See Demo
             </Button>
+          </div>
+          
+          {/* Benefits checklist */}
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-sm text-gray-600 max-w-2xl mx-auto">
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+              <span>30-day free trial</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+              <span>Cancel anytime</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+              <span>No credit card required</span>
+            </div>
           </div>
           
 
