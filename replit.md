@@ -30,6 +30,8 @@ Preferred communication style: Simple, everyday language.
 - **API Rate Limiting**: Implemented comprehensive Plaid API rate limiting system to prevent billing overages. Balance refreshes now limited to once every 12 hours per user, with clear user feedback on rate limit status.
 - **Login Balance Refresh**: Automatic balance updates triggered on user login (bypasses manual rate limiting) to ensure users always see fresh data when they access the app.
 - **Credit Assessment Database**: Added credit_assessments table storing user credit profiles, AI-generated improvement plans, and historical progress tracking (Aug 11, 2025).
+- **Enhanced Credit Education**: Added comprehensive credit score factors education with visual progress bars, color-coded indicators, and detailed explanations for all 5 FICO scoring factors (Aug 11, 2025).
+- **Progress Tracking System**: Implemented user-friendly progress monitoring with assessment date tracking, "Retake Assessment" functionality, key metrics dashboard, and progress tips for ongoing credit improvement (Aug 11, 2025).
 
 ### Feature Specifications
 - **Dashboard**: Overview of accounts, recent transactions, spending trends, and savings goals summary.
@@ -37,7 +39,7 @@ Preferred communication style: Simple, everyday language.
 - **Budgeting**: AI-generated and user-customizable budget plans with real-time tracking, color-coded progress, and persistence.
 - **Goals**: Creation and tracking of savings goals with progress visualization, milestone celebrations, and deletion functionality.
 - **AI Coach**: Interactive "Money Mind" providing personalized financial advice based on linked financial data.
-- **Credit Simulator**: Comprehensive AI-powered credit score improvement system with detailed assessment forms, personalized improvement plans, factor analysis, and progress tracking (launched Aug 11, 2025).
+- **Credit Simulator**: Comprehensive AI-powered credit score improvement system with detailed assessment forms, personalized improvement plans, the 5 credit scoring factors with exact percentages (Payment History 35%, Credit Utilization 30%, etc.), and enhanced progress tracking with assessment update capabilities (launched Aug 11, 2025).
 - **Admin Panel**: For managing user feedback and performing administrative tasks.
 
 ## External Dependencies
