@@ -37,6 +37,12 @@ export default function Accounts() {
   const { data: accountsData, isLoading: accountsLoading } = useQuery({
     queryKey: ['/api/accounts'],
   });
+
+  // Get refresh status data
+  const { data: refreshStatus } = useQuery({
+    queryKey: ['/api/accounts/refresh-status'],
+    refetchInterval: 30000, // Update every 30 seconds
+  });
   
   // Check if this is demo mode
   const isDemoMode = !userData;
@@ -63,6 +69,36 @@ export default function Accounts() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(amount);
+  };
+
+  // Format date/time for display
+  const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Calculate time until next refresh
+  const getTimeUntilRefresh = (nextRefreshTime: string | null) => {
+    if (!nextRefreshTime) return null;
+    const next = new Date(nextRefreshTime).getTime();
+    const now = Date.now();
+    const diff = next - now;
+    
+    if (diff <= 0) return 'Available now';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
   
   // Disconnect account mutation
@@ -282,6 +318,58 @@ export default function Accounts() {
 
             </div>
           </div>
+
+          {/* Balance Refresh Status Card */}
+          {refreshStatus && refreshStatus.hasPlaidAccounts && (
+            <Card className="mb-6 border-l-4 border-l-blue-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-full">
+                      <span className="material-icons text-blue-600 text-lg">schedule</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">Balance Refresh Status</h3>
+                      <p className="text-sm text-gray-600">
+                        Last updated: {formatDateTime(refreshStatus.lastBalanceUpdate)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {refreshStatus.canRefresh ? (
+                      <div className="flex items-center text-green-600">
+                        <span className="material-icons text-sm mr-1">check_circle</span>
+                        <span className="text-sm font-medium">Available now</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-amber-600">
+                        <span className="material-icons text-sm mr-1">access_time</span>
+                        <span className="text-sm font-medium">
+                          Available in {getTimeUntilRefresh(refreshStatus.nextRefreshAllowed)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {!refreshStatus.automaticRefreshStatus.enabled && (
+                  <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-start space-x-2">
+                      <span className="material-icons text-amber-600 text-sm mt-0.5">info</span>
+                      <div>
+                        <p className="text-sm text-amber-800 font-medium">
+                          Automatic updates disabled
+                        </p>
+                        <p className="text-xs text-amber-700 mt-1">
+                          {refreshStatus.automaticRefreshStatus.disabledReason}. 
+                          Manual refreshes available every 12 hours to control API costs.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
           
           <TrialGate feature="Account Management" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode}>
             {accountsLoading ? (

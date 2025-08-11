@@ -977,9 +977,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const oldBalance = account.balance;
             const newBalance = plaidAccount.balances.current;
             
-            // Update the account balance
+            // Update the account balance and timestamp
             await storage.updateAccount(account.id, {
-              balance: newBalance
+              balance: newBalance,
+              lastBalanceUpdate: new Date()
             });
             updatedAccountsCount++;
             
@@ -1005,12 +1006,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Balance refresh completed',
         updatedAccounts: updatedAccountsCount,
         totalAccounts: plaidAccounts.length,
-        nextRefreshAllowed: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString() // 12 hours from now
+        nextRefreshAllowed: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(), // 12 hours from now
+        lastRefreshTime: new Date().toISOString()
       });
       
     } catch (error) {
       console.error('Error refreshing balances:', error);
       res.status(500).json({ error: 'Failed to refresh account balances' });
+    }
+  });
+
+  // Get account refresh status and timing information
+  app.get('/api/accounts/refresh-status', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const accounts = await storage.getAccounts(user.id);
+      const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
+      
+      if (plaidAccounts.length === 0) {
+        return res.json({
+          hasPlaidAccounts: false,
+          message: 'No connected bank accounts found'
+        });
+      }
+      
+      // Check if user can refresh (rate limiting)
+      const rateLimitResult = plaidRateLimiter.checkRefreshAllowed(user.id);
+      
+      // Get the most recent balance update time across all accounts
+      const mostRecentUpdate = plaidAccounts.reduce((latest, account) => {
+        const accountTime = account.lastBalanceUpdate ? new Date(account.lastBalanceUpdate).getTime() : 0;
+        return accountTime > latest ? accountTime : latest;
+      }, 0);
+      
+      res.json({
+        hasPlaidAccounts: true,
+        canRefresh: rateLimitResult.allowed,
+        lastBalanceUpdate: mostRecentUpdate ? new Date(mostRecentUpdate).toISOString() : null,
+        nextRefreshAllowed: rateLimitResult.allowed ? null : rateLimitResult.nextAllowedTime?.toISOString(),
+        remainingMinutes: rateLimitResult.allowed ? null : rateLimitResult.remainingMinutes,
+        automaticRefreshStatus: {
+          enabled: false,
+          disabledReason: 'Automatic refresh disabled to prevent excessive API charges',
+          lastDisabled: '2025-08-11'
+        },
+        refreshPolicy: {
+          manualOnly: true,
+          cooldownMinutes: 720, // 12 hours
+          maxRefreshesPerDay: 2
+        }
+      });
+    } catch (error) {
+      console.error('Error getting refresh status:', error);
+      res.status(500).json({ error: 'Failed to get refresh status' });
     }
   });
 
