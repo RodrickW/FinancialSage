@@ -22,13 +22,14 @@ Preferred communication style: Simple, everyday language.
 - **Mobile**: React Native application developed alongside the web version, ensuring feature parity with shared backend APIs. Includes mobile-specific screens and navigation.
 - **Authentication**: Secure session management, bcrypt hashing for passwords, email verification, and password reset functionality.
 - **Financial Data Handling**: Secure integration with Plaid for bank connections and transactions, including transaction categorization, balance refresh, and duplicate prevention. **CRITICAL FIX (Aug 11, 2025)**: Disabled automatic balance refresh scheduler and implemented strict 12-hour rate limiting per user to prevent excessive API charges.
-- **AI Integration**: Leverages OpenAI's GPT-4o for personalized financial coaching, budget recommendations, and credit improvement suggestions based in user data.
+- **AI Integration**: Leverages OpenAI's GPT-4o for personalized financial coaching, budget recommendations, and comprehensive credit improvement plans with detailed monthly action items based on user financial data.
 - **Subscription Management**: Stripe for secure payment processing, supporting both monthly and annual plans with a 30-day free trial.
 - **Notifications**: SendGrid for transactional emails (welcome, trial, admin alerts).
 - **Scalability**: Implemented connection pooling, Redis session store (with memory fallback), enhanced rate limiting, and caching for high-volume user support.
 - **Security**: Includes input validation, CSRF protection, Helmet.js security headers, and role-based access control (for admin features).
 - **API Rate Limiting**: Implemented comprehensive Plaid API rate limiting system to prevent billing overages. Balance refreshes now limited to once every 12 hours per user, with clear user feedback on rate limit status.
 - **Login Balance Refresh**: Automatic balance updates triggered on user login (bypasses manual rate limiting) to ensure users always see fresh data when they access the app.
+- **Credit Assessment Database**: Added credit_assessments table storing user credit profiles, AI-generated improvement plans, and historical progress tracking (Aug 11, 2025).
 
 ### Feature Specifications
 - **Dashboard**: Overview of accounts, recent transactions, spending trends, and savings goals summary.
@@ -36,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 - **Budgeting**: AI-generated and user-customizable budget plans with real-time tracking, color-coded progress, and persistence.
 - **Goals**: Creation and tracking of savings goals with progress visualization, milestone celebrations, and deletion functionality.
 - **AI Coach**: Interactive "Money Mind" providing personalized financial advice based on linked financial data.
-- **Credit Monitoring**: Integration with Experian for credit score data and recommendations (feature marked as "coming soon" for users).
+- **Credit Simulator**: Comprehensive AI-powered credit score improvement system with detailed assessment forms, personalized improvement plans, factor analysis, and progress tracking (launched Aug 11, 2025).
 - **Admin Panel**: For managing user feedback and performing administrative tasks.
 
 ## External Dependencies
