@@ -119,6 +119,28 @@ export const feedback = pgTable("feedback", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Credit assessment schema for credit score simulation and improvement
+export const creditAssessments = pgTable("credit_assessments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  currentScore: integer("current_score").notNull(),
+  goalScore: integer("goal_score").notNull(),
+  paymentHistory: text("payment_history").notNull(), // excellent, good, fair, poor
+  creditUtilization: doublePrecision("credit_utilization").notNull(), // percentage
+  creditHistoryLength: integer("credit_history_length").notNull(), // months
+  creditMix: text("credit_mix").notNull(), // excellent, good, limited, poor
+  newCreditInquiries: integer("new_credit_inquiries").notNull(), // in last 12 months
+  totalCreditLimit: doublePrecision("total_credit_limit").notNull(),
+  totalCreditBalance: doublePrecision("total_credit_balance").notNull(),
+  monthlyIncome: doublePrecision("monthly_income").notNull(),
+  hasCollections: boolean("has_collections").default(false),
+  hasBankruptcy: boolean("has_bankruptcy").default(false),
+  hasForeclosure: boolean("has_foreclosure").default(false),
+  improvementPlan: jsonb("improvement_plan"), // AI-generated plan
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Savings tracker schema for monthly and yearly progress
 export const savingsTracker = pgTable("savings_tracker", {
   id: serial("id").primaryKey(),
@@ -141,6 +163,7 @@ export const insertCreditScoreSchema = createInsertSchema(creditScores).omit({ i
 export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({ id: true, currentAmount: true });
 export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertCreditAssessmentSchema = createInsertSchema(creditAssessments).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Type definitions
 export type User = typeof users.$inferSelect;
@@ -169,3 +192,6 @@ export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 
 export type SavingsTracker = typeof savingsTracker.$inferSelect;
 export type InsertSavingsTracker = z.infer<typeof insertSavingsTrackerSchema>;
+
+export type CreditAssessment = typeof creditAssessments.$inferSelect;
+export type InsertCreditAssessment = z.infer<typeof insertCreditAssessmentSchema>;

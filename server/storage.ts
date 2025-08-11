@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback, savingsTracker } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback, savingsTracker, creditAssessments } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -59,6 +59,11 @@ export interface IStorage {
   getCurrentMonthSavings(userId: number): Promise<SavingsTracker | undefined>;
   getCurrentYearSavings(userId: number): Promise<number>;
   updateMonthlySavings(userId: number, month: number, year: number, amount: number): Promise<SavingsTracker>;
+
+  // Credit assessment operations
+  getCreditAssessment(userId: number): Promise<CreditAssessment | undefined>;
+  createCreditAssessment(assessment: InsertCreditAssessment): Promise<CreditAssessment>;
+  updateCreditAssessment(id: number, data: Partial<InsertCreditAssessment>): Promise<CreditAssessment | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -413,6 +418,28 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  // Credit assessment operations
+  async getCreditAssessment(userId: number): Promise<CreditAssessment | undefined> {
+    const [assessment] = await db.select().from(creditAssessments)
+      .where(eq(creditAssessments.userId, userId))
+      .orderBy(desc(creditAssessments.createdAt));
+    return assessment;
+  }
+
+  async createCreditAssessment(assessment: InsertCreditAssessment): Promise<CreditAssessment> {
+    const [created] = await db.insert(creditAssessments).values(assessment).returning();
+    return created;
+  }
+
+  async updateCreditAssessment(id: number, data: Partial<InsertCreditAssessment>): Promise<CreditAssessment | undefined> {
+    const [updated] = await db
+      .update(creditAssessments)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(creditAssessments.id, id))
+      .returning();
+    return updated;
   }
 }
 

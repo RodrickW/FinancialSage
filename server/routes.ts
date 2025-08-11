@@ -2872,6 +2872,131 @@ Group similar transactions together and sum the amounts for each category. Only 
     }
   });
 
+  // Credit Assessment API Routes
+  app.get('/api/credit/assessment', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const assessment = await storage.getCreditAssessment(user.id);
+      res.json(assessment);
+    } catch (error) {
+      console.error('Error fetching credit assessment:', error);
+      res.status(500).json({ error: 'Failed to fetch credit assessment' });
+    }
+  });
+
+  app.post('/api/credit/assessment', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { generateCreditImprovementPlan } = await import('./creditAssessment');
+      
+      // Validate required fields
+      const requiredFields = [
+        'currentScore', 'goalScore', 'paymentHistory', 'creditUtilization',
+        'creditHistoryLength', 'creditMix', 'newCreditInquiries',
+        'totalCreditLimit', 'totalCreditBalance', 'monthlyIncome'
+      ];
+      
+      for (const field of requiredFields) {
+        if (req.body[field] === undefined || req.body[field] === null) {
+          return res.status(400).json({ error: `${field} is required` });
+        }
+      }
+      
+      // Get user's financial data for comprehensive analysis
+      const accounts = await storage.getAccounts(user.id);
+      const budgets = await storage.getBudgets(user.id);
+      const transactions = await storage.getTransactions(user.id, 100);
+      
+      // Create assessment data
+      const assessmentData = {
+        userId: user.id,
+        currentScore: parseInt(req.body.currentScore),
+        goalScore: parseInt(req.body.goalScore),
+        paymentHistory: req.body.paymentHistory,
+        creditUtilization: parseFloat(req.body.creditUtilization),
+        creditHistoryLength: parseInt(req.body.creditHistoryLength),
+        creditMix: req.body.creditMix,
+        newCreditInquiries: parseInt(req.body.newCreditInquiries),
+        totalCreditLimit: parseFloat(req.body.totalCreditLimit),
+        totalCreditBalance: parseFloat(req.body.totalCreditBalance),
+        monthlyIncome: parseFloat(req.body.monthlyIncome),
+        hasCollections: req.body.hasCollections || false,
+        hasBankruptcy: req.body.hasBankruptcy || false,
+        hasForeclosure: req.body.hasForeclosure || false
+      };
+      
+      // Create the assessment
+      const assessment = await storage.createCreditAssessment(assessmentData);
+      
+      // Generate AI improvement plan
+      const improvementPlan = await generateCreditImprovementPlan(
+        assessment,
+        accounts,
+        budgets,
+        transactions
+      );
+      
+      // Update assessment with the improvement plan
+      const updatedAssessment = await storage.updateCreditAssessment(assessment.id, {
+        improvementPlan
+      });
+      
+      res.json({
+        assessment: updatedAssessment,
+        improvementPlan
+      });
+      
+    } catch (error) {
+      console.error('Error creating credit assessment:', error);
+      res.status(500).json({ 
+        error: 'Failed to create credit assessment',
+        message: error.message 
+      });
+    }
+  });
+
+  app.put('/api/credit/assessment/:id', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const assessmentId = parseInt(req.params.id);
+      
+      // Check if assessment belongs to user
+      const existing = await storage.getCreditAssessment(user.id);
+      if (!existing || existing.id !== assessmentId) {
+        return res.status(404).json({ error: 'Assessment not found' });
+      }
+      
+      const updatedAssessment = await storage.updateCreditAssessment(assessmentId, req.body);
+      res.json(updatedAssessment);
+      
+    } catch (error) {
+      console.error('Error updating credit assessment:', error);
+      res.status(500).json({ error: 'Failed to update credit assessment' });
+    }
+  });
+
+  // Credit score factors and analysis
+  app.get('/api/credit/factors/:assessmentId', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const assessmentId = parseInt(req.params.assessmentId);
+      const { calculateCreditScoreFactors } = await import('./creditAssessment');
+      
+      // Check if assessment belongs to user
+      const assessment = await storage.getCreditAssessment(user.id);
+      if (!assessment || assessment.id !== assessmentId) {
+        return res.status(404).json({ error: 'Assessment not found' });
+      }
+      
+      const factors = calculateCreditScoreFactors(assessment);
+      res.json(factors);
+      
+    } catch (error) {
+      console.error('Error calculating credit factors:', error);
+      res.status(500).json({ error: 'Failed to calculate credit factors' });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
