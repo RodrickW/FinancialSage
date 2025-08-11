@@ -52,6 +52,58 @@ function isWithinLastMonth(date: Date): boolean {
   return date >= lastMonth;
 }
 
+// Login balance refresh function - bypasses manual rate limiting
+async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
+  try {
+    console.log(`🔄 Auto-refreshing balances on login for user ${userId}`);
+    
+    const accounts = await storage.getAccounts(userId);
+    const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
+    
+    if (plaidAccounts.length === 0) {
+      console.log(`No Plaid accounts found for user ${userId} - skipping login refresh`);
+      return;
+    }
+    
+    let updatedAccountsCount = 0;
+    
+    for (const account of plaidAccounts) {
+      try {
+        console.log(`Refreshing login balance for ${account.institutionName} - ${account.accountName}`);
+        
+        // Get fresh account data from Plaid
+        const accountsResponse = await getAccounts(account.plaidAccessToken!);
+        const matchingAccount = accountsResponse.accounts.find(
+          plaidAcc => plaidAcc.account_id === account.plaidAccountId
+        );
+        
+        if (matchingAccount) {
+          const newBalance = matchingAccount.balances.current || 0;
+          
+          // Update account with new balance and timestamp
+          await storage.updateAccount(account.id, {
+            balance: newBalance,
+            lastBalanceUpdate: new Date().toISOString()
+          });
+          
+          updatedAccountsCount++;
+          console.log(`✓ Updated ${account.institutionName} balance: $${newBalance.toFixed(2)}`);
+        }
+        
+      } catch (accountError: any) {
+        console.error(`Failed to refresh login balance for ${account.institutionName}:`, accountError.message);
+        // Continue with other accounts even if one fails
+      }
+    }
+    
+    console.log(`✓ Login refresh complete: ${updatedAccountsCount}/${plaidAccounts.length} accounts updated`);
+    
+  } catch (error: any) {
+    console.error('Error in refreshUserBalancesOnLogin:', error.message);
+    throw error;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session with Redis fallback to memory
   let sessionStore;
@@ -389,6 +441,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         logSecurityEvent('USER_LOGIN_SUCCESS', user.id, {
           username: user.username
+        });
+        
+        // Trigger automatic balance refresh on login (non-blocking)
+        refreshUserBalancesOnLogin(user.id).catch(error => {
+          console.error('Failed to refresh balances on login for user', user.id, ':', error.message);
         });
         
         return res.json({ message: 'Authentication successful', user: { id: user.id, username: user.username } });
