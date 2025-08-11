@@ -1005,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Balance refresh completed',
         updatedAccounts: updatedAccountsCount,
         totalAccounts: plaidAccounts.length,
-        nextRefreshAllowed: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour from now
+        nextRefreshAllowed: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString() // 12 hours from now
       });
       
     } catch (error) {
@@ -2755,7 +2755,7 @@ Group similar transactions together and sum the amounts for each category. Only 
         message: 'Plaid API usage statistics',
         ...stats,
         rateLimitInfo: {
-          refreshCooldownMinutes: 60,
+          refreshCooldownMinutes: 720,
           automaticRefreshDisabled: true,
           lastDisabled: '2025-08-11 18:03:46 PM'
         }

@@ -172,7 +172,7 @@ export default function Accounts() {
       if (error.status === 429) {
         toast({
           title: "Rate Limited",
-          description: `Please wait ${error.remainingMinutes || 60} minutes before refreshing again to avoid excessive API charges.`,
+          description: `Please wait ${error.remainingMinutes || 720} minutes before refreshing again to avoid excessive API charges.`,
           variant: "destructive",
         });
       } else {

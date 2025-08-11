@@ -14,9 +14,9 @@ class TaskScheduler {
     // DISABLED: Automatic balance refresh to prevent excessive Plaid API charges
     // Balance updates now only happen:
     // 1. When user manually refreshes
-    // 2. Once per hour maximum per user
+    // 2. Once every 12 hours maximum per user
     console.log('⚠️  AUTOMATIC BALANCE REFRESH DISABLED TO PREVENT EXCESSIVE PLAID CHARGES');
-    console.log('Balances will only update on manual refresh or once per hour per user');
+    console.log('Balances will only update on manual refresh or once every 12 hours per user');
     
     // DISABLED: Run balance refresh every 10 minutes for all users
     // const balanceInterval = setInterval(async () => {

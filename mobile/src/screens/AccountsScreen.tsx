@@ -43,7 +43,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ navigation }) =>
       if (error.status === 429) {
         Alert.alert(
           'Rate Limited', 
-          `Please wait ${error.remainingMinutes || 60} minutes before refreshing again to avoid excessive API charges.`
+          `Please wait ${error.remainingMinutes || 720} minutes before refreshing again to avoid excessive API charges.`
         );
       } else {
         Alert.alert('Error', 'Failed to refresh balances. Please try again.');

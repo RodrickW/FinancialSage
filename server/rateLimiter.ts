@@ -10,7 +10,7 @@ interface UserRefreshRecord {
 
 class PlaidRateLimiter {
   private userRefreshTimes = new Map<number, Date>();
-  private readonly REFRESH_COOLDOWN_MINUTES = 60; // 1 hour between refreshes per user
+  private readonly REFRESH_COOLDOWN_MINUTES = 720; // 12 hours between refreshes per user
 
   /**
    * Check if user can refresh their accounts
