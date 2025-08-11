@@ -19,7 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { TrendingUp, TrendingDown, Target, Clock, CheckCircle, AlertTriangle, DollarSign, Calendar, CreditCard, Shield } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Clock, CheckCircle, AlertTriangle, DollarSign, Calendar, CreditCard, Shield, BarChart3, Search } from 'lucide-react';
 
 const creditInterviewSchema = z.object({
   currentScore: z.string().min(1, "Current score is required"),
@@ -483,7 +483,6 @@ export default function Credit() {
                         <Progress 
                           value={creditAssessment.creditUtilization} 
                           className="mt-2"
-                          // @ts-ignore
                           indicatorClassName={creditAssessment.creditUtilization > 30 ? "bg-red-500" : creditAssessment.creditUtilization > 10 ? "bg-yellow-500" : "bg-green-500"}
                         />
                       </CardContent>
@@ -518,65 +517,180 @@ export default function Credit() {
                 </TabsContent>
 
                 <TabsContent value="factors" className="space-y-6">
-                  {creditFactors && (
-                    <>
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Credit Score Factors</CardTitle>
-                          <CardDescription>
-                            How different factors impact your credit score
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {creditFactors.factors.map((factor: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-sm font-medium">{factor.name}</span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {factor.impact}/{factor.maxImpact} ({factor.percentage}%)
-                                  </span>
-                                </div>
-                                <Progress 
-                                  value={(factor.impact / factor.maxImpact) * 100} 
-                                  className="h-2"
-                                />
-                              </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Credit Score Factors</CardTitle>
+                      <CardDescription>
+                        The 5 key factors that determine your FICO credit score
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Payment History - 35% */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                              <Calendar className="w-5 h-5 text-blue-600" />
                             </div>
-                          ))}
-                        </CardContent>
-                      </Card>
+                            <div>
+                              <h4 className="font-semibold">Payment History</h4>
+                              <p className="text-sm text-muted-foreground">On-time vs. late payments</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-blue-600">35%</div>
+                            <div className="text-xs text-muted-foreground">Most Important</div>
+                          </div>
+                        </div>
+                        <Progress value={35} className="h-3" indicatorClassName="bg-blue-500" />
+                        <p className="text-sm text-muted-foreground">
+                          Your track record of making payments on time. Late payments, bankruptcies, and collections hurt your score.
+                        </p>
+                      </div>
 
-                      {creditFactors.derogatory.totalImpact < 0 && (
-                        <Card className="border-red-200 bg-red-50">
-                          <CardHeader>
-                            <CardTitle className="text-red-800">Derogatory Marks</CardTitle>
-                          </CardHeader>
-                          <CardContent className="text-red-700">
-                            <div className="space-y-2">
-                              {creditFactors.derogatory.collections && (
-                                <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-4 h-4" />
-                                  <span>Collections: ~50 point impact</span>
-                                </div>
-                              )}
-                              {creditFactors.derogatory.bankruptcy && (
-                                <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-4 h-4" />
-                                  <span>Bankruptcy: ~100 point impact</span>
-                                </div>
-                              )}
-                              {creditFactors.derogatory.foreclosure && (
-                                <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-4 h-4" />
-                                  <span>Foreclosure: ~80 point impact</span>
-                                </div>
-                              )}
+                      {/* Credit Utilization - 30% */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                              <CreditCard className="w-5 h-5 text-green-600" />
                             </div>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </>
+                            <div>
+                              <h4 className="font-semibold">Credit Utilization</h4>
+                              <p className="text-sm text-muted-foreground">How much credit you use</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-green-600">30%</div>
+                            <div className="text-xs text-muted-foreground">Very Important</div>
+                          </div>
+                        </div>
+                        <Progress value={30} className="h-3" indicatorClassName="bg-green-500" />
+                        <p className="text-sm text-muted-foreground">
+                          Keep balances below 30% of credit limits. Lower is better - under 10% is excellent.
+                        </p>
+                      </div>
+
+                      {/* Credit History Length - 15% */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                              <Clock className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">Credit History Length</h4>
+                              <p className="text-sm text-muted-foreground">Age of your accounts</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-purple-600">15%</div>
+                            <div className="text-xs text-muted-foreground">Moderately Important</div>
+                          </div>
+                        </div>
+                        <Progress value={15} className="h-3" indicatorClassName="bg-purple-500" />
+                        <p className="text-sm text-muted-foreground">
+                          Longer credit history is better. Keep old accounts open to maintain a longer average account age.
+                        </p>
+                      </div>
+
+                      {/* Credit Mix - 10% */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                              <BarChart3 className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">Credit Mix</h4>
+                              <p className="text-sm text-muted-foreground">Types of credit accounts</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-orange-600">10%</div>
+                            <div className="text-xs text-muted-foreground">Less Important</div>
+                          </div>
+                        </div>
+                        <Progress value={10} className="h-3" indicatorClassName="bg-orange-500" />
+                        <p className="text-sm text-muted-foreground">
+                          Having different types of credit (cards, loans, mortgage) shows you can manage various credit types.
+                        </p>
+                      </div>
+
+                      {/* New Credit Inquiries - 10% */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                              <Search className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">New Credit Inquiries</h4>
+                              <p className="text-sm text-muted-foreground">Recent credit applications</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-red-600">10%</div>
+                            <div className="text-xs text-muted-foreground">Less Important</div>
+                          </div>
+                        </div>
+                        <Progress value={10} className="h-3" indicatorClassName="bg-red-500" />
+                        <p className="text-sm text-muted-foreground">
+                          Too many hard inquiries in a short time can lower your score. Space out credit applications.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* User's Current Status */}
+                  {creditAssessment && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Your Current Status</CardTitle>
+                        <CardDescription>
+                          How your profile measures against each factor
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Payment History</span>
+                              <Badge variant={creditAssessment.paymentHistory === 'excellent' ? 'default' : creditAssessment.paymentHistory === 'good' ? 'secondary' : 'destructive'}>
+                                {creditAssessment.paymentHistory}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Credit Utilization</span>
+                              <Badge variant={creditAssessment.creditUtilization <= 10 ? 'default' : creditAssessment.creditUtilization <= 30 ? 'secondary' : 'destructive'}>
+                                {creditAssessment.creditUtilization}%
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Credit History</span>
+                              <Badge variant={creditAssessment.creditHistoryLength >= 84 ? 'default' : creditAssessment.creditHistoryLength >= 24 ? 'secondary' : 'destructive'}>
+                                {Math.floor(creditAssessment.creditHistoryLength / 12)} years
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">New Inquiries</span>
+                              <Badge variant={creditAssessment.newCreditInquiries <= 1 ? 'default' : creditAssessment.newCreditInquiries <= 3 ? 'secondary' : 'destructive'}>
+                                {creditAssessment.newCreditInquiries}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
                 </TabsContent>
 
