@@ -77,12 +77,12 @@ export default function Budget() {
   });
 
   // Get user's actual spending data
-  const { data: transactions = [] } = useQuery({
+  const { data: transactions = [] } = useQuery<any[]>({
     queryKey: ['/api/transactions']
   });
 
   // Get user's saved budget data from database
-  const { data: savedBudgets = [], isLoading: budgetsLoading } = useQuery({
+  const { data: savedBudgets = [], isLoading: budgetsLoading } = useQuery<any[]>({
     queryKey: ['/api/budgets']
   });
 
@@ -255,7 +255,7 @@ export default function Budget() {
       const mergedGroups = defaultBudgetGroups.map(group => ({
         ...group,
         categories: group.categories.map(category => {
-          const savedBudget = savedBudgets.find(b => b.category === category.id);
+          const savedBudget = savedBudgets.find((b: any) => b.category === category.id);
           if (savedBudget) {
             return {
               ...category,
