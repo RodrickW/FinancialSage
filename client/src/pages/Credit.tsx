@@ -822,19 +822,182 @@ export default function Credit() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Progress Tracking</CardTitle>
-                      <CardDescription>Monitor your credit improvement journey</CardDescription>
+                      <CardDescription>Monitor your credit improvement journey and update your information</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-12">
-                        <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Track Your Progress</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Come back monthly to update your credit score and see your improvement
-                        </p>
-                        <Button onClick={() => setActiveTab("overview")}>
-                          View Current Status
-                        </Button>
+                    <CardContent className="space-y-6">
+                      {/* Current Status Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                          <div className="text-2xl font-bold text-blue-600 mb-1">
+                            {creditAssessment.currentScore}
+                          </div>
+                          <div className="text-sm text-blue-600">Current Score</div>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                          <div className="text-2xl font-bold text-green-600 mb-1">
+                            {creditAssessment.goalScore}
+                          </div>
+                          <div className="text-sm text-green-600">Goal Score</div>
+                        </div>
+                        <div className="text-center p-4 bg-purple-50 rounded-lg">
+                          <div className="text-2xl font-bold text-purple-600 mb-1">
+                            +{creditAssessment.goalScore - creditAssessment.currentScore}
+                          </div>
+                          <div className="text-sm text-purple-600">Points to Go</div>
+                        </div>
                       </div>
+
+                      {/* Assessment Date */}
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm font-medium">Last Assessment:</span>
+                          <span className="text-sm text-gray-600">
+                            {new Date(creditAssessment.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <Badge variant="secondary">
+                          {Math.floor((new Date().getTime() - new Date(creditAssessment.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days ago
+                        </Badge>
+                      </div>
+
+                      {/* Progress Actions */}
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">Update Your Progress</h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Card className="border-2 border-dashed border-gray-200 hover:border-blue-300 transition-colors">
+                            <CardContent className="p-6 text-center">
+                              <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                              <h5 className="font-medium mb-2">Retake Assessment</h5>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                Update your credit information to see your latest progress and get a new improvement plan
+                              </p>
+                              <Button 
+                                onClick={() => {
+                                  setHasCreditAssessment(false);
+                                  setCreditAssessment(null);
+                                  setActiveTab("overview");
+                                }}
+                                className="w-full"
+                                variant="outline"
+                              >
+                                Update Assessment
+                              </Button>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="border-2 border-dashed border-gray-200 hover:border-green-300 transition-colors">
+                            <CardContent className="p-6 text-center">
+                              <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
+                              <h5 className="font-medium mb-2">Monthly Check-in</h5>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                Perfect for tracking monthly progress without a full reassessment
+                              </p>
+                              <Button 
+                                onClick={() => setActiveTab("plan")}
+                                className="w-full"
+                                variant="outline"
+                              >
+                                View Action Plan
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+
+                      {/* Progress Tips */}
+                      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+                        <CardHeader>
+                          <CardTitle className="text-blue-900">Progress Tracking Tips</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-blue-600">1</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-blue-900">Check monthly</p>
+                              <p className="text-xs text-blue-700">Review your progress monthly to stay on track with your goals</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-blue-600">2</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-blue-900">Update when changes occur</p>
+                              <p className="text-xs text-blue-700">Retake the assessment when you've made significant changes to your credit profile</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-blue-600">3</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-blue-900">Follow the action plan</p>
+                              <p className="text-xs text-blue-700">Stick to your personalized improvement plan for the best results</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Key Metrics to Track */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Key Metrics to Monitor</CardTitle>
+                          <CardDescription>
+                            Track these important numbers between assessments
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-medium">Credit Utilization</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-bold">{creditAssessment.creditUtilization}%</div>
+                                <div className="text-xs text-muted-foreground">Keep under 30%</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-green-600" />
+                                <span className="text-sm font-medium">Payment History</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-bold capitalize">{creditAssessment.paymentHistory}</div>
+                                <div className="text-xs text-muted-foreground">Keep excellent</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-purple-600" />
+                                <span className="text-sm font-medium">Credit Age</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-bold">{Math.floor(creditAssessment.creditHistoryLength / 12)} years</div>
+                                <div className="text-xs text-muted-foreground">Longer is better</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Search className="w-4 h-4 text-red-600" />
+                                <span className="text-sm font-medium">Hard Inquiries</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-bold">{creditAssessment.newCreditInquiries}</div>
+                                <div className="text-xs text-muted-foreground">Keep minimal</div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </CardContent>
                   </Card>
                 </TabsContent>
