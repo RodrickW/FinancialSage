@@ -1,131 +1,70 @@
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = __DEV__ ? 'http://localhost:5000' : 'https://mindmymoneyapp.com';
+// Configure the base API URL
+const BASE_URL = __DEV__ 
+  ? 'http://10.0.2.2:5000' // Android emulator
+  : 'https://your-production-domain.com'; // Replace with your production URL
 
-interface ApiConfig {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  headers?: Record<string, string>;
-  body?: any;
-}
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-class ApiService {
-  private async getAuthHeaders(): Promise<Record<string, string>> {
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  async (config) => {
     const token = await AsyncStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  async request<T>(endpoint: string, config: ApiConfig = { method: 'GET' }): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const headers = await this.getAuthHeaders();
+// Response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired
+      await AsyncStorage.removeItem('authToken');
+      // You might want to redirect to login screen here
+    }
+    return Promise.reject(error);
+  }
+);
 
-    try {
-      const response = await fetch(url, {
-        ...config,
-        headers: {
-          ...headers,
-          ...config.headers,
-        },
-        body: config.body ? JSON.stringify(config.body) : undefined,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+export const apiRequest = async (
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+  url: string,
+  data?: any
+) => {
+  try {
+    const response = await api.request({
+      method,
+      url,
+      data,
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      // Server responded with an error status
+      throw new Error(error.response.data?.message || 'Request failed');
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Network error. Please check your connection.');
+    } else {
+      // Something else happened
+      throw new Error('An unexpected error occurred');
     }
   }
+};
 
-  // Authentication
-  async login(username: string, password: string) {
-    return this.request('/api/auth/login', {
-      method: 'POST',
-      body: { username, password },
-    });
-  }
-
-  async register(userData: any) {
-    return this.request('/api/auth/register', {
-      method: 'POST',
-      body: userData,
-    });
-  }
-
-  async getUserProfile() {
-    return this.request('/api/users/profile');
-  }
-
-  // Financial data
-  async getAccounts() {
-    return this.request('/api/accounts');
-  }
-
-  async getTransactions() {
-    return this.request('/api/transactions');
-  }
-
-  async getSpendingTrends() {
-    return this.request('/api/spending-trends');
-  }
-
-  async getBudget() {
-    return this.request('/api/budget');
-  }
-
-  async getSavingsGoals() {
-    return this.request('/api/savings-goals');
-  }
-
-  async getSavingsTracker() {
-    return this.request('/api/savings-tracker');
-  }
-
-  // AI Coaching
-  async getFinancialCoaching(question: string): Promise<{ answer: string }> {
-    return this.request('/api/ai/coaching', {
-      method: 'POST',
-      body: { question },
-    });
-  }
-
-  // Plaid
-  async createLinkToken() {
-    return this.request('/api/plaid/link-token', { method: 'POST' });
-  }
-
-  async exchangePublicToken(publicToken: string) {
-    return this.request('/api/plaid/exchange-public-token', {
-      method: 'POST',
-      body: { public_token: publicToken },
-    });
-  }
-
-  // Subscription
-  async createSubscription() {
-    return this.request('/api/create-subscription', { method: 'POST' });
-  }
-
-  async cancelTrial() {
-    return this.request('/api/cancel-trial', { method: 'POST' });
-  }
-
-  async getSubscriptionStatus() {
-    return this.request('/api/subscription/status');
-  }
-
-  async startFreeTrial(planType: 'monthly' | 'annual' = 'monthly') {
-    return this.request('/api/start-free-trial', {
-      method: 'POST',
-      body: { planType },
-    });
-  }
-}
-
-export const apiService = new ApiService();
-export default apiService;
+export default api;
