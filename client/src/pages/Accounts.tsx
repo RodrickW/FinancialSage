@@ -167,11 +167,21 @@ export default function Accounts() {
     },
     onError: (error: any) => {
       console.error('Balance refresh error:', error);
-      toast({
-        title: "Refresh Failed",
-        description: error.message || "Failed to refresh balances. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Handle rate limiting specifically
+      if (error.status === 429) {
+        toast({
+          title: "Rate Limited",
+          description: `Please wait ${error.remainingMinutes || 60} minutes before refreshing again to avoid excessive API charges.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Refresh Failed",
+          description: error.message || "Failed to refresh balances. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
   

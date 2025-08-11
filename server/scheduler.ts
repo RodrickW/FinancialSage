@@ -11,19 +11,26 @@ class TaskScheduler {
   start() {
     console.log('Starting task scheduler...');
     
-    // Run balance refresh every 10 minutes for all users
-    const balanceInterval = setInterval(async () => {
-      console.log('Running scheduled balance refresh for all users...');
-      await refreshAllAccountBalances();
-    }, 10 * 60 * 1000); // 10 minutes
-
-    this.intervals.push(balanceInterval);
+    // DISABLED: Automatic balance refresh to prevent excessive Plaid API charges
+    // Balance updates now only happen:
+    // 1. When user manually refreshes
+    // 2. Once per hour maximum per user
+    console.log('⚠️  AUTOMATIC BALANCE REFRESH DISABLED TO PREVENT EXCESSIVE PLAID CHARGES');
+    console.log('Balances will only update on manual refresh or once per hour per user');
     
-    // Run initial balance refresh after 30 seconds
-    setTimeout(async () => {
-      console.log('Running initial balance refresh...');
-      await refreshAllAccountBalances();
-    }, 30 * 1000); // 30 seconds after startup
+    // DISABLED: Run balance refresh every 10 minutes for all users
+    // const balanceInterval = setInterval(async () => {
+    //   console.log('Running scheduled balance refresh for all users...');
+    //   await refreshAllAccountBalances();
+    // }, 10 * 60 * 1000); // 10 minutes
+    //
+    // this.intervals.push(balanceInterval);
+    
+    // DISABLED: Run initial balance refresh after 30 seconds
+    // setTimeout(async () => {
+    //   console.log('Running initial balance refresh...');
+    //   await refreshAllAccountBalances();
+    // }, 30 * 1000); // 30 seconds after startup
     
     // Trial notifications temporarily disabled to prevent fake notifications
     // const trialCheckInterval = setInterval(async () => {

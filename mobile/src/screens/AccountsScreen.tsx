@@ -38,8 +38,16 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ navigation }) =>
     try {
       await refetch();
       Alert.alert('Success', 'Account balances refreshed successfully!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to refresh balances. Please try again.');
+    } catch (error: any) {
+      // Handle rate limiting specifically  
+      if (error.status === 429) {
+        Alert.alert(
+          'Rate Limited', 
+          `Please wait ${error.remainingMinutes || 60} minutes before refreshing again to avoid excessive API charges.`
+        );
+      } else {
+        Alert.alert('Error', 'Failed to refresh balances. Please try again.');
+      }
     }
   };
 

@@ -934,6 +934,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as User;
       
+      // Import rate limiter
+      const { plaidRateLimiter } = await import('./rateLimiter');
+      
+      // Check if user can refresh (once per hour limit)
+      const rateLimitCheck = plaidRateLimiter.canUserRefresh(user.id);
+      
+      if (!rateLimitCheck.allowed) {
+        return res.status(429).json({ 
+          error: 'Rate limit exceeded',
+          message: `Please wait ${rateLimitCheck.remainingTime} minutes before refreshing again`,
+          remainingMinutes: rateLimitCheck.remainingTime
+        });
+      }
+      
+      // Record this refresh attempt
+      plaidRateLimiter.recordUserRefresh(user.id);
+      
       // Get all connected accounts for the user
       const accounts = await storage.getAccounts(user.id);
       const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
@@ -987,7 +1004,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: 'Balance refresh completed',
         updatedAccounts: updatedAccountsCount,
-        totalAccounts: plaidAccounts.length
+        totalAccounts: plaidAccounts.length,
+        nextRefreshAllowed: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour from now
       });
       
     } catch (error) {
@@ -2717,6 +2735,35 @@ Group similar transactions together and sum the amounts for each category. Only 
     } catch (error) {
       console.error('Error in account diagnostics:', error);
       res.status(500).json({ error: 'Failed to diagnose account' });
+    }
+  });
+
+  // Admin route to monitor Plaid API usage and rate limiting
+  app.get('/api/admin/plaid-usage', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Only allow admin users to access this endpoint
+      if (user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { plaidRateLimiter } = await import('./rateLimiter');
+      const stats = plaidRateLimiter.getStats();
+      
+      res.json({
+        message: 'Plaid API usage statistics',
+        ...stats,
+        rateLimitInfo: {
+          refreshCooldownMinutes: 60,
+          automaticRefreshDisabled: true,
+          lastDisabled: '2025-08-11 18:03:46 PM'
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error fetching Plaid usage stats:', error);
+      res.status(500).json({ error: 'Failed to fetch usage statistics' });
     }
   });
 
