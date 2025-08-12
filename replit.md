@@ -19,7 +19,7 @@ Preferred communication style: Simple, everyday language.
 ### Technical Implementations
 - **Frontend**: Vite for fast development, Wouter for lightweight routing, and TanStack Query for server state management.
 - **Backend**: Node.js with Express.js, TypeScript with ES modules, Passport.js for session-based authentication, and Drizzle ORM for type-safe PostgreSQL interactions.
-- **Mobile**: React Native application developed alongside the web version, ensuring feature parity with shared backend APIs. Includes mobile-specific screens and navigation.
+- **Mobile**: Completely rebuilt React Native application (v2.0.0) with modern architecture, updated dependencies, and full feature parity including the enhanced credit simulator with all 5 FICO factors, progress tracking, authentication context, and comprehensive mobile-optimized UI components. Includes detailed deployment guides for smooth Android builds using Cursor IDE.
 - **Authentication**: Secure session management, bcrypt hashing for passwords, email verification, and password reset functionality.
 - **Financial Data Handling**: Secure integration with Plaid for bank connections and transactions, including transaction categorization, balance refresh, and duplicate prevention. **CRITICAL FIX (Aug 11, 2025)**: Disabled automatic balance refresh scheduler and implemented strict 12-hour rate limiting per user to prevent excessive API charges.
 - **AI Integration**: Leverages OpenAI's GPT-4o for personalized financial coaching, budget recommendations, and comprehensive credit improvement plans with detailed monthly action items based on user financial data.
