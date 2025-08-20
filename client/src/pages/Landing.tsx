@@ -35,36 +35,26 @@ export default function Landing() {
     }
   };
 
-  const features = [
-    {
-      icon: () => <MoneyMindLogo className="w-8 h-8" />,
-      title: "AI Coaching",
-      description: "Personalized advice from Money Mind AI that learns your habits and goals."
-    },
+  const painPointFeatures = [
     {
       icon: TrendingUp,
-      title: "Smart Analytics",
-      description: "Track spending patterns and discover insights to optimize your finances."
-    },
-    {
-      icon: Target,
-      title: "Goal Tracking",
-      description: "Set financial goals and get recommendations to achieve them faster."
+      title: "Tired of wondering where your money goes?",
+      description: "Instantly track every dollar."
     },
     {
       icon: PiggyBank,
-      title: "Auto Budgeting",
-      description: "AI-powered budgets that adapt to your lifestyle automatically."
+      title: "Struggling to save?",
+      description: "Set goals and watch your progress grow automatically."
     },
     {
-      icon: Smartphone,
-      title: "Quick Setup",
-      description: "Connect accounts securely and get insights in minutes."
+      icon: CreditCard,
+      title: "Worried about debt?",
+      description: "Get clarity on your balances and a plan to crush it."
     },
     {
-      icon: Shield,
-      title: "Secure",
-      description: "Bank-level encryption protects your financial data."
+      icon: BarChart3,
+      title: "Want to build credit?",
+      description: "Unlock tools to boost your score over time."
     }
   ];
 
@@ -145,7 +135,7 @@ export default function Landing() {
       "Personalized insights",
       "Priority email support"
     ],
-    cta: "Start Your 30-Day Free Trial",
+    cta: "Start Your 14-Day Free Trial",
     available: true
   };
 
@@ -187,15 +177,15 @@ export default function Landing() {
       <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <Badge className="mb-6 bg-teal-100 text-teal-700 hover:bg-teal-200 font-medium">
-            🎉 Free 30-Day Trial Available
+            ✨ Start your free 14-day trial today. No credit card required. ✨
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
-            AI-Powered Financial Management System
+            Finally, Take Control of Your Money — Without the Stress.
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Track your money. Set goals. Build a future that works.
+            Mind My Money helps you track spending, build savings, and improve your financial health — all in one simple app.
           </p>
           
           <div className="flex flex-col gap-4 justify-center mb-12 max-w-md mx-auto">
@@ -204,7 +194,7 @@ export default function Landing() {
               onClick={handleNavigateToRegister}
               className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
-              Start Your 30-Day Free Trial
+              Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button 
@@ -217,19 +207,19 @@ export default function Landing() {
             </Button>
           </div>
           
-          {/* Benefits checklist */}
+          {/* Trust Signals */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-sm text-gray-600 max-w-2xl mx-auto">
             <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-              <span>30-day free trial</span>
+              <Shield className="w-4 h-4 mr-2 text-green-500" />
+              <span>Bank-level security with Plaid</span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-              <span>Cancel anytime</span>
+              <Zap className="w-4 h-4 mr-2 text-green-500" />
+              <span>Cancel anytime, no hidden fees</span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-              <span>Credit card required</span>
+              <Users className="w-4 h-4 mr-2 text-green-500" />
+              <span>Trusted by everyday people who want to master their money</span>
             </div>
           </div>
           
@@ -242,15 +232,15 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Master Your Money
+              We Get It. Money Stress Is Real.
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              AI-powered tools to achieve your financial goals
+              Here's how we help you take back control
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {painPointFeatures.map((feature, index) => (
               <Card key={index} className="border-teal-100 hover:border-teal-200 transition-colors group hover:shadow-lg">
                 <CardContent className="p-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-lg flex items-center justify-center mb-4 group-hover:from-teal-200 group-hover:to-emerald-200 transition-colors">
@@ -354,7 +344,7 @@ export default function Landing() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               Simple Pricing
             </h2>
-            <p className="text-xl text-gray-600">Try free for 30 days, then choose monthly or annual</p>
+            <p className="text-xl text-gray-600">Try free for 14 days, then choose monthly or annual</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
