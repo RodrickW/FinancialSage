@@ -198,7 +198,7 @@ export default function Subscribe() {
                           Starting Trial...
                         </>
                       ) : plan.available ? (
-                        'Start 30-Day Free Trial'
+                        'Start 14-Day Free Trial'
                       ) : (
                         'Coming Soon'
                       )}
@@ -212,20 +212,20 @@ export default function Subscribe() {
               <div className="flex items-center justify-center gap-8 text-sm text-gray-500 mb-6">
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-500 mr-2" />
-                  30-day free trial
+                  14-day free trial
+                </div>
+                <div className="flex items-center">
+                  <Check className="w-4 h-4 text-green-500 mr-2" />
+                  No credit card required
                 </div>
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-500 mr-2" />
                   Cancel anytime
                 </div>
-                <div className="flex items-center">
-                  <Check className="w-4 h-4 text-green-500 mr-2" />
-                  Secure payment required
-                </div>
               </div>
               
               <p className="text-gray-500">
-                A payment method is required to start your trial. You'll be charged according to your selected plan after 30 days unless you cancel.
+                Start your 14-day free trial with full access to all features. No credit card required to begin.
                 <br />
                 Monthly: $9.99/month • Annual: $95.99/year (Save $23.89)
                 <br />
