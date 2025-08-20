@@ -189,13 +189,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to check if user has access (either premium or valid trial)
   const hasAccess = (user: User): boolean => {
-    // Premium users always have access
-    if (user.isPremium && user.subscriptionStatus === 'active') {
+    // Premium users always have access (multiple subscription statuses for paid users)
+    if (user.isPremium || 
+        user.subscriptionStatus === 'active' || 
+        user.subscriptionStatus === 'past_due' ||
+        user.subscriptionStatus === 'canceled' || // Users who had subscription (legacy access)
+        user.subscriptionStatus === 'trial_ended' || // Users who completed 30-day trial (legacy access)
+        user.stripeCustomerId || // Anyone with Stripe customer ID is a paid user
+        user.stripeSubscriptionId) { // Anyone with Stripe subscription ID is a paid user
       return true;
     }
     
-    // Check if user is in valid trial period
-    if (user.hasStartedTrial && !isTrialExpired(user)) {
+    // Check if user is in valid 14-day trial period (new trial system)
+    if (user.hasStartedTrial && !isTrialExpired(user) && user.subscriptionStatus === 'trialing') {
       return true;
     }
     
