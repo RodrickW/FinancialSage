@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Secure session management, bcrypt hashing for passwords, email verification, and password reset functionality.
 - **Financial Data Handling**: Secure integration with Plaid for bank connections and transactions, including transaction categorization, balance refresh, and duplicate prevention. **CRITICAL FIX (Aug 11, 2025)**: Disabled automatic balance refresh scheduler and implemented strict 12-hour rate limiting per user to prevent excessive API charges.
 - **AI Integration**: Leverages OpenAI's GPT-4o for personalized financial coaching, budget recommendations, and comprehensive credit improvement plans with detailed monthly action items based on user financial data.
-- **Subscription Management**: Stripe for secure payment processing, supporting both monthly and annual plans with a 30-day free trial.
+- **Subscription Management**: Stripe for secure payment processing, supporting both monthly and annual plans with a comprehensive 14-day no-credit-card free trial system. Trial starts automatically on registration with full access to all features.
 - **Notifications**: SendGrid for transactional emails (welcome, trial, admin alerts).
 - **Scalability**: Implemented connection pooling, Redis session store (with memory fallback), enhanced rate limiting, and caching for high-volume user support.
 - **Security**: Includes input validation, CSRF protection, Helmet.js security headers, and role-based access control (for admin features).
@@ -32,6 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Credit Assessment Database**: Added credit_assessments table storing user credit profiles, AI-generated improvement plans, and historical progress tracking (Aug 11, 2025).
 - **Enhanced Credit Education**: Added comprehensive credit score factors education with visual progress bars, color-coded indicators, and detailed explanations for all 5 FICO scoring factors (Aug 11, 2025).
 - **Progress Tracking System**: Implemented user-friendly progress monitoring with assessment date tracking, "Retake Assessment" functionality, key metrics dashboard, and progress tips for ongoing credit improvement (Aug 11, 2025).
+- **Complete Trial System**: Implemented comprehensive 14-day no-credit-card trial system with automatic access granting, trial status tracking, expiration handling, and seamless upgrade prompts. All premium features (Plaid, AI coaching, analytics) are protected by `requireAccess` middleware (Aug 20, 2025).
 
 ### Feature Specifications
 - **Dashboard**: Overview of accounts, recent transactions, spending trends, and savings goals summary.

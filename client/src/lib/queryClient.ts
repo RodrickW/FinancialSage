@@ -26,6 +26,16 @@ export async function apiRequest(
     credentials: "include",
   });
 
+  // Handle trial expiration (403 errors)
+  if (res.status === 403) {
+    const errorData = await res.json().catch(() => ({ message: 'Access denied' }));
+    if (errorData.message?.includes('trial') || errorData.message?.includes('subscription')) {
+      // Redirect to subscription page for trial-related access issues
+      window.location.href = '/subscribe';
+      return res; // Return without throwing to prevent error toast
+    }
+  }
+
   await throwIfResNotOk(res);
   return res;
 }
@@ -42,6 +52,15 @@ export const getQueryFn: <T>(options: {
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
+    }
+
+    // Handle trial expiration for queries
+    if (res.status === 403) {
+      const errorData = await res.json().catch(() => ({ message: 'Access denied' }));
+      if (errorData.message?.includes('trial') || errorData.message?.includes('subscription')) {
+        // For queries, return null instead of redirecting to prevent loops
+        return null;
+      }
     }
 
     await throwIfResNotOk(res);

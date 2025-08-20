@@ -181,19 +181,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced auth middleware with security logging
-  const requireAuth = (req: any, res: any, next: any) => {
-    if (req.isAuthenticated()) {
-      return validateSession(req, res, next);
+  // Helper function to check if user's trial has expired
+  const isTrialExpired = (user: User): boolean => {
+    if (!user.trialEndsAt || !user.hasStartedTrial) return false;
+    return new Date() > new Date(user.trialEndsAt);
+  };
+
+  // Helper function to check if user has access (either premium or valid trial)
+  const hasAccess = (user: User): boolean => {
+    // Premium users always have access
+    if (user.isPremium && user.subscriptionStatus === 'active') {
+      return true;
     }
     
-    logSecurityEvent('UNAUTHORIZED_ACCESS_ATTEMPT', undefined, {
-      endpoint: req.path,
-      method: req.method,
-      userAgent: req.headers['user-agent']
-    });
+    // Check if user is in valid trial period
+    if (user.hasStartedTrial && !isTrialExpired(user)) {
+      return true;
+    }
     
-    res.status(401).json({ message: 'Unauthorized' });
+    return false;
+  };
+
+  // Enhanced auth middleware with trial checking
+  const requireAuth = async (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      logSecurityEvent('UNAUTHORIZED_ACCESS_ATTEMPT', undefined, {
+        endpoint: req.path,
+        method: req.method,
+        userAgent: req.headers['user-agent']
+      });
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    const user = req.user as User;
+    
+    // Update expired trial status
+    if (isTrialExpired(user) && user.subscriptionStatus === 'trialing') {
+      try {
+        await storage.updateUser(user.id, { 
+          subscriptionStatus: 'trial_expired' 
+        });
+        // Update the user object in the request
+        req.user = { ...user, subscriptionStatus: 'trial_expired' };
+      } catch (error) {
+        console.error('Failed to update expired trial status:', error);
+      }
+    }
+    
+    return validateSession(req, res, next);
+  };
+
+  // Middleware to require active subscription or valid trial
+  const requireAccess = async (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    const user = req.user as User;
+    
+    if (!hasAccess(user)) {
+      // Check if trial expired
+      if (isTrialExpired(user)) {
+        return res.status(403).json({ 
+          message: 'Trial expired',
+          code: 'TRIAL_EXPIRED',
+          trialEndsAt: user.trialEndsAt
+        });
+      }
+      
+      return res.status(403).json({ 
+        message: 'Subscription required',
+        code: 'SUBSCRIPTION_REQUIRED'
+      });
+    }
+    
+    next();
   };
 
   // Admin middleware
@@ -343,21 +405,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(result.data.password, saltRounds);
       
-      // Create complete user object with defaults
+      // Calculate 14-day trial end date
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 14);
+      
+      // Create complete user object with 14-day trial started immediately
       const userWithHashedPassword = {
         username: result.data.username,
         password: hashedPassword,
         firstName: result.data.firstName,
         lastName: result.data.lastName,
         email: result.data.email,
-        // Set default values for subscription fields
-        isPremium: false,
+        // Set 14-day trial - full access without credit card required
+        isPremium: false, // Will become true only after payment
         premiumTier: null,
         stripeCustomerId: null,
         stripeSubscriptionId: null,
-        subscriptionStatus: 'inactive',
-        trialEndsAt: null,
-        hasStartedTrial: false,
+        subscriptionStatus: 'trialing', // Set to trialing status
+        trialEndsAt: trialEndDate, // Set 14-day expiration
+        hasStartedTrial: true, // Mark trial as started
         hasCompletedOnboarding: false,
         hasSeenTour: false,
         loginCount: 0,
@@ -570,8 +636,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(req.user);
   });
 
-  // Financial overview
-  app.get('/api/financial-overview', requireAuth, async (req, res) => {
+  // Financial overview - requires active trial or subscription
+  app.get('/api/financial-overview', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       // Get all user accounts
@@ -669,8 +735,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Plaid routes
-  app.post('/api/plaid/create-link-token', requireAuth, async (req, res) => {
+  // Plaid routes - requires active trial or subscription
+  app.post('/api/plaid/create-link-token', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       console.log('Creating link token for user:', user.id);
@@ -685,7 +751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/plaid/exchange-token', requireAuth, async (req, res) => {
+  app.post('/api/plaid/exchange-token', requireAccess, async (req, res) => {
     try {
       const { publicToken, metadata } = req.body;
       const user = req.user as User;
@@ -810,8 +876,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Accounts routes
-  app.get('/api/accounts', requireAuth, async (req, res) => {
+  // Accounts routes - requires active trial or subscription
+  app.get('/api/accounts', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -830,7 +896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/accounts/:id', requireAuth, async (req, res) => {
+  app.get('/api/accounts/:id', requireAccess, async (req, res) => {
     try {
       const accountId = parseInt(req.params.id);
       const account = await storage.getAccount(accountId);
@@ -915,8 +981,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Sync transactions from Plaid for connected accounts
-  app.post('/api/plaid/sync-transactions', requireAuth, async (req, res) => {
+  // Sync transactions from Plaid for connected accounts - requires active trial or subscription
+  app.post('/api/plaid/sync-transactions', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       const { accountId, days = 30 } = req.body;
@@ -986,8 +1052,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Refresh account balances from Plaid
-  app.post('/api/plaid/refresh-balances', requireAuth, async (req, res) => {
+  // Refresh account balances from Plaid - requires active trial or subscription
+  app.post('/api/plaid/refresh-balances', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -1404,7 +1470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI routes
-  app.get('/api/ai/insights', requireAuth, async (req, res) => {
+  app.get('/api/ai/insights', requireAccess, async (req, res) => {
     try {
       // In a real app, you would fetch user's financial data and pass it to the AI
       const userData = {
@@ -1430,7 +1496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.get('/api/ai/budget-recommendations', requireAuth, async (req, res) => {
+  app.get('/api/ai/budget-recommendations', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -1492,7 +1558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Monthly spending trends endpoint - provides data for the trends chart
-  app.get('/api/spending-trends', requireAuth, async (req, res) => {
+  app.get('/api/spending-trends', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       const transactions = await storage.getTransactions(user.id);
@@ -1590,7 +1656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Credit score analysis and improvement recommendations
-  app.get('/api/ai/credit-score-analysis', requireAuth, async (req, res) => {
+  app.get('/api/ai/credit-score-analysis', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -1662,7 +1728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Comprehensive financial health assessment
-  app.get('/api/ai/financial-health', requireAuth, async (req, res) => {
+  app.get('/api/ai/financial-health', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -1731,7 +1797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Money Mind Interview endpoint - Save user responses
-  app.post('/api/ai/interview', requireAuth, async (req, res) => {
+  app.post('/api/ai/interview', requireAccess, async (req, res) => {
     try {
       const { responses, completedAt } = req.body;
       const user = req.user as User;

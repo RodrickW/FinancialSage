@@ -13,6 +13,7 @@ import {
 } from '@/components/LoadingStates';
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
+import { TrialStatus } from '@/components/TrialStatus';
 
 
 import BudgetProgress from '@/components/Dashboard/BudgetProgress';
@@ -259,6 +260,9 @@ export default function Dashboard() {
           
           {/* Trial Notification Banner (only for real users) */}
           {!isDemoMode && <TrialNotificationBanner />}
+          
+          {/* Trial Status Component */}
+          {!isDemoMode && <TrialStatus />}
           
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
