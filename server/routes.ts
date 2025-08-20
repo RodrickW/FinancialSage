@@ -189,19 +189,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to check if user has access (either premium or valid trial)
   const hasAccess = (user: User): boolean => {
-    // Premium users always have access (multiple subscription statuses for paid users)
-    if (user.isPremium || 
-        user.subscriptionStatus === 'active' || 
-        user.subscriptionStatus === 'past_due' ||
-        user.subscriptionStatus === 'canceled' || // Users who had subscription (legacy access)
-        user.subscriptionStatus === 'trial_ended' || // Users who completed 30-day trial (legacy access)
-        user.stripeCustomerId || // Anyone with Stripe customer ID is a paid user
-        user.stripeSubscriptionId) { // Anyone with Stripe subscription ID is a paid user
+    // PRIORITY 1: Anyone with Stripe Customer ID or Subscription ID gets FULL access (existing paid users)
+    // This ensures NO trial messages for existing customers
+    if (user.stripeCustomerId || user.stripeSubscriptionId) {
       return true;
     }
     
-    // Check if user is in valid 14-day trial period (new trial system)
-    if (user.hasStartedTrial && !isTrialExpired(user) && user.subscriptionStatus === 'trialing') {
+    // PRIORITY 2: Premium users always have access
+    if (user.isPremium) {
+      return true;
+    }
+    
+    // PRIORITY 3: Active subscription statuses (legacy paid users)
+    if (user.subscriptionStatus === 'active' || 
+        user.subscriptionStatus === 'past_due' ||
+        user.subscriptionStatus === 'canceled' || // Users who had subscription (legacy access)
+        user.subscriptionStatus === 'trial_ended') { // Users who completed 30-day trial (legacy access)
+      return true;
+    }
+    
+    // PRIORITY 4: Check if user is in valid 14-day trial period (new trial system only)
+    if (user.hasStartedTrial && user.subscriptionStatus === 'trialing' && !isTrialExpired(user)) {
       return true;
     }
     
