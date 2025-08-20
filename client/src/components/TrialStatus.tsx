@@ -16,6 +16,8 @@ interface User {
   subscriptionStatus: string;
   trialEndsAt: string | null;
   hasStartedTrial: boolean;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
 }
 
 export function TrialStatus() {
@@ -24,11 +26,6 @@ export function TrialStatus() {
     refetchInterval: 30000, // Refresh every 30 seconds to check trial status
   });
 
-  // Don't show trial status for existing paid users (anyone with Stripe customer/subscription ID)
-  if (user && (user.isPremium || user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trial_ended' || user.subscriptionStatus === 'canceled' || user.subscriptionStatus === 'inactive')) {
-    return null; // Hide trial component entirely for existing paid users
-  }
-
   const [timeRemaining, setTimeRemaining] = useState<{
     days: number;
     hours: number;
@@ -36,6 +33,21 @@ export function TrialStatus() {
   }>({ days: 0, hours: 0, minutes: 0 });
 
   const [trialProgress, setTrialProgress] = useState(0);
+
+  // Don't show trial status for existing paid users
+  if (user) {
+    // Check if user is a paid user with Stripe data (these users get full access regardless of trial status)
+    const hasStripeData = user.stripeCustomerId || user.stripeSubscriptionId;
+    const isPaidUser = user.isPremium || 
+                      user.subscriptionStatus === 'active' || 
+                      user.subscriptionStatus === 'trial_ended' || 
+                      user.subscriptionStatus === 'canceled' ||
+                      hasStripeData;
+    
+    if (isPaidUser) {
+      return null; // Hide trial component entirely for existing paid users
+    }
+  }
 
   useEffect(() => {
     if (!user?.trialEndsAt) return;
