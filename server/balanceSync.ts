@@ -1,5 +1,5 @@
 import { storage } from './storage';
-import { getAccounts } from './plaid';
+import { getAccounts, getTransactions, formatPlaidTransactionData } from './plaid';
 
 /**
  * Refresh account balances for all users with connected Plaid accounts
@@ -52,11 +52,51 @@ export async function refreshAllAccountBalances() {
               
               if (bestBalance !== null && oldBalance !== bestBalance) {
                 await storage.updateAccount(account.id, {
-                  balance: bestBalance
+                  balance: bestBalance,
+                  lastBalanceUpdate: new Date()
                 });
                 totalAccountsRefreshed++;
                 
                 console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${bestBalance} (using ${availableBalance !== null ? 'available' : 'current'} balance)`);
+              }
+              
+              // Sync recent transactions (last 7 days) when updating balance
+              try {
+                const today = new Date();
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                
+                const startDateStr = sevenDaysAgo.toISOString().split('T')[0];
+                const endDateStr = today.toISOString().split('T')[0];
+                
+                console.log(`${account.institutionName} - Syncing recent transactions from ${startDateStr} to ${endDateStr}`);
+                
+                const transactionsResponse = await getTransactions(account.plaidAccessToken!, startDateStr, endDateStr);
+                
+                // Filter transactions for this specific account
+                const accountTransactions = transactionsResponse.transactions.filter(
+                  t => t.account_id === account.plaidAccountId
+                );
+                
+                let newTransactionsCount = 0;
+                for (const plaidTransaction of accountTransactions) {
+                  // Check if transaction already exists using Plaid transaction ID
+                  const existingByPlaidId = await storage.getTransactionByPlaidId(plaidTransaction.transaction_id);
+                  
+                  if (!existingByPlaidId) {
+                    const transactionData = formatPlaidTransactionData(plaidTransaction, user.id, account.id);
+                    await storage.createTransaction(transactionData);
+                    newTransactionsCount++;
+                  }
+                }
+                
+                if (newTransactionsCount > 0) {
+                  console.log(`${account.institutionName} - Synced ${newTransactionsCount} new transactions`);
+                }
+                
+              } catch (transactionError: any) {
+                console.error(`Error syncing transactions for ${account.institutionName}:`, transactionError.message);
+                // Don't fail the entire balance refresh if transaction sync fails
               }
             }
             
@@ -128,11 +168,51 @@ export async function refreshUserBalances(userId: number) {
           
           if (bestBalance !== null) {
             await storage.updateAccount(account.id, {
-              balance: bestBalance
+              balance: bestBalance,
+              lastBalanceUpdate: new Date()
             });
             updatedCount++;
             
             console.log(`${account.institutionName} - Updated balance for ${account.accountName}: $${oldBalance} → $${bestBalance} (using ${availableBalance !== null ? 'available' : 'current'} balance)`);
+            
+            // Sync recent transactions (last 7 days) when updating balance
+            try {
+              const today = new Date();
+              const sevenDaysAgo = new Date(today);
+              sevenDaysAgo.setDate(today.getDate() - 7);
+              
+              const startDateStr = sevenDaysAgo.toISOString().split('T')[0];
+              const endDateStr = today.toISOString().split('T')[0];
+              
+              console.log(`${account.institutionName} - Syncing recent transactions from ${startDateStr} to ${endDateStr}`);
+              
+              const transactionsResponse = await getTransactions(account.plaidAccessToken!, startDateStr, endDateStr);
+              
+              // Filter transactions for this specific account
+              const accountTransactions = transactionsResponse.transactions.filter(
+                t => t.account_id === account.plaidAccountId
+              );
+              
+              let newTransactionsCount = 0;
+              for (const plaidTransaction of accountTransactions) {
+                // Check if transaction already exists using Plaid transaction ID
+                const existingByPlaidId = await storage.getTransactionByPlaidId(plaidTransaction.transaction_id);
+                
+                if (!existingByPlaidId) {
+                  const transactionData = formatPlaidTransactionData(plaidTransaction, userId, account.id);
+                  await storage.createTransaction(transactionData);
+                  newTransactionsCount++;
+                }
+              }
+              
+              if (newTransactionsCount > 0) {
+                console.log(`${account.institutionName} - Synced ${newTransactionsCount} new transactions for user ${userId}`);
+              }
+              
+            } catch (transactionError: any) {
+              console.error(`Error syncing transactions for ${account.institutionName} (user ${userId}):`, transactionError.message);
+              // Don't fail the entire balance refresh if transaction sync fails
+            }
           }
         }
         

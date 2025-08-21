@@ -92,18 +92,7 @@ export default function Register() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Chase Bank Disclaimer */}
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-lg mb-4 text-sm">
-            <div className="flex items-start">
-              <span className="material-icons text-yellow-600 mr-2 mt-0.5 text-lg">info</span>
-              <div>
-                <p className="font-medium">Bank Connection Notice</p>
-                <p className="text-xs mt-1">
-                  Note: Chase bank connections are currently unavailable as we await final OAuth approval. All other banks are fully supported.
-                </p>
-              </div>
-            </div>
-          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">

@@ -129,7 +129,8 @@ export function formatPlaidTransactionData(plaidTransaction: any, userId: number
     description: plaidTransaction.name,
     date: new Date(plaidTransaction.date),
     merchantName: plaidTransaction.merchant_name || plaidTransaction.name,
-    merchantIcon: getCategoryIcon(plaidTransaction.category ? plaidTransaction.category[0] : 'Other')
+    merchantIcon: getCategoryIcon(plaidTransaction.category ? plaidTransaction.category[0] : 'Other'),
+    plaidTransactionId: plaidTransaction.transaction_id
   };
 }
 
