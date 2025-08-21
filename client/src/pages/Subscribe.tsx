@@ -130,7 +130,7 @@ export default function Subscribe() {
                 Unlock Your Financial Potential
               </h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Start your 30-day free trial with complete financial management
+                Start your 14-day free trial with complete financial management
               </p>
             </div>
 

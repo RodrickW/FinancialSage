@@ -101,7 +101,7 @@ export function SubscriptionBanner() {
           <p className="font-medium">
             {subscriptionStatus?.isOnFreeTrial 
               ? `Your free trial ends in ${subscriptionStatus.trialDaysLeft} days` 
-              : "Start your 30-day free trial of Mind My Money!"}
+              : "Start your 14-day free trial of Mind My Money!"}
           </p>
           <p className="text-sm text-white/80">
             {subscriptionStatus?.isOnFreeTrial 

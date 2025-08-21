@@ -30,7 +30,7 @@ export default function SubscriptionSuccess() {
       <h1 className="text-3xl font-bold mb-2">Subscription Successful!</h1>
       
       <p className="text-xl mb-6">
-        Your 30-day free trial has started
+        Your 14-day free trial has started
       </p>
       
       <p className="mb-8 text-muted-foreground">
