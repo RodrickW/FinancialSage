@@ -2,45 +2,42 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { StatusBar } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { StatusBar, StyleSheet } from 'react-native';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Auth Screens
+import LandingScreen from './screens/auth/LandingScreen';
 import LoginScreen from './screens/auth/LoginScreen';
 import RegisterScreen from './screens/auth/RegisterScreen';
 import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 
-// Main App Screens
+// Main Screens
 import DashboardScreen from './screens/main/DashboardScreen';
 import AccountsScreen from './screens/main/AccountsScreen';
 import BudgetScreen from './screens/main/BudgetScreen';
 import GoalsScreen from './screens/main/GoalsScreen';
-import CreditScreen from './screens/main/CreditScreen';
 import CoachScreen from './screens/main/CoachScreen';
+import CreditScreen from './screens/main/CreditScreen';
 import ProfileScreen from './screens/main/ProfileScreen';
-
-// Context
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { theme } from './theme/theme';
+import SubscribeScreen from './screens/main/SubscribeScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Query Client Configuration
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-    },
+const theme = {
+  colors: {
+    primary: '#14B8A6',
+    accent: '#10B981',
+    background: '#FFFFFF',
+    surface: '#F8FAFC',
+    text: '#1F2937',
+    placeholder: '#6B7280',
   },
-});
+};
 
-// Main Tab Navigator
-function MainTabNavigator() {
+const MainTabs = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -60,11 +57,11 @@ function MainTabNavigator() {
             case 'Goals':
               iconName = 'flag';
               break;
-            case 'Credit':
-              iconName = 'credit-score';
-              break;
             case 'Coach':
               iconName = 'psychology';
+              break;
+            case 'Profile':
+              iconName = 'person';
               break;
             default:
               iconName = 'help';
@@ -72,159 +69,90 @@ function MainTabNavigator() {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.outline,
+        tabBarActiveTintColor: '#14B8A6',
+        tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.outline,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#E5E7EB',
           paddingBottom: 8,
           paddingTop: 8,
-          height: 65,
+          height: 70,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
         },
-        headerStyle: {
-          backgroundColor: theme.colors.primary,
-        },
-        headerTintColor: theme.colors.onPrimary,
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
+        headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Dashboard" 
-        component={DashboardScreen}
-        options={{ title: 'Mind My Money' }}
-      />
-      <Tab.Screen 
-        name="Accounts" 
-        component={AccountsScreen}
-        options={{ title: 'Accounts' }}
-      />
-      <Tab.Screen 
-        name="Budget" 
-        component={BudgetScreen}
-        options={{ title: 'Budget' }}
-      />
-      <Tab.Screen 
-        name="Goals" 
-        component={GoalsScreen}
-        options={{ title: 'Goals' }}
-      />
-      <Tab.Screen 
-        name="Credit" 
-        component={CreditScreen}
-        options={{ title: 'Credit Simulator' }}
-      />
-      <Tab.Screen 
-        name="Coach" 
-        component={CoachScreen}
-        options={{ title: 'Money Mind' }}
-      />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Accounts" component={AccountsScreen} />
+      <Tab.Screen name="Budget" component={BudgetScreen} />
+      <Tab.Screen name="Goals" component={GoalsScreen} />
+      <Tab.Screen name="Coach" component={CoachScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
-}
+};
 
-// Auth Stack Navigator
-function AuthStackNavigator() {
+const AuthStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.primary,
-        },
-        headerTintColor: theme.colors.onPrimary,
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
+        headerShown: false,
+        contentStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
-      <Stack.Screen 
-        name="Login" 
-        component={LoginScreen}
-        options={{ 
-          title: 'Welcome Back',
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
-        name="Register" 
-        component={RegisterScreen}
-        options={{ 
-          title: 'Create Account',
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
-        name="ForgotPassword" 
-        component={ForgotPasswordScreen}
-        options={{ 
-          title: 'Reset Password' 
-        }}
-      />
+      <Stack.Screen name="Landing" component={LandingScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </Stack.Navigator>
   );
-}
+};
 
-// Main App Navigator
-function AppNavigator() {
-  const { isAuthenticated, isLoading } = useAuth();
+const MainStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: '#FFFFFF' },
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="Subscribe" component={SubscribeScreen} />
+      <Stack.Screen name="Credit" component={CreditScreen} />
+    </Stack.Navigator>
+  );
+};
+
+const AppNavigator = () => {
+  const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    // You could show a splash screen here
-    return null;
+    return null; // You could show a loading screen here
   }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <>
-            <Stack.Screen name="MainApp" component={MainTabNavigator} />
-            <Stack.Screen 
-              name="Profile" 
-              component={ProfileScreen}
-              options={{ 
-                headerShown: true,
-                title: 'Profile',
-                headerStyle: {
-                  backgroundColor: theme.colors.primary,
-                },
-                headerTintColor: theme.colors.onPrimary,
-              }}
-            />
-          </>
-        ) : (
-          <Stack.Screen name="Auth" component={AuthStackNavigator} />
-        )}
-      </Stack.Navigator>
+      {user ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
-}
+};
 
-// Main App Component
-export default function App() {
+const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <PaperProvider theme={theme}>
-        <AuthProvider>
-          <StatusBar 
-            barStyle="light-content" 
-            backgroundColor={theme.colors.primary} 
-          />
-          <AppNavigator />
-        </AuthProvider>
-      </PaperProvider>
-    </QueryClientProvider>
+    <PaperProvider theme={theme}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#0F766E"
+        translucent={false}
+      />
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </PaperProvider>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-});
+export default App;

@@ -3,29 +3,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiRequest } from '../services/api';
 
 interface User {
-  id: string;
-  email: string;
+  id: number;
   username: string;
-  firstName?: string;
-  lastName?: string;
+  email: string;
+  isPremium: boolean;
+  isOnFreeTrial: boolean;
+  trialDaysLeft: number;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<boolean>;
+  login: (userData: User) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-}
-
-interface RegisterData {
-  email: string;
-  password: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,88 +39,63 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = !!user;
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      if (token) {
-        const userData = await apiRequest('GET', '/api/users/profile');
-        setUser(userData);
-      }
-    } catch (error) {
-      console.log('Auth check failed:', error);
-      await AsyncStorage.removeItem('authToken');
-    } finally {
-      setIsLoading(false);
-    }
+  const login = async (userData: User) => {
+    setUser(userData);
+    await AsyncStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const response = await apiRequest('POST', '/api/auth/login', {
-        email,
-        password,
-      });
-
-      if (response.token) {
-        await AsyncStorage.setItem('authToken', response.token);
-        setUser(response.user);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login failed:', error);
-      return false;
-    }
-  };
-
-  const register = async (userData: RegisterData): Promise<boolean> => {
-    try {
-      const response = await apiRequest('POST', '/api/auth/register', userData);
-
-      if (response.token) {
-        await AsyncStorage.setItem('authToken', response.token);
-        setUser(response.user);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Registration failed:', error);
-      return false;
-    }
-  };
-
-  const logout = async (): Promise<void> => {
+  const logout = async () => {
     try {
       await apiRequest('POST', '/api/auth/logout');
     } catch (error) {
-      console.log('Logout request failed:', error);
+      console.error('Logout error:', error);
     } finally {
-      await AsyncStorage.removeItem('authToken');
       setUser(null);
+      await AsyncStorage.removeItem('user');
     }
   };
 
-  const refreshUser = async (): Promise<void> => {
+  const refreshUser = async () => {
     try {
-      const userData = await apiRequest('GET', '/api/users/profile');
-      setUser(userData);
+      const response = await apiRequest('GET', '/api/users/profile');
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        // Session expired
+        await logout();
+      }
     } catch (error) {
-      console.error('Failed to refresh user data:', error);
+      console.error('Refresh user error:', error);
+      await logout();
     }
   };
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          // Verify session is still valid
+          await refreshUser();
+        }
+      } catch (error) {
+        console.error('Initialize auth error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
 
   const value: AuthContextType = {
     user,
-    isAuthenticated,
     isLoading,
     login,
-    register,
     logout,
     refreshUser,
   };

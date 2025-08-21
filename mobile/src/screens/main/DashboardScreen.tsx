@@ -1,27 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
+  Text,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   RefreshControl,
   Dimensions,
+  Alert,
 } from 'react-native';
-import {
-  Card,
-  Text,
-  Button,
-  Surface,
-  IconButton,
-  ProgressBar,
-  Chip,
-} from 'react-native-paper';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card } from 'react-native-paper';
+import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { LineChart } from 'react-native-chart-kit';
-import { format, subDays } from 'date-fns';
-import { theme } from '../../theme/theme';
+import { useNavigation } from '@react-navigation/native';
 import { apiRequest } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { TrialStatus } from '../../components/TrialStatus';
 
 const { width } = Dimensions.get('window');
 
@@ -30,10 +24,17 @@ interface Account {
   name: string;
   type: string;
   balance: number;
-  lastUpdated: string;
+  lastRefreshed: string;
 }
 
-interface Transaction {
+interface FinancialOverview {
+  totalBalance: number;
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  savings: number;
+}
+
+interface RecentTransaction {
   id: string;
   description: string;
   amount: number;
@@ -41,364 +42,320 @@ interface Transaction {
   category: string;
 }
 
-interface Budget {
-  id: string;
-  category: string;
-  budgeted: number;
-  spent: number;
-  remaining: number;
-}
-
-interface Goal {
-  id: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  targetDate: string;
-}
-
 const DashboardScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const [overview, setOverview] = useState<FinancialOverview | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch dashboard data
-  const { data: accounts, isLoading: accountsLoading, refetch: refetchAccounts } = useQuery({
-    queryKey: ['accounts'],
-    queryFn: () => apiRequest('GET', '/api/accounts'),
-  });
+  const fetchDashboardData = async () => {
+    try {
+      const [overviewRes, accountsRes, transactionsRes] = await Promise.all([
+        apiRequest('GET', '/api/dashboard/overview'),
+        apiRequest('GET', '/api/accounts'),
+        apiRequest('GET', '/api/transactions/recent?limit=5'),
+      ]);
 
-  const { data: transactions, isLoading: transactionsLoading } = useQuery({
-    queryKey: ['transactions', 'recent'],
-    queryFn: () => apiRequest('GET', '/api/transactions?limit=5'),
-  });
+      if (overviewRes.ok) {
+        const overviewData = await overviewRes.json();
+        setOverview(overviewData);
+      }
 
-  const { data: budgets, isLoading: budgetsLoading } = useQuery({
-    queryKey: ['budgets'],
-    queryFn: () => apiRequest('GET', '/api/budgets'),
-  });
+      if (accountsRes.ok) {
+        const accountsData = await accountsRes.json();
+        setAccounts(accountsData);
+      }
 
-  const { data: goals, isLoading: goalsLoading } = useQuery({
-    queryKey: ['goals'],
-    queryFn: () => apiRequest('GET', '/api/goals'),
-  });
+      if (transactionsRes.ok) {
+        const transactionsData = await transactionsRes.json();
+        setRecentTransactions(transactionsData);
+      }
+    } catch (error) {
+      console.error('Dashboard data fetch error:', error);
+      Alert.alert('Error', 'Failed to load dashboard data');
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-  const { data: spendingData } = useQuery({
-    queryKey: ['spending', 'chart'],
-    queryFn: () => apiRequest('GET', '/api/analytics/spending-trend'),
-  });
-
-  const isLoading = accountsLoading || transactionsLoading || budgetsLoading || goalsLoading;
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const onRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['accounts'] });
-    queryClient.invalidateQueries({ queryKey: ['transactions'] });
-    queryClient.invalidateQueries({ queryKey: ['budgets'] });
-    queryClient.invalidateQueries({ queryKey: ['goals'] });
-    queryClient.invalidateQueries({ queryKey: ['spending'] });
+    setRefreshing(true);
+    fetchDashboardData();
   };
 
-  const getTotalBalance = () => {
-    if (!accounts) return 0;
-    return accounts.reduce((total: number, account: Account) => total + account.balance, 0);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
   };
 
-  const getTotalBudgetUtilization = () => {
-    if (!budgets || budgets.length === 0) return 0;
-    const totalBudgeted = budgets.reduce((total: number, budget: Budget) => total + budget.budgeted, 0);
-    const totalSpent = budgets.reduce((total: number, budget: Budget) => total + budget.spent, 0);
-    return totalBudgeted > 0 ? (totalSpent / totalBudgeted) : 0;
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
-  const getSpendingChartData = () => {
-    if (!spendingData) {
-      // Fallback chart data
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = subDays(new Date(), 6 - i);
-        return {
-          date: format(date, 'MM/dd'),
-          amount: Math.random() * 100,
-        };
-      });
-      return last7Days;
-    }
-    return spendingData;
-  };
+  const OverviewCard = ({ title, amount, icon, color, onPress }: {
+    title: string;
+    amount: number;
+    icon: string;
+    color: string;
+    onPress?: () => void;
+  }) => (
+    <TouchableOpacity style={styles.overviewCard} onPress={onPress}>
+      <Card style={[styles.card, { borderLeftColor: color, borderLeftWidth: 4 }]}>
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
+            <Icon name={icon} size={24} color={color} />
+            <Text style={styles.cardTitle}>{title}</Text>
+          </View>
+          <Text style={[styles.cardAmount, { color }]}>
+            {formatCurrency(amount)}
+          </Text>
+        </View>
+      </Card>
+    </TouchableOpacity>
+  );
 
-  const chartData = getSpendingChartData();
-
-  const renderAccountCard = () => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.cardTitle}>Total Balance</Text>
-            <Text style={styles.balanceAmount}>
-              ${getTotalBalance().toLocaleString('en-US', { minimumFractionDigits: 2 })}
+  const AccountCard = ({ account }: { account: Account }) => (
+    <TouchableOpacity 
+      style={styles.accountCard}
+      onPress={() => navigation.navigate('Accounts' as never)}
+    >
+      <Card style={styles.card}>
+        <View style={styles.cardContent}>
+          <View style={styles.accountHeader}>
+            <View>
+              <Text style={styles.accountName}>{account.name}</Text>
+              <Text style={styles.accountType}>{account.type}</Text>
+            </View>
+            <Text style={styles.accountBalance}>
+              {formatCurrency(account.balance)}
             </Text>
           </View>
-          <IconButton
-            icon="refresh"
-            onPress={refetchAccounts}
-            mode="outlined"
-            size={20}
-          />
+          <Text style={styles.lastRefreshed}>
+            Last updated: {formatDate(account.lastRefreshed)}
+          </Text>
         </View>
-        
-        {accounts && accounts.length > 0 ? (
-          <View style={styles.accountsList}>
-            {accounts.slice(0, 3).map((account: Account) => (
-              <View key={account.id} style={styles.accountItem}>
-                <View style={styles.accountInfo}>
-                  <Icon 
-                    name={account.type === 'checking' ? 'account-balance' : 'savings'} 
-                    size={20} 
-                    color={theme.colors.primary} 
-                  />
-                  <Text style={styles.accountName}>{account.name}</Text>
-                </View>
-                <Text style={styles.accountBalance}>
-                  ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Icon name="account-balance-wallet" size={40} color={theme.colors.outline} />
-            <Text style={styles.emptyStateText}>No accounts connected</Text>
-            <Button mode="outlined" compact>Connect Account</Button>
-          </View>
-        )}
-      </Card.Content>
-    </Card>
+      </Card>
+    </TouchableOpacity>
   );
 
-  const renderSpendingChart = () => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <Text style={styles.cardTitle}>Spending Trend (Last 7 Days)</Text>
-        <LineChart
-          data={{
-            labels: chartData.map(item => item.date),
-            datasets: [{
-              data: chartData.map(item => item.amount),
-              strokeWidth: 3,
-            }],
-          }}
-          width={width - 64}
-          height={200}
-          chartConfig={{
-            backgroundColor: theme.colors.surface,
-            backgroundGradientFrom: theme.colors.surface,
-            backgroundGradientTo: theme.colors.surface,
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-            propsForDots: {
-              r: "4",
-              strokeWidth: "2",
-              stroke: theme.colors.primary,
-            },
-          }}
-          bezier
-          style={styles.chart}
-        />
-      </Card.Content>
-    </Card>
+  const TransactionItem = ({ transaction }: { transaction: RecentTransaction }) => (
+    <View style={styles.transactionItem}>
+      <View style={styles.transactionInfo}>
+        <Text style={styles.transactionDescription} numberOfLines={1}>
+          {transaction.description}
+        </Text>
+        <Text style={styles.transactionCategory}>{transaction.category}</Text>
+      </View>
+      <View style={styles.transactionRight}>
+        <Text style={[
+          styles.transactionAmount,
+          { color: transaction.amount < 0 ? '#EF4444' : '#10B981' }
+        ]}>
+          {formatCurrency(Math.abs(transaction.amount))}
+        </Text>
+        <Text style={styles.transactionDate}>
+          {formatDate(transaction.date)}
+        </Text>
+      </View>
+    </View>
   );
 
-  const renderRecentTransactions = () => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Recent Transactions</Text>
-          <Button mode="text" compact>View All</Button>
-        </View>
-        
-        {transactions && transactions.length > 0 ? (
-          <View style={styles.transactionsList}>
-            {transactions.map((transaction: Transaction) => (
-              <View key={transaction.id} style={styles.transactionItem}>
-                <View style={styles.transactionLeft}>
-                  <Icon 
-                    name={transaction.amount > 0 ? 'arrow-downward' : 'arrow-upward'} 
-                    size={20} 
-                    color={transaction.amount > 0 ? theme.colors.secondary : theme.colors.error}
-                  />
-                  <View style={styles.transactionInfo}>
-                    <Text style={styles.transactionDescription}>{transaction.description}</Text>
-                    <Text style={styles.transactionCategory}>{transaction.category}</Text>
-                  </View>
-                </View>
-                <Text style={[
-                  styles.transactionAmount,
-                  { color: transaction.amount > 0 ? theme.colors.secondary : theme.colors.error }
-                ]}>
-                  {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Icon name="receipt-long" size={40} color={theme.colors.outline} />
-            <Text style={styles.emptyStateText}>No recent transactions</Text>
-          </View>
-        )}
-      </Card.Content>
-    </Card>
-  );
-
-  const renderBudgetOverview = () => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Budget Overview</Text>
-          <Chip mode="flat" style={styles.utilizationChip}>
-            {Math.round(getTotalBudgetUtilization() * 100)}% Used
-          </Chip>
-        </View>
-        
-        {budgets && budgets.length > 0 ? (
-          <View style={styles.budgetsList}>
-            {budgets.slice(0, 3).map((budget: Budget) => {
-              const utilization = budget.budgeted > 0 ? budget.spent / budget.budgeted : 0;
-              const isOverBudget = utilization > 1;
-              
-              return (
-                <View key={budget.id} style={styles.budgetItem}>
-                  <View style={styles.budgetHeader}>
-                    <Text style={styles.budgetCategory}>{budget.category}</Text>
-                    <Text style={[
-                      styles.budgetAmount,
-                      { color: isOverBudget ? theme.colors.error : theme.colors.onSurface }
-                    ]}>
-                      ${budget.spent.toFixed(0)} / ${budget.budgeted.toFixed(0)}
-                    </Text>
-                  </View>
-                  <ProgressBar 
-                    progress={Math.min(utilization, 1)} 
-                    color={isOverBudget ? theme.colors.error : theme.colors.primary}
-                    style={styles.budgetProgress}
-                  />
-                </View>
-              );
-            })}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Icon name="pie-chart" size={40} color={theme.colors.outline} />
-            <Text style={styles.emptyStateText}>No budgets created</Text>
-            <Button mode="outlined" compact>Create Budget</Button>
-          </View>
-        )}
-      </Card.Content>
-    </Card>
-  );
-
-  const renderGoalsPreview = () => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Savings Goals</Text>
-          <Button mode="text" compact>View All</Button>
-        </View>
-        
-        {goals && goals.length > 0 ? (
-          <View style={styles.goalsList}>
-            {goals.slice(0, 2).map((goal: Goal) => {
-              const progress = goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0;
-              
-              return (
-                <View key={goal.id} style={styles.goalItem}>
-                  <View style={styles.goalHeader}>
-                    <Text style={styles.goalName}>{goal.name}</Text>
-                    <Text style={styles.goalProgress}>
-                      {Math.round(progress * 100)}%
-                    </Text>
-                  </View>
-                  <ProgressBar 
-                    progress={progress} 
-                    color={theme.colors.secondary}
-                    style={styles.goalProgressBar}
-                  />
-                  <Text style={styles.goalAmount}>
-                    ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Icon name="flag" size={40} color={theme.colors.outline} />
-            <Text style={styles.emptyStateText}>No savings goals</Text>
-            <Button mode="outlined" compact>Create Goal</Button>
-          </View>
-        )}
-      </Card.Content>
-    </Card>
-  );
-
-  const renderQuickActions = () => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <Text style={styles.cardTitle}>Quick Actions</Text>
-        <View style={styles.quickActions}>
-          <Button 
-            mode="outlined" 
-            style={styles.quickActionButton}
-            icon="psychology"
-            compact
-          >
-            Ask Money Mind
-          </Button>
-          <Button 
-            mode="outlined" 
-            style={styles.quickActionButton}
-            icon="credit-score"
-            compact
-          >
-            Check Credit
-          </Button>
-          <Button 
-            mode="outlined" 
-            style={styles.quickActionButton}
-            icon="add"
-            compact
-          >
-            Add Goal
-          </Button>
-        </View>
-      </Card.Content>
-    </Card>
-  );
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading your financial overview...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 
       style={styles.container}
       refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+      showsVerticalScrollIndicator={false}
     >
-      <View style={styles.header}>
-        <Text style={styles.greeting}>
-          Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName || user?.username}!
-        </Text>
-        <Text style={styles.subtitle}>Here's your financial overview</Text>
-      </View>
-
-      {renderAccountCard()}
-      {renderSpendingChart()}
-      {renderRecentTransactions()}
-      {renderBudgetOverview()}
-      {renderGoalsPreview()}
-      {renderQuickActions()}
+      <TrialStatus />
       
-      <View style={styles.bottomPadding} />
+      <LinearGradient
+        colors={['#0F766E', '#14B8A6']}
+        style={styles.header}
+      >
+        <Text style={styles.welcomeText}>Welcome back, {user?.username}!</Text>
+        <Text style={styles.headerSubtitle}>Here's your financial overview</Text>
+      </LinearGradient>
+
+      <View style={styles.content}>
+        {/* Financial Overview */}
+        {overview && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Financial Overview</Text>
+            <View style={styles.overviewGrid}>
+              <OverviewCard
+                title="Total Balance"
+                amount={overview.totalBalance}
+                icon="account-balance-wallet"
+                color="#14B8A6"
+                onPress={() => navigation.navigate('Accounts' as never)}
+              />
+              <OverviewCard
+                title="Monthly Income"
+                amount={overview.monthlyIncome}
+                icon="trending-up"
+                color="#10B981"
+              />
+              <OverviewCard
+                title="Monthly Expenses"
+                amount={overview.monthlyExpenses}
+                icon="trending-down"
+                color="#EF4444"
+                onPress={() => navigation.navigate('Budget' as never)}
+              />
+              <OverviewCard
+                title="Savings"
+                amount={overview.savings}
+                icon="savings"
+                color="#8B5CF6"
+                onPress={() => navigation.navigate('Goals' as never)}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActions}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Coach' as never)}
+            >
+              <LinearGradient
+                colors={['#8B5CF6', '#A855F7']}
+                style={styles.actionGradient}
+              >
+                <Icon name="psychology" size={32} color="#FFFFFF" />
+                <Text style={styles.actionText}>AI Coach</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Budget' as never)}
+            >
+              <LinearGradient
+                colors={['#F59E0B', '#FBBF24']}
+                style={styles.actionGradient}
+              >
+                <Icon name="pie-chart" size={32} color="#FFFFFF" />
+                <Text style={styles.actionText}>Budget</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Goals' as never)}
+            >
+              <LinearGradient
+                colors={['#06B6D4', '#0891B2']}
+                style={styles.actionGradient}
+              >
+                <Icon name="flag" size={32} color="#FFFFFF" />
+                <Text style={styles.actionText}>Goals</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Credit' as never)}
+            >
+              <LinearGradient
+                colors={['#EC4899', '#F472B6']}
+                style={styles.actionGradient}
+              >
+                <Icon name="credit-score" size={32} color="#FFFFFF" />
+                <Text style={styles.actionText}>Credit</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Recent Transactions */}
+        {recentTransactions.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent Transactions</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Transactions' as never)}>
+                <Text style={styles.seeAllText}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <Card style={styles.transactionsCard}>
+              {recentTransactions.map((transaction, index) => (
+                <View key={transaction.id}>
+                  <TransactionItem transaction={transaction} />
+                  {index < recentTransactions.length - 1 && (
+                    <View style={styles.transactionDivider} />
+                  )}
+                </View>
+              ))}
+            </Card>
+          </View>
+        )}
+
+        {/* Connected Accounts */}
+        {accounts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Your Accounts</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Accounts' as never)}>
+                <Text style={styles.seeAllText}>Manage</Text>
+              </TouchableOpacity>
+            </View>
+            {accounts.slice(0, 3).map((account) => (
+              <AccountCard key={account.id} account={account} />
+            ))}
+          </View>
+        )}
+
+        {/* Connect Account CTA */}
+        {accounts.length === 0 && (
+          <View style={styles.section}>
+            <Card style={styles.ctaCard}>
+              <LinearGradient
+                colors={['#0F766E', '#14B8A6']}
+                style={styles.ctaGradient}
+              >
+                <Icon name="account-balance" size={48} color="#FFFFFF" />
+                <Text style={styles.ctaTitle}>Connect Your Bank Account</Text>
+                <Text style={styles.ctaSubtitle}>
+                  Get started by connecting your bank account to see your financial overview
+                </Text>
+                <TouchableOpacity 
+                  style={styles.ctaButton}
+                  onPress={() => navigation.navigate('Accounts' as never)}
+                >
+                  <Text style={styles.ctaButtonText}>Connect Account</Text>
+                  <Icon name="arrow-forward" size={20} color="#14B8A6" />
+                </TouchableOpacity>
+              </LinearGradient>
+            </Card>
+          </View>
+        )}
+      </View>
     </ScrollView>
   );
 };
@@ -406,172 +363,219 @@ const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#F8FAFC',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#6B7280',
   },
   header: {
-    padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
   },
-  greeting: {
-    ...theme.typography.headingMedium,
-    color: theme.colors.onBackground,
-    marginBottom: theme.spacing.xs,
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
-  subtitle: {
-    ...theme.typography.bodyLarge,
-    color: theme.colors.onSurfaceVariant,
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#F0FDFA',
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#14B8A6',
+    fontWeight: '600',
+  },
+  overviewGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  overviewCard: {
+    width: (width - 60) / 2,
+    marginBottom: 16,
   },
   card: {
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardContent: {
+    padding: 16,
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 8,
   },
   cardTitle: {
-    ...theme.typography.titleMedium,
-    fontWeight: '600',
+    fontSize: 14,
+    color: '#6B7280',
+    marginLeft: 8,
+    fontWeight: '500',
   },
-  balanceAmount: {
-    ...theme.typography.headingLarge,
-    color: theme.colors.primary,
+  cardAmount: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: theme.spacing.xs,
   },
-  accountsList: {
-    gap: theme.spacing.sm,
-  },
-  accountItem: {
+  quickActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+  },
+  actionButton: {
+    width: (width - 80) / 2,
+    marginBottom: 16,
+  },
+  actionGradient: {
+    borderRadius: 12,
+    padding: 20,
     alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
   },
-  accountInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  accountName: {
-    ...theme.typography.bodyMedium,
-    marginLeft: theme.spacing.sm,
-  },
-  accountBalance: {
-    ...theme.typography.bodyMedium,
+  actionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
+    marginTop: 8,
   },
-  chart: {
-    marginVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-  },
-  transactionsList: {
-    gap: theme.spacing.sm,
+  transactionsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
   },
   transactionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-  },
-  transactionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    paddingVertical: 12,
   },
   transactionInfo: {
-    marginLeft: theme.spacing.sm,
     flex: 1,
+    marginRight: 16,
   },
   transactionDescription: {
-    ...theme.typography.bodyMedium,
+    fontSize: 16,
     fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 4,
   },
   transactionCategory: {
-    ...theme.typography.bodySmall,
-    color: theme.colors.onSurfaceVariant,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  transactionRight: {
+    alignItems: 'flex-end',
   },
   transactionAmount: {
-    ...theme.typography.bodyMedium,
+    fontSize: 16,
     fontWeight: '600',
+    marginBottom: 4,
   },
-  utilizationChip: {
-    height: 28,
+  transactionDate: {
+    fontSize: 12,
+    color: '#6B7280',
   },
-  budgetsList: {
-    gap: theme.spacing.md,
+  transactionDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: -16,
   },
-  budgetItem: {
-    gap: theme.spacing.sm,
+  accountCard: {
+    marginBottom: 12,
   },
-  budgetHeader: {
+  accountHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
-  budgetCategory: {
-    ...theme.typography.bodyMedium,
-    fontWeight: '500',
-  },
-  budgetAmount: {
-    ...theme.typography.bodyMedium,
+  accountName: {
+    fontSize: 16,
     fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
   },
-  budgetProgress: {
-    height: 6,
-    borderRadius: 3,
+  accountType: {
+    fontSize: 14,
+    color: '#6B7280',
+    textTransform: 'capitalize',
   },
-  goalsList: {
-    gap: theme.spacing.lg,
+  accountBalance: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#14B8A6',
   },
-  goalItem: {
-    gap: theme.spacing.sm,
+  lastRefreshed: {
+    fontSize: 12,
+    color: '#6B7280',
   },
-  goalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  ctaCard: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  ctaGradient: {
+    padding: 24,
     alignItems: 'center',
   },
-  goalName: {
-    ...theme.typography.bodyMedium,
-    fontWeight: '500',
-  },
-  goalProgress: {
-    ...theme.typography.bodyMedium,
-    fontWeight: '600',
-    color: theme.colors.secondary,
-  },
-  goalProgressBar: {
-    height: 8,
-    borderRadius: 4,
-  },
-  goalAmount: {
-    ...theme.typography.bodySmall,
-    color: theme.colors.onSurfaceVariant,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.md,
-  },
-  quickActionButton: {
-    flex: 1,
-    marginHorizontal: theme.spacing.xs,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.lg,
-    gap: theme.spacing.sm,
-  },
-  emptyStateText: {
-    ...theme.typography.bodyMedium,
-    color: theme.colors.onSurfaceVariant,
+  ctaTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 16,
+    marginBottom: 8,
     textAlign: 'center',
   },
-  bottomPadding: {
-    height: theme.spacing.lg,
+  ctaSubtitle: {
+    fontSize: 16,
+    color: '#F0FDFA',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  ctaButton: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ctaButtonText: {
+    color: '#14B8A6',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
   },
 });
 

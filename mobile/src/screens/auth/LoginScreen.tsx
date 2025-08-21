@@ -1,225 +1,359 @@
 import React, { useState } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
-  Alert,
 } from 'react-native';
-import {
-  Text,
-  TextInput,
-  Button,
-  Surface,
-  IconButton,
-} from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { TextInput } from 'react-native-paper';
+import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { theme } from '../../theme/theme';
+import { useNavigation } from '@react-navigation/native';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { apiRequest } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-interface LoginScreenProps {
-  navigation: any;
-}
+const loginSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
+type LoginFormData = z.infer<typeof loginSchema>;
+
+const LoginScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
-      return;
-    }
+  const { control, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
 
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const success = await login(email, password);
-      if (!success) {
-        Alert.alert('Login Failed', 'Invalid email or password');
+      const response = await apiRequest('POST', '/api/auth/login', {
+        username: data.username,
+        password: data.password,
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        await login(userData);
+        navigation.navigate('Dashboard' as never);
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Login Failed', errorData.message || 'Invalid username or password');
       }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', 'Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleForgotPassword = () => {
+    navigation.navigate('ForgotPassword' as never);
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
+        <LinearGradient
+          colors={['#0F766E', '#14B8A6']}
+          style={styles.header}
         >
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Icon name="psychology" size={60} color={theme.colors.primary} />
-              <Text style={styles.logoText}>Mind My Money</Text>
-            </View>
-            <Text style={styles.subtitle}>
-              AI-powered financial management
-            </Text>
+          <View style={styles.logoContainer}>
+            <Icon name="attach-money" size={40} color="#FFFFFF" />
           </View>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>
+            Sign in to continue managing your finances
+          </Text>
+        </LinearGradient>
 
-          <Surface style={styles.formContainer}>
-            <Text style={styles.formTitle}>Welcome Back</Text>
-            <Text style={styles.formSubtitle}>
-              Sign in to continue managing your finances
-            </Text>
+        <View style={styles.formContainer}>
+          <View style={styles.form}>
+            <Controller
+              control={control}
+              name="username"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Username"
+                  mode="outlined"
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  error={!!errors.username}
+                  style={styles.input}
+                  autoCapitalize="none"
+                  theme={{ colors: { primary: '#14B8A6' } }}
+                  left={<TextInput.Icon icon="account" />}
+                />
+              )}
+            />
+            {errors.username && (
+              <Text style={styles.errorText}>{errors.username.message}</Text>
+            )}
 
-            <View style={styles.form}>
-              <TextInput
-                mode="outlined"
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-                style={styles.input}
-                left={<TextInput.Icon icon="email" />}
-              />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Password"
+                  mode="outlined"
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  error={!!errors.password}
+                  style={styles.input}
+                  secureTextEntry={!showPassword}
+                  theme={{ colors: { primary: '#14B8A6' } }}
+                  left={<TextInput.Icon icon="lock" />}
+                  right={
+                    <TextInput.Icon 
+                      icon={showPassword ? "eye-off" : "eye"} 
+                      onPress={() => setShowPassword(!showPassword)}
+                    />
+                  }
+                />
+              )}
+            />
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password.message}</Text>
+            )}
 
-              <TextInput
-                mode="outlined"
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoComplete="password"
-                style={styles.input}
-                left={<TextInput.Icon icon="lock" />}
-                right={
-                  <TextInput.Icon
-                    icon={showPassword ? "eye-off" : "eye"}
-                    onPress={() => setShowPassword(!showPassword)}
-                  />
-                }
-              />
-
-              <Button
-                mode="contained"
-                onPress={handleLogin}
-                loading={isLoading}
-                disabled={isLoading}
-                style={styles.loginButton}
-                contentStyle={styles.buttonContent}
-              >
-                Sign In
-              </Button>
-
-              <Button
-                mode="text"
-                onPress={() => navigation.navigate('ForgotPassword')}
-                style={styles.forgotButton}
-              >
-                Forgot Password?
-              </Button>
-            </View>
-          </Surface>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              Don't have an account?{' '}
-            </Text>
-            <Button
-              mode="text"
-              onPress={() => navigation.navigate('Register')}
-              compact
+            <TouchableOpacity 
+              style={styles.forgotPassword}
+              onPress={handleForgotPassword}
             >
-              Sign Up
-            </Button>
+              <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.loginButton, isLoading && styles.disabledButton]}
+              onPress={handleSubmit(onSubmit)}
+              disabled={isLoading}
+            >
+              <LinearGradient
+                colors={['#14B8A6', '#10B981']}
+                style={styles.buttonGradient}
+              >
+                {isLoading ? (
+                  <Text style={styles.buttonText}>Signing In...</Text>
+                ) : (
+                  <>
+                    <Text style={styles.buttonText}>Sign In</Text>
+                    <Icon name="arrow-forward" size={20} color="#FFFFFF" />
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity 
+              style={styles.registerButton}
+              onPress={() => navigation.navigate('Register' as never)}
+            >
+              <Text style={styles.registerButtonText}>Create New Account</Text>
+              <Icon name="person-add" size={20} color="#14B8A6" />
+            </TouchableOpacity>
+
+            <View style={styles.trialInfo}>
+              <Text style={styles.trialText}>
+                New to Mind My Money? Start your 14-day free trial
+              </Text>
+              <Text style={styles.trialSubtext}>
+                No credit card required • Full access to all features
+              </Text>
+            </View>
+
+            <View style={styles.landingSection}>
+              <Text style={styles.landingText}>Want to learn more?</Text>
+              <TouchableOpacity 
+                onPress={() => navigation.navigate('Landing' as never)}
+                style={styles.landingLink}
+              >
+                <Text style={styles.landingLinkText}>View Features</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.primary,
-  },
-  keyboardView: {
-    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
   },
   header: {
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: theme.spacing.xxl,
   },
   logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 20,
   },
-  logoText: {
-    ...theme.typography.headingLarge,
-    color: theme.colors.onPrimary,
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginTop: theme.spacing.sm,
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
-    ...theme.typography.bodyLarge,
-    color: theme.colors.onPrimary,
-    opacity: 0.9,
+    fontSize: 16,
+    color: '#F0FDFA',
     textAlign: 'center',
+    lineHeight: 22,
   },
   formContainer: {
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    elevation: 4,
-    backgroundColor: theme.colors.surface,
-  },
-  formTitle: {
-    ...theme.typography.headingMedium,
-    textAlign: 'center',
-    marginBottom: theme.spacing.sm,
-    color: theme.colors.onSurface,
-  },
-  formSubtitle: {
-    ...theme.typography.bodyMedium,
-    textAlign: 'center',
-    color: theme.colors.onSurfaceVariant,
-    marginBottom: theme.spacing.lg,
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 30,
   },
   form: {
-    gap: theme.spacing.md,
+    flex: 1,
   },
   input: {
-    backgroundColor: theme.colors.surface,
+    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 14,
+    marginBottom: 16,
+    marginLeft: 4,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    paddingVertical: 8,
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    color: '#14B8A6',
+    fontSize: 14,
+    fontWeight: '500',
   },
   loginButton: {
-    marginTop: theme.spacing.md,
+    marginBottom: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
-  buttonContent: {
-    paddingVertical: theme.spacing.sm,
+  disabledButton: {
+    opacity: 0.7,
   },
-  forgotButton: {
-    alignSelf: 'center',
+  buttonGradient: {
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  footer: {
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  registerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#14B8A6',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 24,
+  },
+  registerButtonText: {
+    color: '#14B8A6',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  trialInfo: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: '#22C55E',
+  },
+  trialText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#065F46',
+    marginBottom: 4,
+  },
+  trialSubtext: {
+    fontSize: 14,
+    color: '#047857',
+  },
+  landingSection: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: theme.spacing.lg,
+    paddingBottom: 40,
   },
-  footerText: {
-    ...theme.typography.bodyMedium,
-    color: theme.colors.onPrimary,
+  landingText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginRight: 8,
+  },
+  landingLink: {
+    paddingVertical: 4,
+  },
+  landingLinkText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#14B8A6',
   },
 });
 
