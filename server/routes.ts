@@ -667,26 +667,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userTransactions = await storage.getTransactions(user.id);
       const now = new Date();
       
-      // Calculate monthly spending (current month)
+      // Calculate monthly spending (current month) with improved precision
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
       const monthlySpending = userTransactions
-        .filter(t => t.amount < 0 && new Date(t.date).getMonth() === now.getMonth())
+        .filter(t => {
+          const transactionDate = new Date(t.date);
+          return t.amount < 0 && 
+                 transactionDate.getMonth() === currentMonth &&
+                 transactionDate.getFullYear() === currentYear;
+        })
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
       
-      // Calculate weekly spending (last 7 days)
+      // Calculate weekly spending (last 7 days) with proper date handling
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const weeklySpending = userTransactions
-        .filter(t => t.amount < 0 && new Date(t.date) >= weekAgo)
+        .filter(t => {
+          const transactionDate = new Date(t.date);
+          return t.amount < 0 && transactionDate >= weekAgo;
+        })
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
       
-      // Calculate daily spending (today)
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Calculate daily spending (today) with improved date comparison
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
       const dailySpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
           return t.amount < 0 && 
-                 transactionDate.getFullYear() === today.getFullYear() &&
-                 transactionDate.getMonth() === today.getMonth() &&
-                 transactionDate.getDate() === today.getDate();
+                 transactionDate >= todayStart && 
+                 transactionDate < todayEnd;
         })
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
       
@@ -714,19 +724,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const financialOverview = {
-        totalBalance,
-        previousMonthBalance,
-        monthlySpending,
-        previousMonthSpending,
-        weeklySpending,
-        dailySpending,
+        totalBalance: Math.round(totalBalance * 100) / 100,
+        previousMonthBalance: Math.round(previousMonthBalance * 100) / 100,
+        monthlySpending: Math.round(monthlySpending * 100) / 100,
+        previousMonthSpending: Math.round(previousMonthSpending * 100) / 100,
+        weeklySpending: Math.round(weeklySpending * 100) / 100,
+        dailySpending: Math.round(dailySpending * 100) / 100,
         creditScore,
         savingsProgress: {
-          current: mainSavingsGoal.currentAmount,
-          target: mainSavingsGoal.targetAmount,
+          current: Math.round(mainSavingsGoal.currentAmount * 100) / 100,
+          target: Math.round(mainSavingsGoal.targetAmount * 100) / 100,
           name: mainSavingsGoal.name
         }
       };
+
+      console.log(`📊 Financial Overview for user ${user.id}:`, {
+        totalBalance: financialOverview.totalBalance,
+        monthlySpending: financialOverview.monthlySpending,
+        weeklySpending: financialOverview.weeklySpending,
+        dailySpending: financialOverview.dailySpending,
+        transactionCount: userTransactions.length
+      });
       
       res.json(financialOverview);
     } catch (error) {
@@ -1199,11 +1217,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Force refresh recent transactions (last 90 days) for all accounts
+  // Force refresh recent transactions (last 7 days) for all accounts
   app.post('/api/plaid/refresh-transactions', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
-      const { days = 90 } = req.body; // Default to last 90 days to catch up on missing transactions
+      const { days = 7 } = req.body; // Default to last 7 days for cost efficiency
       
       const accounts = await storage.getAccounts(user.id);
       const plaidAccounts = accounts.filter(account => account.plaidAccessToken);

@@ -105,7 +105,7 @@ export default function Dashboard() {
       toast({
         title: "Transactions Updated!",
         description: data.newTransactions > 0 
-          ? `Added ${data.newTransactions} new transactions from the last 90 days`
+          ? `Added ${data.newTransactions} new transactions from the last 7 days`
           : "All transactions are up to date",
       });
     },
