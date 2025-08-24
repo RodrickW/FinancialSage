@@ -379,7 +379,9 @@ export class DatabaseStorage implements IStorage {
     const currentYear = new Date().getFullYear();
     const yearTrackers = await this.getSavingsTracker(userId, currentYear);
     
-    return yearTrackers.reduce((total, tracker) => total + tracker.totalSaved, 0);
+    const total = yearTrackers.reduce((total, tracker) => total + tracker.totalSaved, 0);
+    // Fix floating point precision issues by rounding to 2 decimal places
+    return Math.round(total * 100) / 100;
   }
 
   async updateMonthlySavings(userId: number, month: number, year: number, amount: number): Promise<SavingsTracker> {

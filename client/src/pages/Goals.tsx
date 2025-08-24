@@ -420,7 +420,7 @@ export default function Goals() {
                 <CardContent>
                   <div className="space-y-2">
                     <div className="text-3xl font-bold">
-                      ${trackingData.monthlyStats?.current || 0}
+                      ${(trackingData.monthlyStats?.current || 0).toFixed(2)}
                     </div>
                     <p className="text-green-100 text-sm">
                       Total saved this month
@@ -440,7 +440,7 @@ export default function Goals() {
                 <CardContent>
                   <div className="space-y-2">
                     <div className="text-3xl font-bold">
-                      ${trackingData.yearlyStats?.current || 0}
+                      ${(trackingData.yearlyStats?.current || 0).toFixed(2)}
                     </div>
                     <p className="text-blue-100 text-sm">
                       Total saved this year
@@ -464,10 +464,10 @@ export default function Goals() {
                 </p>
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg mb-4">
                   <p className="text-sm text-gray-700">
-                    Monthly savings: <span className="font-bold text-green-600">${trackingData.monthlyStats?.current || 0}</span>
+                    Monthly savings: <span className="font-bold text-green-600">${(trackingData.monthlyStats?.current || 0).toFixed(2)}</span>
                   </p>
                   <p className="text-sm text-gray-700">
-                    Yearly savings: <span className="font-bold text-blue-600">${trackingData.yearlyStats?.current || 0}</span>
+                    Yearly savings: <span className="font-bold text-blue-600">${(trackingData.yearlyStats?.current || 0).toFixed(2)}</span>
                   </p>
                 </div>
                 <Button 

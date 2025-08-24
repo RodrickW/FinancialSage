@@ -2758,16 +2758,16 @@ Group similar transactions together and sum the amounts for each category. Only 
       
       res.json({
         monthlyStats: {
-          current: currentMonthAmount,
+          current: Math.round(currentMonthAmount * 100) / 100,
           monthName: new Date().toLocaleDateString('en-US', { month: 'long' }),
           nextMilestone: nextMonthlyMilestone,
-          progress: nextMonthlyMilestone ? (currentMonthAmount / nextMonthlyMilestone) * 100 : 100
+          progress: nextMonthlyMilestone ? Math.round((currentMonthAmount / nextMonthlyMilestone) * 100 * 100) / 100 : 100
         },
         yearlyStats: {
-          current: currentYearSavings,
+          current: Math.round(currentYearSavings * 100) / 100,
           year: currentYear,
           nextMilestone: nextYearlyMilestone,
-          progress: nextYearlyMilestone ? (currentYearSavings / nextYearlyMilestone) * 100 : 100,
+          progress: nextYearlyMilestone ? Math.round((currentYearSavings / nextYearlyMilestone) * 100 * 100) / 100 : 100,
           monthlyBreakdown: yearlyTracker
         }
       });
