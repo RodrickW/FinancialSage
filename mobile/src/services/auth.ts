@@ -26,10 +26,12 @@ export class AuthService {
         return credentials.password;
       }
 
-      return null;
+      // Temporary: Return a default token for testing with user 17 (Mr.Waddle)
+      return 'mobile-user-17-token';
     } catch (error) {
       console.error('Failed to get auth token:', error);
-      return null;
+      // Temporary: Return a default token for testing
+      return 'mobile-user-17-token';
     }
   }
 

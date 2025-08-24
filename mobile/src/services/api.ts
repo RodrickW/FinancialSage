@@ -1,6 +1,8 @@
 const API_BASE_URL = __DEV__ 
   ? 'http://10.0.2.2:5000' // Android emulator
-  : 'https://your-production-api.com';
+  : 'https://mindmymoney.replit.app';
+
+import { AuthService } from './auth';
 
 export async function apiRequest(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
@@ -10,10 +12,14 @@ export async function apiRequest(
 ): Promise<Response> {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  // Get stored auth token for mobile authentication
+  const authToken = await AuthService.getAuthToken();
+  
   const config: RequestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
+      ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
       ...options?.headers,
     },
     credentials: 'include', // Include cookies for session management
@@ -25,7 +31,12 @@ export async function apiRequest(
   }
 
   try {
+    console.log(`📱 API Request: ${method} ${endpoint}`, authToken ? '(authenticated)' : '(no auth)');
     const response = await fetch(url, config);
+    
+    // Log response status for debugging
+    console.log(`📱 API Response: ${response.status} ${response.statusText}`);
+    
     return response;
   } catch (error) {
     console.error('API request failed:', error);

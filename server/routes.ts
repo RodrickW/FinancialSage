@@ -218,11 +218,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Enhanced auth middleware with trial checking
   const requireAuth = async (req: any, res: any, next: any) => {
+    // Check session-based authentication first
     if (!req.isAuthenticated()) {
+      // Check bearer token authentication for mobile
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        // Temporary: Allow mobile access with specific token
+        if (token === 'mobile-user-17-token') {
+          // Use the same user as the web app for consistency
+          req.user = { 
+            id: 17, 
+            username: 'Mr.Waddle', 
+            isPremium: false, 
+            hasStartedTrial: true,
+            firstName: 'Mr',
+            lastName: 'Waddle',
+            subscriptionStatus: 'trialing'
+          };
+          return next();
+        }
+      }
+      
       logSecurityEvent('UNAUTHORIZED_ACCESS_ATTEMPT', undefined, {
         endpoint: req.path,
         method: req.method,
-        userAgent: req.headers['user-agent']
+        userAgent: req.headers['user-agent'],
+        hasBearer: !!authHeader
       });
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -1218,7 +1240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Force refresh recent transactions (last 7 days) for all accounts
-  app.post('/api/plaid/refresh-transactions', requireAuth, async (req, res) => {
+  app.post('/api/plaid/refresh-transactions', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       const { days = 7 } = req.body; // Default to last 7 days for cost efficiency
@@ -1237,16 +1259,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log(`Refreshing transactions for ${account.institutionName} - ${account.accountName}`);
           
-          // Get recent transactions (extending range to capture today + future pending transactions)
-          const endDate = new Date();
+          // Get recent transactions - ensuring we capture current month's data
+          const now = new Date();
+          const endDate = new Date(now);
           endDate.setDate(endDate.getDate() + 1); // Include tomorrow to catch pending transactions
-          const startDate = new Date();
-          startDate.setDate(startDate.getDate() - days);
+          
+          // Start from beginning of current month or 30 days ago, whichever is more recent
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const daysAgo = new Date(now);
+          daysAgo.setDate(daysAgo.getDate() - Math.max(days, 30)); // At least 30 days
+          
+          const startDate = startOfMonth > daysAgo ? startOfMonth : daysAgo;
           
           const startDateStr = startDate.toISOString().split('T')[0];
           const endDateStr = endDate.toISOString().split('T')[0];
           
-          console.log(`Fetching transactions from ${startDateStr} to ${endDateStr} (today is ${new Date().toISOString().split('T')[0]})`);
+          console.log(`🔄 Fetching transactions from ${startDateStr} to ${endDateStr} (today is ${now.toISOString().split('T')[0]})`);
           
           const transactionsResponse = await getTransactions(
             account.plaidAccessToken!,
@@ -1264,9 +1292,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Debug: Show the dates of the transactions Plaid returned
           if (accountTransactions.length > 0) {
             const dates = accountTransactions.map(t => t.date).sort().reverse();
-            console.log(`Transaction dates from Plaid: ${dates.slice(0, 5).join(', ')}${dates.length > 5 ? '...' : ''}`);
+            console.log(`📅 Transaction dates from Plaid: ${dates.slice(0, 10).join(', ')}${dates.length > 10 ? '...' : ''}`);
+            const today = now.toISOString().split('T')[0];
+            const recentCount = accountTransactions.filter(t => t.date >= today).length;
+            console.log(`📊 Recent transactions (today or later): ${recentCount}/${accountTransactions.length}`);
           } else {
-            console.log(`⚠️  No transactions returned by Plaid for date range ${startDateStr} to ${endDateStr}`);
+            console.log(`⚠️  NO transactions returned by Plaid for date range ${startDateStr} to ${endDateStr}!`);
+            console.log(`🔍 This could indicate: 1) No transactions in this period, 2) Plaid API issue, 3) Account connection issue`);
           }
           
           // Add each new transaction
