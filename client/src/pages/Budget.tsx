@@ -158,16 +158,25 @@ export default function Budget() {
   // AI mutation to analyze spending and categorize transactions
   const analyzeMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/ai/analyze-spending", {
-        transactions: transactions.filter(t => {
-          const transactionDate = new Date(t.date);
-          const now = new Date();
-          const currentMonth = now.getMonth();
-          const currentYear = now.getFullYear();
-          return transactionDate.getMonth() === currentMonth && 
-                 transactionDate.getFullYear() === currentYear;
-        }) // Use current month transactions for monthly budget analysis
+      const currentMonthTransactions = transactions.filter(t => {
+        const transactionDate = new Date(t.date);
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        return transactionDate.getMonth() === currentMonth && 
+               transactionDate.getFullYear() === currentYear;
       });
+      
+      console.log(`Analyzing ${currentMonthTransactions.length} current month transactions`);
+      
+      const response = await apiRequest("POST", "/api/ai/analyze-spending", {
+        transactions: currentMonthTransactions
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Analysis failed: ${response.status} ${response.statusText}`);
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
@@ -180,10 +189,11 @@ export default function Budget() {
       });
       setIsAnalyzing(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Spending analysis error:', error);
       toast({
-        title: "Analysis Failed",
-        description: "Unable to analyze your spending patterns.",
+        title: "Analysis Failed", 
+        description: "Unable to analyze your spending patterns. Please try again.",
         variant: "destructive"
       });
       setIsAnalyzing(false);
