@@ -193,28 +193,23 @@ export default function Budget() {
       }
     },
     onSuccess: (data) => {
-      try {
-        console.log('Success callback triggered with data:', data);
-        if (data && data.categorizedSpending) {
-          updateBudgetWithAnalysis(data.categorizedSpending);
-          // Refresh budget data from database
-          queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
-          toast({
-            title: "Spending Analysis Complete",
-            description: "Your budget has been updated with your actual spending patterns and saved."
-          });
-        } else {
-          toast({
-            title: "Analysis Warning",
-            description: "Analysis completed but no spending data was returned.",
-            variant: "default"
-          });
-        }
-      } catch (error) {
-        console.error('Error in success callback:', error);
-      } finally {
-        setIsAnalyzing(false);
+      console.log('Success callback triggered with data:', data);
+      if (data && data.categorizedSpending) {
+        updateBudgetWithAnalysis(data.categorizedSpending);
+        // Refresh budget data from database
+        queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+        toast({
+          title: "Spending Analysis Complete",
+          description: "Your budget has been updated with your actual spending patterns and saved."
+        });
+      } else {
+        toast({
+          title: "Analysis Warning",
+          description: "Analysis completed but no spending data was returned.",
+          variant: "default"
+        });
       }
+      setIsAnalyzing(false);
     },
     onError: (error) => {
       console.error('Spending analysis error:', error);
