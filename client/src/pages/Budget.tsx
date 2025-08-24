@@ -204,7 +204,7 @@ export default function Budget() {
       console.error('Spending analysis error:', error);
       toast({
         title: "Analysis Failed", 
-        description: "Unable to analyze your spending patterns. Please try again.",
+        description: error?.message || "Unable to analyze your spending patterns. Please try again.",
         variant: "destructive"
       });
       setIsAnalyzing(false);
@@ -213,6 +213,11 @@ export default function Budget() {
 
   // Update budget categories with analyzed spending
   const updateBudgetWithAnalysis = (analysis: SpendingAnalysis[]) => {
+    if (!analysis || !Array.isArray(analysis)) {
+      console.error('Invalid analysis data:', analysis);
+      return;
+    }
+    
     console.log('Updating budget with analysis:', analysis);
     const updatedGroups = defaultBudgetGroups.map(group => ({
       ...group,
