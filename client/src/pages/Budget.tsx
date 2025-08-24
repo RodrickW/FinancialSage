@@ -158,47 +158,63 @@ export default function Budget() {
   // AI mutation to analyze spending and categorize transactions
   const analyzeMutation = useMutation({
     mutationFn: async () => {
-      const currentMonthTransactions = transactions.filter(t => {
-        const transactionDate = new Date(t.date);
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        return transactionDate.getMonth() === currentMonth && 
-               transactionDate.getFullYear() === currentYear;
-      });
-      
-      console.log(`Analyzing ${currentMonthTransactions.length} current month transactions`);
-      
-      const response = await apiRequest("POST", "/api/ai/analyze-spending", {
-        transactions: currentMonthTransactions
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Analysis failed: ${response.status} ${response.statusText} - ${errorText}`);
+      try {
+        const currentMonthTransactions = transactions.filter(t => {
+          const transactionDate = new Date(t.date);
+          const now = new Date();
+          const currentMonth = now.getMonth();
+          const currentYear = now.getFullYear();
+          return transactionDate.getMonth() === currentMonth && 
+                 transactionDate.getFullYear() === currentYear;
+        });
+        
+        console.log(`Analyzing ${currentMonthTransactions.length} current month transactions`);
+        
+        const response = await apiRequest("POST", "/api/ai/analyze-spending", {
+          transactions: currentMonthTransactions
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Analysis failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Analysis result:', result);
+        
+        if (!result || !result.categorizedSpending) {
+          throw new Error('Invalid response format from analysis API');
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('Mutation error:', error);
+        throw error;
       }
-      
-      const result = await response.json();
-      console.log('Analysis result:', result);
-      return result;
     },
     onSuccess: (data) => {
-      if (data && data.categorizedSpending) {
-        updateBudgetWithAnalysis(data.categorizedSpending);
-        // Refresh budget data from database
-        queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
-        toast({
-          title: "Spending Analysis Complete",
-          description: "Your budget has been updated with your actual spending patterns and saved."
-        });
-      } else {
-        toast({
-          title: "Analysis Warning",
-          description: "Analysis completed but no spending data was returned.",
-          variant: "default"
-        });
+      try {
+        console.log('Success callback triggered with data:', data);
+        if (data && data.categorizedSpending) {
+          updateBudgetWithAnalysis(data.categorizedSpending);
+          // Refresh budget data from database
+          queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+          toast({
+            title: "Spending Analysis Complete",
+            description: "Your budget has been updated with your actual spending patterns and saved."
+          });
+        } else {
+          toast({
+            title: "Analysis Warning",
+            description: "Analysis completed but no spending data was returned.",
+            variant: "default"
+          });
+        }
+      } catch (error) {
+        console.error('Error in success callback:', error);
+      } finally {
+        setIsAnalyzing(false);
       }
-      setIsAnalyzing(false);
     },
     onError: (error) => {
       console.error('Spending analysis error:', error);
