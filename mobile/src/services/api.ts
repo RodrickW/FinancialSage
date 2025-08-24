@@ -1,5 +1,5 @@
 const API_BASE_URL = __DEV__ 
-  ? 'http://10.0.2.2:5000' // Android emulator
+  ? 'http://localhost:5000' // For development/testing
   : 'https://mindmymoney.replit.app';
 
 import { AuthService } from './auth';
