@@ -1575,22 +1575,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/spending-trends', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
-      const transactions = await storage.getTransactions(user.id);
+      console.log(`📊 Generating spending trends for user ${user.id}`);
+      
+      // Get more transactions to ensure we have enough data (limit 500)
+      const transactions = await storage.getTransactions(user.id, 500);
+      
+      console.log(`Found ${transactions.length} transactions for spending trends`);
       
       if (transactions.length === 0) {
+        console.log('No transactions found, returning empty data');
         return res.json({
           spendingData: [],
           categories: []
         });
       }
       
-      // Group transactions by month for the last 6 months
+      // Group transactions by month for the last 12 months (increased from 6)
       const now = new Date();
       const monthlyData: Record<string, { income: number; expenses: number; month: string }> = {};
       const categoryTotals: Record<string, number> = {};
       
-      // Generate last 6 months
-      for (let i = 5; i >= 0; i--) {
+      // Generate last 12 months
+      for (let i = 11; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
         const monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -1602,28 +1608,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
       
-      // Process transactions
+      // Process transactions with better logging and precision handling
+      let processedCount = 0;
+      let incomeCount = 0;
+      let expenseCount = 0;
+      
       transactions.forEach(transaction => {
         const transactionDate = new Date(transaction.date);
         const monthKey = transactionDate.toISOString().slice(0, 7);
         
         if (monthlyData[monthKey]) {
+          processedCount++;
+          
           if (transaction.amount > 0) {
-            // Income
-            monthlyData[monthKey].income += transaction.amount;
+            // Income - round to 2 decimal places to avoid floating point issues
+            const roundedAmount = Math.round(transaction.amount * 100) / 100;
+            monthlyData[monthKey].income += roundedAmount;
+            incomeCount++;
           } else {
-            // Expenses
-            monthlyData[monthKey].expenses += Math.abs(transaction.amount);
+            // Expenses - round to 2 decimal places to avoid floating point issues
+            const roundedAmount = Math.round(Math.abs(transaction.amount) * 100) / 100;
+            monthlyData[monthKey].expenses += roundedAmount;
+            expenseCount++;
             
             // Track category spending
             const category = transaction.category || 'Other';
-            categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(transaction.amount);
+            categoryTotals[category] = Math.round(((categoryTotals[category] || 0) + roundedAmount) * 100) / 100;
           }
         }
       });
       
-      // Convert to array format for chart
-      const spendingData = Object.values(monthlyData);
+      console.log(`Processed ${processedCount} transactions: ${incomeCount} income, ${expenseCount} expenses`);
+      
+      // Convert to array format for chart with proper rounding
+      const spendingData = Object.values(monthlyData).map(data => ({
+        ...data,
+        income: Math.round(data.income * 100) / 100,
+        expenses: Math.round(data.expenses * 100) / 100
+      }));
       
       // Create spending categories with icons and colors
       const categoryColors = [
@@ -1651,12 +1673,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categories = Object.entries(categoryTotals)
         .map(([name, amount], index) => ({
           name,
-          amount,
+          amount: Math.round(amount * 100) / 100, // Round category amounts
           color: categoryColors[index % categoryColors.length],
           icon: categoryIcons[index % categoryIcons.length]
         }))
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 8); // Top 8 categories
+      
+      console.log(`Returning ${spendingData.length} months of data and ${categories.length} categories`);
       
       res.json({
         spendingData,
