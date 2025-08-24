@@ -159,7 +159,12 @@ export default function Budget() {
   const analyzeMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/ai/analyze-spending", {
-        transactions: transactions.slice(0, 50) // Last 50 transactions for analysis
+        transactions: transactions.filter(t => {
+          const transactionDate = new Date(t.date);
+          const threeMonthsAgo = new Date();
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+          return transactionDate >= threeMonthsAgo;
+        }) // Use last 3 months for comprehensive analysis
       });
       return response.json();
     },
