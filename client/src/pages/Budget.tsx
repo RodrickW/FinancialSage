@@ -174,19 +174,30 @@ export default function Budget() {
       });
       
       if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Analysis failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('Analysis result:', result);
+      return result;
     },
     onSuccess: (data) => {
-      updateBudgetWithAnalysis(data.categorizedSpending);
-      // Refresh budget data from database
-      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
-      toast({
-        title: "Spending Analysis Complete",
-        description: "Your budget has been updated with your actual spending patterns and saved."
-      });
+      if (data && data.categorizedSpending) {
+        updateBudgetWithAnalysis(data.categorizedSpending);
+        // Refresh budget data from database
+        queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+        toast({
+          title: "Spending Analysis Complete",
+          description: "Your budget has been updated with your actual spending patterns and saved."
+        });
+      } else {
+        toast({
+          title: "Analysis Warning",
+          description: "Analysis completed but no spending data was returned.",
+          variant: "default"
+        });
+      }
       setIsAnalyzing(false);
     },
     onError: (error) => {
