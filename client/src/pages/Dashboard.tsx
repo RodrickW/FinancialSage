@@ -21,7 +21,8 @@ import SavingsGoalCard from '@/components/Dashboard/SavingsGoalCard';
 import IncomeSpendingReport from '@/components/Dashboard/IncomeSpendingReport';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
 import TrialNotificationBanner from '@/components/TrialNotificationBanner';
@@ -32,6 +33,7 @@ import { Link } from 'wouter';
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState('');
   const [addAccountOpen, setAddAccountOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -84,6 +86,36 @@ export default function Dashboard() {
   const { data: savingsGoals, isLoading: savingsGoalsLoading } = useQuery({
     queryKey: ['/api/savings-goals'],
     retry: false,
+  });
+
+  // Transaction refresh mutation
+  const refreshTransactionsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/plaid/refresh-transactions', {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate all financial data to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['/api/financial-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/spending-trends'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+      
+      toast({
+        title: "Transactions Updated!",
+        description: data.newTransactions > 0 
+          ? `Added ${data.newTransactions} new transactions from the last 90 days`
+          : "All transactions are up to date",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sync Failed",
+        description: "Failed to refresh transactions. Please try again later.",
+        variant: "destructive",
+      });
+    },
   });
   
   // Handle connect account
@@ -215,6 +247,21 @@ export default function Dashboard() {
                   </Link>
                 </TrialGate>
                 
+                {/* Refresh Transactions Button */}
+                <TrialGate feature="Transaction Sync" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center border-blue-300 text-blue-600 hover:bg-blue-50 shadow-md btn-animate card-hover"
+                    onClick={() => refreshTransactionsMutation.mutate()}
+                    disabled={refreshTransactionsMutation.isPending}
+                  >
+                    <span className="material-icons text-sm mr-1">
+                      {refreshTransactionsMutation.isPending ? 'sync' : 'refresh'}
+                    </span>
+                    {refreshTransactionsMutation.isPending ? 'Syncing...' : 'Refresh Data'}
+                  </Button>
+                </TrialGate>
+
                 {/* Money Mind Interview Button */}
                 <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                   <Link href="/coach?onboarding=true">

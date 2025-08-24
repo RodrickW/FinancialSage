@@ -1199,11 +1199,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Force refresh recent transactions (last 7 days) for all accounts
+  // Force refresh recent transactions (last 90 days) for all accounts
   app.post('/api/plaid/refresh-transactions', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
-      const { days = 7 } = req.body; // Default to last 7 days for recent data
+      const { days = 90 } = req.body; // Default to last 90 days to catch up on missing transactions
       
       const accounts = await storage.getAccounts(user.id);
       const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
