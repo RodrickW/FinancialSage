@@ -341,8 +341,8 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <SpendingTrends 
-                      spendingData={spendingTrendsData?.spendingData || []}
-                      categories={spendingTrendsData?.categories || []}
+                      spendingData={(spendingTrendsData as any)?.spendingData || []}
+                      categories={(spendingTrendsData as any)?.categories || []}
                     />
                   )}
                 </TrialGate>
@@ -378,7 +378,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ) : (
-                    <SavingsGoalCard goals={savingsGoals || []} />
+                    <SavingsGoalCard goals={(savingsGoals as any) || []} />
                   )}
                 </TrialGate>
               </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Logo } from '@/components/Logo';
@@ -11,9 +11,16 @@ interface DashboardScreenProps {
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  const queryClient = useQueryClient();
+  
   const { data: userProfile, isLoading: userLoading } = useQuery({
     queryKey: ['userProfile'],
     queryFn: () => apiService.getUserProfile(),
+  });
+
+  const { data: financialOverview, isLoading: overviewLoading } = useQuery({
+    queryKey: ['financialOverview'],
+    queryFn: () => apiService.getFinancialOverview(),
   });
 
   const { data: accounts, isLoading: accountsLoading, refetch: refetchAccounts } = useQuery({
@@ -36,12 +43,33 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
     queryFn: () => apiService.getSavingsGoals(),
   });
 
+  // Transaction refresh mutation
+  const refreshTransactionsMutation = useMutation({
+    mutationFn: () => apiService.refreshTransactions(),
+    onSuccess: (data) => {
+      // Invalidate all financial data to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['financialOverview'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['spendingTrends'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      console.log('Transactions refreshed:', data);
+    },
+    onError: (error) => {
+      console.error('Failed to refresh transactions:', error);
+    },
+  });
+
   const onRefresh = async () => {
     await refetchAccounts();
+    refreshTransactionsMutation.mutate();
   };
 
-  const totalBalance = accounts?.reduce((sum: number, account: any) => sum + account.balance, 0) || 0;
+  const totalBalance = financialOverview?.totalBalance || accounts?.reduce((sum: number, account: any) => sum + account.balance, 0) || 0;
   const recentTransactions = transactions?.slice(0, 5) || [];
+  
+  const dailySpending = financialOverview?.dailySpending || 0;
+  const weeklySpending = financialOverview?.weeklySpending || 0;
+  const monthlySpending = financialOverview?.monthlySpending || 0;
 
   return (
     <ScrollView 
@@ -61,6 +89,23 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       <Card style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Total Balance</Text>
         <Text style={styles.balanceAmount}>${totalBalance.toFixed(2)}</Text>
+        
+        {/* Daily/Weekly/Monthly Spending */}
+        <View style={styles.spendingRow}>
+          <View style={styles.spendingItem}>
+            <Text style={styles.spendingLabel}>Today</Text>
+            <Text style={styles.spendingValue}>${dailySpending.toFixed(2)}</Text>
+          </View>
+          <View style={styles.spendingItem}>
+            <Text style={styles.spendingLabel}>This Week</Text>
+            <Text style={styles.spendingValue}>${weeklySpending.toFixed(2)}</Text>
+          </View>
+          <View style={styles.spendingItem}>
+            <Text style={styles.spendingLabel}>This Month</Text>
+            <Text style={styles.spendingValue}>${monthlySpending.toFixed(2)}</Text>
+          </View>
+        </View>
+        
         <Button
           title="Connect Bank Account"
           onPress={() => navigation.navigate('Accounts')}
@@ -72,11 +117,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
         <Button
-          title="Premium Features"
-          onPress={() => navigation.navigate('Subscribe')}
+          title={refreshTransactionsMutation.isPending ? "Refreshing..." : "Refresh Data"}
+          onPress={() => refreshTransactionsMutation.mutate()}
           variant="outline"
           size="sm"
-          style={styles.quickAction}
+          style={[styles.quickAction, { opacity: refreshTransactionsMutation.isPending ? 0.6 : 1 }]}
+          disabled={refreshTransactionsMutation.isPending}
         />
         <Button
           title="AI Coach"
@@ -185,6 +231,25 @@ const styles = StyleSheet.create({
   connectButton: {
     backgroundColor: '#ffffff',
     marginTop: 12,
+  },
+  spendingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  spendingItem: {
+    alignItems: 'center',
+  },
+  spendingLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
+  },
+  spendingValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   quickActions: {
     flexDirection: 'row',

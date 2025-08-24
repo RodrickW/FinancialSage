@@ -32,3 +32,46 @@ export async function apiRequest(
     throw error;
   }
 }
+
+// Financial Overview API
+export const apiService = {
+  getUserProfile: async () => {
+    const response = await apiRequest('GET', '/api/users/profile');
+    return response.json();
+  },
+
+  getFinancialOverview: async () => {
+    const response = await apiRequest('GET', '/api/financial-overview');
+    return response.json();
+  },
+
+  getAccounts: async () => {
+    const response = await apiRequest('GET', '/api/accounts');
+    return response.json();
+  },
+
+  getTransactions: async () => {
+    const response = await apiRequest('GET', '/api/transactions');
+    return response.json();
+  },
+
+  getSpendingTrends: async () => {
+    const response = await apiRequest('GET', '/api/spending-trends');
+    return response.json();
+  },
+
+  getSavingsGoals: async () => {
+    const response = await apiRequest('GET', '/api/savings-goals');
+    return response.json();
+  },
+
+  refreshTransactions: async () => {
+    const response = await apiRequest('POST', '/api/plaid/refresh-transactions', {});
+    return response.json();
+  },
+
+  getSubscriptionStatus: async () => {
+    const response = await apiRequest('GET', '/api/subscription/status');
+    return response.json();
+  },
+};
