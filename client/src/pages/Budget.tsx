@@ -161,10 +161,12 @@ export default function Budget() {
       const response = await apiRequest("POST", "/api/ai/analyze-spending", {
         transactions: transactions.filter(t => {
           const transactionDate = new Date(t.date);
-          const threeMonthsAgo = new Date();
-          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-          return transactionDate >= threeMonthsAgo;
-        }) // Use last 3 months for comprehensive analysis
+          const now = new Date();
+          const currentMonth = now.getMonth();
+          const currentYear = now.getFullYear();
+          return transactionDate.getMonth() === currentMonth && 
+                 transactionDate.getFullYear() === currentYear;
+        }) // Use current month transactions for monthly budget analysis
       });
       return response.json();
     },

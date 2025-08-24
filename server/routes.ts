@@ -2347,25 +2347,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "other_debt": ["loan", "debt", "payment", "finance"]
       };
 
-      // Use AI to categorize transactions
+      // Use AI to categorize transactions for monthly budget analysis
       const prompt = `
-Analyze these financial transactions and categorize them into the following comprehensive budget categories based on Dave Ramsey's EveryDollar system. 
+Analyze these MONTHLY financial transactions and categorize them into budget categories for a comprehensive monthly budget plan.
+
+This is for MONTHLY BUDGET TRACKING - calculate the total spending per category for this month.
 
 Available categories:
 ${Object.keys(budgetCategories).join(', ')}
 
-Transactions to analyze:
-${transactions.map(t => `${t.description || t.merchant_name || 'Unknown'}: $${Math.abs(t.amount)}`).slice(0, 20).join('\n')}
+Current month transactions to analyze:
+${transactions.map(t => `${t.description || t.merchant_name || 'Unknown'}: $${Math.abs(t.amount)} on ${new Date(t.date).toLocaleDateString()}`).join('\n')}
 
-For each transaction, determine the most appropriate category based on the description/merchant. Return a JSON object with this structure:
+For each category where spending occurred, calculate the TOTAL MONTHLY SPENDING amount and return JSON in this exact format:
 {
   "categorizedSpending": [
-    {"categoryId": "groceries", "amount": 150.50},
-    {"categoryId": "gas", "amount": 45.20}
+    {
+      "categoryId": "category_name", 
+      "amount": total_monthly_spent_amount,
+      "description": "Monthly spending summary for this category"
+    }
   ]
 }
 
-Group similar transactions together and sum the amounts for each category. Only include categories that have actual spending.
+IMPORTANT: 
+- This is for MONTHLY BUDGET ANALYSIS - calculate total spending per category for the entire month
+- Only include categories that have actual spending this month
+- Be precise with the math - sum ALL transactions that belong to each category
+- Use the exact category IDs from the list provided
+- The amounts should represent TOTAL MONTHLY SPENDING per category
 `;
 
       const response = await openai.chat.completions.create({
@@ -2373,7 +2383,7 @@ Group similar transactions together and sum the amounts for each category. Only 
         messages: [
           {
             role: "system",
-            content: "You are a financial analyst expert at categorizing transactions into budget categories. Respond only with valid JSON."
+            content: "You are a financial analyst expert at categorizing transactions for MONTHLY BUDGET ANALYSIS. Calculate total monthly spending per category. Respond only with valid JSON."
           },
           {
             role: "user",
