@@ -717,20 +717,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const monthlySpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
-          return t.amount < 0 && 
+          const amount = parseFloat(t.amount.toString());
+          return amount < 0 && 
                  transactionDate.getMonth() === currentMonth &&
                  transactionDate.getFullYear() === currentYear;
         })
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount.toString())), 0);
       
       // Calculate weekly spending (last 7 days) with proper date handling
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const weeklySpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
-          return t.amount < 0 && transactionDate >= weekAgo;
+          const amount = parseFloat(t.amount.toString());
+          return amount < 0 && transactionDate >= weekAgo;
         })
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount.toString())), 0);
       
       // Calculate daily spending (today) with improved date comparison
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -738,11 +740,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dailySpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
-          return t.amount < 0 && 
+          const amount = parseFloat(t.amount.toString());
+          return amount < 0 && 
                  transactionDate >= todayStart && 
                  transactionDate < todayEnd;
         })
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount.toString())), 0);
       
       // Previous month spending
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -787,7 +790,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         monthlySpending: financialOverview.monthlySpending,
         weeklySpending: financialOverview.weeklySpending,
         dailySpending: financialOverview.dailySpending,
-        transactionCount: userTransactions.length
+        transactionCount: userTransactions.length,
+        debugInfo: {
+          currentMonth,
+          currentYear,
+          todayStart: todayStart.toISOString(),
+          weekAgo: weekAgo.toISOString(),
+          negativeTransactions: userTransactions.filter(t => t.amount < 0).length,
+          sampleTransaction: userTransactions.filter(t => t.amount < 0)[0]
+        }
       });
       
       res.json(financialOverview);

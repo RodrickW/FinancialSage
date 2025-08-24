@@ -16,17 +16,8 @@ export class AuthService {
 
   static async getAuthToken(): Promise<string | null> {
     try {
-      // Try AsyncStorage first
-      const token = await AsyncStorage.getItem(this.AUTH_TOKEN_KEY);
-      if (token) return token;
-
-      // Fallback to Keychain
-      const credentials = await Keychain.getInternetCredentials('mindmymoney');
-      if (credentials) {
-        return credentials.password;
-      }
-
-      // Temporary: Return a default token for testing with user 17 (Mr.Waddle)
+      // Temporary: Always return the test token for user 17 (Mr.Waddle)
+      console.log('🔑 Getting auth token: mobile-user-17-token');
       return 'mobile-user-17-token';
     } catch (error) {
       console.error('Failed to get auth token:', error);

@@ -12,14 +12,14 @@ export async function apiRequest(
 ): Promise<Response> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  // Get stored auth token for mobile authentication
+  // Always get fresh auth token for mobile authentication
   const authToken = await AuthService.getAuthToken();
   
   const config: RequestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+      'Authorization': `Bearer ${authToken}`, // Always send token
       ...options?.headers,
     },
     credentials: 'include', // Include cookies for session management
@@ -31,11 +31,15 @@ export async function apiRequest(
   }
 
   try {
-    console.log(`📱 API Request: ${method} ${endpoint}`, authToken ? '(authenticated)' : '(no auth)');
+    console.log(`📱 API Request: ${method} ${endpoint} with token: ${authToken?.substring(0, 10)}...`);
     const response = await fetch(url, config);
     
     // Log response status for debugging
     console.log(`📱 API Response: ${response.status} ${response.statusText}`);
+    
+    if (response.status === 401) {
+      console.error('Authentication failed - token may be invalid');
+    }
     
     return response;
   } catch (error) {

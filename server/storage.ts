@@ -154,12 +154,12 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Transaction operations
-  async getTransactions(userId: number, limit: number = 50): Promise<Transaction[]> {
+  async getTransactions(userId: number, limit: number = 500): Promise<Transaction[]> {
     return await db
       .select()
       .from(transactions)
       .where(eq(transactions.userId, userId))
-      .orderBy(transactions.date)
+      .orderBy(desc(transactions.date)) // Get newest transactions first
       .limit(limit);
   }
   
