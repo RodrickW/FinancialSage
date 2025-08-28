@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Trophy, Star, Sparkles, PiggyBank } from 'lucide-react';
+import { CalendarIcon, Trophy, Star, Sparkles, PiggyBank, Zap, Target, Award, Crown, TrendingUp } from 'lucide-react';
 import AIGoalChat from '@/components/AIGoalChat';
 import { format } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
@@ -84,6 +84,52 @@ export default function Goals() {
   const { data: trackingData } = useQuery<SavingsTrackingData>({
     queryKey: ['/api/savings-tracker']
   });
+  
+  // Calculate user level based on total savings
+  const totalSaved = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const calculateUserLevel = (totalSaved: number) => {
+    const level = Math.floor(totalSaved / 1000) + 1; // Every $1000 = 1 level
+    const nextLevelTarget = level * 1000;
+    const currentLevelProgress = (totalSaved % 1000) / 1000 * 100;
+    return { level, nextLevelTarget, currentLevelProgress };
+  };
+  const { level, nextLevelTarget, currentLevelProgress } = calculateUserLevel(totalSaved);
+  
+  // Achievement system
+  const achievements = [
+    { 
+      id: 'first_goal', 
+      name: 'Goal Setter', 
+      description: 'Created your first savings goal',
+      icon: Target,
+      unlocked: savingsGoals.length > 0,
+      color: 'from-blue-500 to-purple-600'
+    },
+    { 
+      id: 'saver', 
+      name: 'Saver', 
+      description: 'Saved your first $100',
+      icon: PiggyBank,
+      unlocked: totalSaved >= 100,
+      color: 'from-green-500 to-emerald-600'
+    },
+    { 
+      id: 'milestone', 
+      name: 'Milestone Master', 
+      description: 'Reached $1000 in total savings',
+      icon: Trophy,
+      unlocked: totalSaved >= 1000,
+      color: 'from-yellow-500 to-orange-600'
+    },
+    { 
+      id: 'champion', 
+      name: 'Savings Champion', 
+      description: 'Reached $5000 in total savings',
+      icon: Crown,
+      unlocked: totalSaved >= 5000,
+      color: 'from-purple-500 to-pink-600'
+    }
+  ];
   
   // Create mutation for adding goals
   const createGoalMutation = useMutation({
@@ -384,68 +430,137 @@ export default function Goals() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
         {user && <BottomNavigation user={user} />}
         
         <div className="p-6">
-          {/* Page header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-black">Your Savings Goals</h1>
-              <p className="text-gray-600">Track your financial progress</p>
+          {/* Gamified Header with Level System */}
+          <div className="mb-8">
+            <div className="bg-white/20 glass rounded-3xl p-6 backdrop-blur-lg border border-white/30">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center pulse-glow">
+                      <Crown className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold px-2 py-1 rounded-full">
+                      L{level}
+                    </div>
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      Savings Master
+                    </h1>
+                    <p className="text-gray-700 font-medium">Total Saved: ${totalSaved.toLocaleString()}</p>
+                    <div className="mt-2 w-48 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 rounded-full transition-all duration-1000 xp-bar"
+                        style={{ width: `${currentLevelProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      ${((level * 1000) - totalSaved).toLocaleString()} to next level
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  className="mt-6 md:mt-0 btn-gamified px-8 py-3 rounded-2xl font-bold text-lg shadow-lg"
+                  onClick={openAddGoalDialog}
+                >
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Create New Goal
+                </Button>
+              </div>
             </div>
-            
-            <Button 
-              className="mt-4 md:mt-0 bg-black text-white hover:bg-gray-800"
-              onClick={openAddGoalDialog}
-            >
-              <span className="material-icons text-sm mr-1">add</span>
-              Add New Goal
-            </Button>
           </div>
 
-          {/* Year-to-Date and Monthly Savings Totals - Prominent Display */}
+          {/* Achievement Badges */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <Award className="mr-2 h-6 w-6" />
+              Your Achievements
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {achievements.map((achievement, index) => (
+                <div
+                  key={achievement.id}
+                  className={`achievement-badge rounded-2xl p-4 text-white text-center transition-all duration-300 ${
+                    achievement.unlocked 
+                      ? `bg-gradient-to-br ${achievement.color} shadow-lg bounce-in` 
+                      : 'bg-gray-300 opacity-50'
+                  }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <achievement.icon className={`w-8 h-8 mx-auto mb-2 ${achievement.unlocked ? 'text-white' : 'text-gray-500'}`} />
+                  <h4 className="font-bold text-sm">{achievement.name}</h4>
+                  <p className="text-xs opacity-90 mt-1">{achievement.description}</p>
+                  {achievement.unlocked && (
+                    <div className="mt-2">
+                      <span className="bg-white/20 px-2 py-1 rounded-full text-xs font-bold">
+                        UNLOCKED!
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Year-to-Date and Monthly Savings Totals - Gamified Display */}
           {trackingData && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Current Month Total */}
-              <Card className="bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg">
-                <CardHeader className="pb-3">
+              <Card className="gamified-card bg-gradient-to-br from-emerald-400 via-emerald-500 to-green-600 text-white shadow-2xl border-0 rounded-3xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+                <CardHeader className="pb-3 relative">
                   <CardTitle className="text-xl flex items-center">
-                    <PiggyBank className="h-6 w-6 mr-3" />
-                    {trackingData.monthlyStats?.monthName} Total
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                      <PiggyBank className="h-6 w-6" />
+                    </div>
+                    {trackingData.monthlyStats?.monthName} Progress
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="text-3xl font-bold">
+                <CardContent className="relative">
+                  <div className="space-y-3">
+                    <div className="text-4xl font-bold neon-text">
                       ${(trackingData.monthlyStats?.current || 0).toFixed(2)}
                     </div>
-                    <p className="text-green-100 text-sm">
-                      Total saved this month
-                    </p>
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-4 w-4 text-green-200" />
+                      <p className="text-green-100 text-sm font-medium">
+                        Monthly savings streak!
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Year-to-Date Total */}
-              <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-                <CardHeader className="pb-3">
+              <Card className="gamified-card bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white shadow-2xl border-0 rounded-3xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+                <CardHeader className="pb-3 relative">
                   <CardTitle className="text-xl flex items-center">
-                    <Trophy className="h-6 w-6 mr-3" />
-                    {trackingData.yearlyStats?.year} Year-to-Date
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                      <Trophy className="h-6 w-6" />
+                    </div>
+                    {trackingData.yearlyStats?.year} Champion
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="text-3xl font-bold">
+                <CardContent className="relative">
+                  <div className="space-y-3">
+                    <div className="text-4xl font-bold neon-text">
                       ${(trackingData.yearlyStats?.current || 0).toFixed(2)}
                     </div>
-                    <p className="text-blue-100 text-sm">
-                      Total saved this year
-                    </p>
+                    <div className="flex items-center space-x-2">
+                      <Zap className="h-4 w-4 text-yellow-300" />
+                      <p className="text-blue-100 text-sm font-medium">
+                        Year-to-date mastery!
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -87,14 +87,88 @@
     @apply transition-all duration-300 ease-in-out;
   }
 
-  /* Card hover animations */
+  /* Modern card hover animations */
   .card-hover {
-    @apply transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-1;
+    @apply transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02];
   }
 
-  /* Button animations */
+  /* Gamified card styling */
+  .gamified-card {
+    @apply relative transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 hover:shadow-purple-500/20 border-2 border-transparent hover:border-purple-300/50;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Modern button animations */
   .btn-animate {
-    @apply transition-all duration-150 ease-out transform active:scale-95;
+    @apply transition-all duration-200 ease-out transform active:scale-95 hover:scale-105;
+  }
+
+  /* Gamified button */
+  .btn-gamified {
+    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-105 active:scale-95 text-white font-bold;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  }
+  
+  .btn-gamified::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  .btn-gamified:hover::before {
+    left: 100%;
+  }
+
+  /* Achievement badge */
+  .achievement-badge {
+    @apply relative transform transition-all duration-300 hover:scale-110;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 8px 20px rgba(240, 147, 251, 0.4);
+  }
+
+  /* XP bar */
+  .xp-bar {
+    @apply relative overflow-hidden;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    animation: xpFill 2s ease-out;
+  }
+
+  /* Progress ring */
+  .progress-ring {
+    transform-origin: center;
+    animation: progressRing 1.5s ease-out;
+  }
+
+  /* Celebration animation */
+  .celebrate {
+    animation: celebrate 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* XP gain animation */
+  .xp-gain {
+    animation: xpGain 1s ease-out forwards;
+  }
+
+  /* Bounce animation */
+  .bounce-in {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Pulse glow animation */
+  .pulse-glow {
+    animation: pulseGlow 2s infinite;
+  }
+
+  /* Achievement unlock animation */
+  .achievement-unlock {
+    animation: achievementUnlock 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   /* Fade in animation */
@@ -105,6 +179,20 @@
   /* Slide up animation */
   .slide-up {
     animation: slideUp 0.4s ease-out;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Neon glow text */
+  .neon-text {
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.8),
+                 0 0 20px rgba(102, 126, 234, 0.6),
+                 0 0 40px rgba(102, 126, 234, 0.4);
   }
 
   /* Stagger animation for lists */
@@ -176,6 +264,93 @@
   }
   50% {
     opacity: .5;
+  }
+}
+
+/* Gamification keyframes */
+@keyframes celebrate {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-3deg); }
+  50% { transform: scale(1.2) rotate(3deg); }
+  75% { transform: scale(1.1) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes xpGain {
+  0% { 
+    transform: translateY(0px) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 0.8;
+  }
+  100% { 
+    transform: translateY(-40px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes progressRing {
+  0% {
+    stroke-dashoffset: 100;
+    transform: rotate(-90deg);
+  }
+  100% {
+    stroke-dashoffset: 0;
+    transform: rotate(-90deg);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3) translateY(-50px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) translateY(0px);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(0.9) translateY(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+  }
+}
+
+@keyframes achievementUnlock {
+  0% {
+    transform: scale(0) rotate(180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(90deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes xpFill {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
   }
 }
 
