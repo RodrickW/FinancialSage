@@ -76,10 +76,6 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
               <span className="material-icons mr-3">dashboard</span>
               Dashboard
             </a>
-            <a href="/accounts" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
-              <span className="material-icons mr-3">account_balance_wallet</span>
-              Accounts
-            </a>
             <a href="/budget" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">pie_chart</span>
               Budget
