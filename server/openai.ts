@@ -89,7 +89,7 @@ You provide personalized, actionable financial advice based on the user's specif
       ]
     });
 
-    return response.choices[0].message.content;
+    return response.choices[0].message.content || "";
   } catch (error: any) {
     console.error("Error getting financial coaching:", error.message);
     throw new Error("Failed to get financial coaching");
@@ -193,10 +193,104 @@ export async function analyzeCreditScore(creditData: any): Promise<any> {
       response_format: { type: "json_object" }
     });
 
-    return JSON.parse(response.choices[0].message.content);
+    return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error: any) {
     console.error("Error analyzing credit score:", error.message);
     throw new Error("Failed to analyze credit score");
+  }
+}
+
+// AI Goal Creation - Parse user message and extract goal details
+export async function parseGoalCreation(message: string, userData: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, helping users create savings goals through natural conversation. 
+
+Parse the user's message and extract goal information. If the user wants to create a goal, extract:
+- Goal name/purpose (what they're saving for)
+- Target amount (if mentioned, otherwise suggest reasonable amount)
+- Deadline (if mentioned, otherwise suggest reasonable timeline)
+- Current amount (usually $0 for new goals unless specified)
+
+User's financial context: ${JSON.stringify(userData)}
+
+Respond with JSON in this format:
+{
+  "shouldCreateGoal": true/false,
+  "goalDetails": {
+    "name": "Goal name",
+    "targetAmount": number,
+    "currentAmount": number,
+    "deadline": "YYYY-MM-DD",
+    "color": "blue"
+  },
+  "response": "Friendly conversational response explaining what you're creating",
+  "needsMoreInfo": true/false,
+  "followUpQuestion": "What additional info do you need?"
+}
+
+If the message is unclear or you need more information, set needsMoreInfo to true and ask for clarification.`
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error parsing goal creation:", error.message);
+    throw new Error("Failed to parse goal creation request");
+  }
+}
+
+// AI Progress Update - Parse user message and update goal progress
+export async function parseProgressUpdate(message: string, userGoals: any[], userData: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, helping users track progress on their savings goals through natural conversation.
+
+The user has these active goals: ${JSON.stringify(userGoals)}
+
+Parse their message to identify:
+1. Which goal they're updating (match by name/keywords)
+2. How much money they want to add
+3. Provide encouraging response about their progress
+
+Respond with JSON in this format:
+{
+  "shouldUpdateProgress": true/false,
+  "goalId": number or null,
+  "amount": number,
+  "response": "Encouraging response about their progress with specific numbers",
+  "needsMoreInfo": true/false,
+  "followUpQuestion": "What clarification do you need?"
+}
+
+If unclear which goal or amount, set needsMoreInfo to true and ask for clarification.`
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error parsing progress update:", error.message);
+    throw new Error("Failed to parse progress update request");
   }
 }
 
@@ -219,7 +313,7 @@ export async function generateFinancialHealthReport(userData: any): Promise<any>
       response_format: { type: "json_object" }
     });
 
-    return JSON.parse(response.choices[0].message.content);
+    return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error: any) {
     console.error("Error generating financial health report:", error.message);
     throw new Error("Failed to generate financial health report");

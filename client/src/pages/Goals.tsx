@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Trophy, Star, Sparkles, PiggyBank } from 'lucide-react';
+import AIGoalChat from '@/components/AIGoalChat';
 import { format } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -596,33 +597,7 @@ export default function Goals() {
           )}
           
           {/* Money Mind Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm p-6">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-                <span className="text-white text-lg font-bold">MM</span>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind Tips</h3>
-                <p className="text-sm text-neutral-600">Your personal financial advisor</p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-white rounded-lg border border-blue-100">
-                <p className="text-neutral-700">
-                  <span className="font-medium">Savings Tip:</span> To accelerate your Emergency Fund goal, consider automating your savings. 
-                  Setting up a recurring transfer of $300 per week to your savings account could help you reach your goal 3 months earlier.
-                </p>
-              </div>
-              
-              <div className="p-4 bg-white rounded-lg border border-blue-100">
-                <p className="text-neutral-700">
-                  <span className="font-medium">Goal Recommendation:</span> Based on your spending history, you could create a "New Car" 
-                  savings goal. Setting aside just $200 per month could help you build a $7,200 fund over 3 years.
-                </p>
-              </div>
-            </div>
-          </div>
+          <AIGoalChat user={user} />
         </div>
       </main>
       

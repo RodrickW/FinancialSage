@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { User } from "@shared/schema";
-import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget, generateFinancialHealthReport } from "./openai";
+import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget, generateFinancialHealthReport, parseGoalCreation, parseProgressUpdate } from "./openai";
 import OpenAI from "openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { servePlaidSDK } from "./plaid-proxy";
@@ -2982,6 +2982,135 @@ IMPORTANT:
     } catch (error) {
       console.error('Error getting savings tracker:', error);
       res.status(500).json({ message: "Failed to get savings tracker data" });
+    }
+  });
+
+  // AI Goal Creation endpoint
+  app.post('/api/goals/ai-create', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { message } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Get user's financial data for context
+      const userData = {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email
+        },
+        accounts: await storage.getAccountsByUserId(user.id),
+        goals: await storage.getSavingsGoalsByUserId(user.id),
+        recentTransactions: await storage.getTransactionsByUserId(user.id)
+      };
+
+      // Parse user message with AI
+      const aiResponse = await parseGoalCreation(message, userData);
+
+      if (aiResponse.shouldCreateGoal && aiResponse.goalDetails) {
+        // Create the goal in database
+        const goalData = {
+          ...aiResponse.goalDetails,
+          userId: user.id,
+          deadline: new Date(aiResponse.goalDetails.deadline)
+        };
+
+        const newGoal = await storage.createSavingsGoal(goalData);
+        
+        res.json({
+          response: aiResponse.response,
+          goalCreated: true,
+          goal: newGoal
+        });
+      } else if (aiResponse.needsMoreInfo) {
+        res.json({
+          response: aiResponse.followUpQuestion,
+          goalCreated: false,
+          needsMoreInfo: true
+        });
+      } else {
+        res.json({
+          response: aiResponse.response || "I can help you create savings goals! Tell me what you'd like to save for.",
+          goalCreated: false
+        });
+      }
+
+    } catch (error) {
+      console.error('Error with AI goal creation:', error);
+      res.status(500).json({ 
+        error: 'Failed to process goal creation request',
+        response: "I'm having trouble processing that request right now. Please try again or create your goal manually using the 'Add New Goal' button."
+      });
+    }
+  });
+
+  // AI Progress Update endpoint
+  app.post('/api/goals/ai-progress', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { message } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Get user's goals and financial data
+      const userGoals = await storage.getSavingsGoalsByUserId(user.id);
+      const userData = {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email
+        },
+        goals: userGoals
+      };
+
+      // Parse progress update with AI
+      const aiResponse = await parseProgressUpdate(message, userGoals, userData);
+
+      if (aiResponse.shouldUpdateProgress && aiResponse.goalId && aiResponse.amount) {
+        // Find the goal to update
+        const goal = userGoals.find(g => g.id === aiResponse.goalId);
+        
+        if (goal) {
+          const newCurrentAmount = goal.currentAmount + aiResponse.amount;
+          await storage.updateGoalProgress(aiResponse.goalId, aiResponse.amount);
+          
+          res.json({
+            response: aiResponse.response,
+            progressUpdated: true,
+            goalId: aiResponse.goalId,
+            amountAdded: aiResponse.amount,
+            newTotal: newCurrentAmount
+          });
+        } else {
+          res.json({
+            response: "I couldn't find that goal. Please check your goal list and try again.",
+            progressUpdated: false
+          });
+        }
+      } else if (aiResponse.needsMoreInfo) {
+        res.json({
+          response: aiResponse.followUpQuestion,
+          progressUpdated: false,
+          needsMoreInfo: true
+        });
+      } else {
+        res.json({
+          response: aiResponse.response || "I can help you track progress on your savings goals! Tell me how much you've saved recently.",
+          progressUpdated: false
+        });
+      }
+
+    } catch (error) {
+      console.error('Error with AI progress update:', error);
+      res.status(500).json({ 
+        error: 'Failed to process progress update request',
+        response: "I couldn't update your progress right now. Please try again or use the manual 'Add Money' option on your goal cards."
+      });
     }
   });
 
