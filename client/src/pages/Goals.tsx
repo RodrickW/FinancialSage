@@ -526,12 +526,12 @@ export default function Goals() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3">
-                    <div className="text-4xl font-bold neon-text">
+                    <div className="text-4xl font-bold text-white drop-shadow-lg">
                       ${(trackingData.monthlyStats?.current || 0).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-4 w-4 text-green-200" />
-                      <p className="text-green-100 text-sm font-medium">
+                      <TrendingUp className="h-4 w-4 text-white/90" />
+                      <p className="text-white/90 text-sm font-medium">
                         Monthly savings streak!
                       </p>
                     </div>
@@ -552,12 +552,12 @@ export default function Goals() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3">
-                    <div className="text-4xl font-bold neon-text">
+                    <div className="text-4xl font-bold text-white drop-shadow-lg">
                       ${(trackingData.yearlyStats?.current || 0).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Zap className="h-4 w-4 text-yellow-300" />
-                      <p className="text-blue-100 text-sm font-medium">
+                      <p className="text-white/90 text-sm font-medium">
                         Year-to-date mastery!
                       </p>
                     </div>
