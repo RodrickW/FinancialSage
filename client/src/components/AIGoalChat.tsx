@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { MoneyMindLogo } from '@/components/Logo';
 
 interface ChatMessage {
   id: string;
@@ -164,8 +165,8 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
   return (
     <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm p-6">
       <div className="flex items-center mb-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-          <Bot className="text-white w-6 h-6" />
+        <div className="mr-4">
+          <MoneyMindLogo className="w-12 h-12 rounded-full" />
         </div>
         <div>
           <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -188,12 +189,12 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                 message.type === 'user' 
                   ? 'bg-gray-500' 
-                  : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                  : ''
               }`}>
                 {message.type === 'user' ? (
                   <User className="w-4 h-4 text-white" />
                 ) : (
-                  <Bot className="w-4 h-4 text-white" />
+                  <MoneyMindLogo className="w-8 h-8 rounded-full" />
                 )}
               </div>
               <div className={`flex-1 ${message.type === 'user' ? 'text-right' : ''}`}>
@@ -215,8 +216,8 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
           
           {isProcessing && (
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
+              <div className="w-8 h-8">
+                <MoneyMindLogo className="w-8 h-8 rounded-full" />
               </div>
               <div className="flex-1">
                 <div className="inline-block p-3 rounded-lg bg-blue-100 text-gray-800">
