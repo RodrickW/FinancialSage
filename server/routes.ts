@@ -3040,6 +3040,7 @@ IMPORTANT:
 
     } catch (error) {
       console.error('Error with AI goal creation:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ 
         error: 'Failed to process goal creation request',
         response: "I'm having trouble processing that request right now. Please try again or create your goal manually using the 'Add New Goal' button."
@@ -3107,6 +3108,7 @@ IMPORTANT:
 
     } catch (error) {
       console.error('Error with AI progress update:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ 
         error: 'Failed to process progress update request',
         response: "I couldn't update your progress right now. Please try again or use the manual 'Add Money' option on your goal cards."
