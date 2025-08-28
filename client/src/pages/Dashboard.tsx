@@ -4,6 +4,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import FinancialOverview from '@/components/Dashboard/FinancialOverview';
 import SpendingTrends from '@/components/Dashboard/SpendingTrends';
 import RecentTransactions from '@/components/Dashboard/RecentTransactions';
+import AIInsights from '@/components/Dashboard/AIInsights';
 import { 
   FinancialOverviewSkeleton, 
   TransactionsSkeleton, 
@@ -293,6 +294,15 @@ export default function Dashboard() {
           {/* Trial Status Component */}
           {!isDemoMode && <TrialStatus />}
           
+          {/* Proactive AI Insights */}
+          {user && (
+            <div className="mb-6">
+              <TrialGate feature="AI Financial Insights" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
+                <AIInsights user={user} />
+              </TrialGate>
+            </div>
+          )}
+
           {/* Financial Overview Cards */}
           <div data-tour="financial-overview">
             <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>

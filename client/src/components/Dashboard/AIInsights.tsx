@@ -1,128 +1,183 @@
-import { Card } from '@/components/ui/card';
-import { AIInsight, FinancialHealthScore } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { getFinancialCoaching } from '@/lib/queryClient';
+import { Loader2, Brain, TrendingUp, TrendingDown, AlertTriangle, Target, Star } from 'lucide-react';
+import { UserProfile } from '@/types';
 
 interface AIInsightsProps {
-  insights: AIInsight[];
-  healthScore: FinancialHealthScore;
+  user: UserProfile;
 }
 
-export default function AIInsights({ insights, healthScore }: AIInsightsProps) {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleAskQuestion = async () => {
-    if (!question.trim()) return;
-    
-    setIsLoading(true);
-    try {
-      const response = await getFinancialCoaching(question);
-      setAnswer(response);
-    } catch (error) {
-      console.error('Error getting financial coaching:', error);
-      setAnswer('Sorry, I encountered an error while processing your question. Please try again later.');
-    } finally {
-      setIsLoading(false);
+interface AIInsight {
+  type: 'alert' | 'opportunity' | 'achievement' | 'warning';
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  message: string;
+  action: string;
+  icon: 'trending_up' | 'trending_down' | 'savings' | 'warning' | 'celebration';
+}
+
+interface AIInsightsResponse {
+  insights: AIInsight[];
+  summary: string;
+}
+
+export default function AIInsights({ user }: AIInsightsProps) {
+  const { data: aiInsights, isLoading, error } = useQuery<AIInsightsResponse>({
+    queryKey: ['/api/ai/proactive-insights'],
+    retry: false,
+  });
+
+  const getIconForInsight = (iconName: string) => {
+    switch (iconName) {
+      case 'trending_up':
+        return <TrendingUp className="w-5 h-5" />;
+      case 'trending_down':
+        return <TrendingDown className="w-5 h-5" />;
+      case 'warning':
+        return <AlertTriangle className="w-5 h-5" />;
+      case 'celebration':
+        return <Star className="w-5 h-5" />;
+      case 'savings':
+      default:
+        return <Target className="w-5 h-5" />;
     }
   };
-  
+
+  const getColorForType = (type: string, priority: string) => {
+    switch (type) {
+      case 'warning':
+        return priority === 'high' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-orange-50 border-orange-200 text-orange-800';
+      case 'opportunity':
+        return 'bg-blue-50 border-blue-200 text-blue-800';
+      case 'achievement':
+        return 'bg-green-50 border-green-200 text-green-800';
+      case 'alert':
+        return priority === 'high' ? 'bg-purple-50 border-purple-200 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-800';
+      default:
+        return 'bg-gray-50 border-gray-200 text-gray-800';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-teal-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <Brain className="w-4 h-4 text-white" />
+            </div>
+            Money Mind Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
+            <span className="ml-2 text-gray-600">Analyzing your financial data...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !aiInsights?.insights?.length) {
+    return (
+      <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-teal-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <Brain className="w-4 h-4 text-white" />
+            </div>
+            Money Mind Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-gray-600 mb-4">
+              Connect your bank accounts to receive personalized AI insights about your spending patterns and financial opportunities.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-white rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">AI Financial Coach</h3>
-        <span className="material-icons text-primary-500">psychology</span>
-      </div>
-      
-      {/* Financial Health Score */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-sm text-neutral-500">Financial Health Score</p>
-          <p className="text-sm font-semibold">{healthScore.score}/{healthScore.maxScore}</p>
-        </div>
-        <div className="w-full bg-neutral-100 rounded-full h-2.5">
-          <div 
-            className="bg-primary-500 h-2.5 rounded-full transition-all duration-500" 
-            style={{ width: `${(healthScore.score / healthScore.maxScore) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-      
-      {/* AI Recommendation Cards */}
-      {insights.map((insight) => (
-        <div key={insight.id} className={`${insight.color} p-4 rounded-lg mb-4`}>
-          <div className="flex items-start">
-            <span className="material-icons mr-2">{insight.icon}</span>
-            <div>
-              <h4 className="font-medium mb-1">{insight.title}</h4>
-              <p className="text-sm text-neutral-700">{insight.description}</p>
+    <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-teal-200">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <Brain className="w-4 h-4 text-white" />
             </div>
+            <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              Money Mind Insights
+            </span>
           </div>
-        </div>
-      ))}
-      
-      {/* AI Chat Button */}
-      <Button 
-        variant="outline"
-        className="w-full flex items-center justify-center border-primary-500 text-primary-500 hover:bg-primary-50 transition-colors mt-2"
-        onClick={() => setChatOpen(true)}
-      >
-        <span className="material-icons text-sm mr-2">chat</span>
-        Ask Financial Coach
-      </Button>
-      
-      {/* AI Chat Dialog */}
-      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Financial Coach</DialogTitle>
-            <DialogDescription>
-              Ask me anything about your financial situation, budgeting, or investment advice.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="flex items-end gap-2">
-              <Input
-                placeholder="Ask a question..."
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleAskQuestion}
-                disabled={isLoading || !question.trim()}
-              >
-                {isLoading ? 'Thinking...' : 'Ask'}
-              </Button>
-            </div>
-            
-            {answer && (
-              <div className="bg-neutral-50 p-4 rounded-lg">
-                <p className="text-sm whitespace-pre-line">{answer}</p>
+          <Badge variant="secondary" className="bg-white/50 text-teal-700 border-teal-200">
+            {aiInsights.insights.length} insights
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* AI Summary */}
+        {aiInsights.summary && (
+          <div className="mb-6 p-4 bg-white/60 rounded-lg border border-teal-100">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                <span className="text-white text-xs font-bold">MM</span>
               </div>
-            )}
+              <p className="text-gray-700 text-sm leading-relaxed">
+                {aiInsights.summary}
+              </p>
+            </div>
           </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setChatOpen(false);
-                setQuestion('');
-                setAnswer('');
-              }}
+        )}
+
+        {/* AI Insights */}
+        <div className="space-y-3">
+          {aiInsights.insights.map((insight, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-lg border ${getColorForType(insight.type, insight.priority)}`}
             >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 rounded-full ${getColorForType(insight.type, insight.priority)} bg-opacity-20`}>
+                    {getIconForInsight(insight.icon)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-medium text-sm">{insight.title}</h4>
+                      <Badge 
+                        variant="secondary" 
+                        className={`text-xs px-2 py-0 ${
+                          insight.priority === 'high' 
+                            ? 'bg-red-100 text-red-700' 
+                            : insight.priority === 'medium'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {insight.priority}
+                      </Badge>
+                    </div>
+                    <p className="text-sm mb-2 opacity-90">
+                      {insight.message}
+                    </p>
+                    {insight.action && (
+                      <p className="text-xs font-medium">
+                        💡 {insight.action}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 }

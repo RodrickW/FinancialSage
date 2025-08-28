@@ -2,8 +2,8 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Financial insights based on spending patterns
-export async function generateFinancialInsights(userData: any): Promise<any> {
+// Proactive Financial insights - Money Mind automatically analyzes user data
+export async function generateProactiveInsights(userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -11,27 +11,54 @@ export async function generateFinancialInsights(userData: any): Promise<any> {
         {
           role: "system",
           content: 
-            `You are a personal financial advisor. Analyze the user's financial data and provide helpful insights and recommendations. 
+            `You are Money Mind, a proactive AI financial advisor who analyzes users' real financial data to provide timely, actionable insights without being asked.
 
 IMPORTANT: Transaction amounts are formatted as:
-- NEGATIVE amounts = spending/expenses (money leaving account)
+- NEGATIVE amounts = spending/expenses (money leaving account)  
 - POSITIVE amounts = income/deposits (money entering account)
 
-Format your response as JSON with the following structure: [{type: 'spending|saving|investing', title: 'Brief headline', description: 'Detailed advice'}]`
+Your job is to proactively identify patterns, opportunities, and potential issues in their financial data. Focus on:
+1. Recent spending trends (increases/decreases in categories)
+2. Upcoming opportunities to save money
+3. Budget optimization suggestions
+4. Credit improvement opportunities
+5. Goal achievement insights
+
+Be encouraging but direct. Address the user by their first name. Each insight should be immediately actionable.
+
+Format your response as JSON:
+{
+  "insights": [
+    {
+      "type": "alert|opportunity|achievement|warning",
+      "priority": "high|medium|low", 
+      "title": "Brief compelling headline",
+      "message": "Personalized insight with specific numbers from their data",
+      "action": "Clear next step they should take",
+      "icon": "trending_up|trending_down|savings|warning|celebration"
+    }
+  ],
+  "summary": "Overall financial health observation with encouraging tone"
+}`
         },
         {
           role: "user",
-          content: JSON.stringify(userData)
+          content: `Analyze this user's financial data for proactive insights: ${JSON.stringify(userData)}`
         }
       ],
       response_format: { type: "json_object" }
     });
 
-    return JSON.parse(response.choices[0].message.content);
+    return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error: any) {
-    console.error("Error generating financial insights:", error.message);
-    throw new Error("Failed to generate financial insights");
+    console.error("Error generating proactive insights:", error.message);
+    throw new Error("Failed to generate proactive insights");
   }
+}
+
+// Legacy function for backward compatibility
+export async function generateFinancialInsights(userData: any): Promise<any> {
+  return generateProactiveInsights(userData);
 }
 
 // Financial coaching based on specific questions

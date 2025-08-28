@@ -1566,7 +1566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI routes
+  // AI routes - Legacy endpoint with mock data for compatibility
   app.get('/api/ai/insights', requireAccess, async (req, res) => {
     try {
       // In a real app, you would fetch user's financial data and pass it to the AI
@@ -1588,6 +1588,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error generating AI insights:', error);
       res.status(500).json({ message: 'Failed to generate insights' });
+    }
+  });
+
+  // New proactive AI insights endpoint using real user data
+  app.get('/api/ai/proactive-insights', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { generateProactiveInsights } = await import('./openai');
+      
+      // Get comprehensive user financial data
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id, 100); // Last 100 transactions
+      const budgets = await storage.getBudgets(user.id);
+      const savingsGoals = await storage.getSavingsGoals(user.id);
+      const creditScore = await storage.getCreditScore(user.id);
+      
+      // Calculate financial metrics
+      const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+      const totalExpenses = transactions
+        .filter(t => t.amount < 0)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      // Group spending by category
+      const categorySpending: Record<string, number> = {};
+      transactions
+        .filter(t => t.amount < 0)
+        .forEach(t => {
+          const category = t.category || 'Other';
+          if (!categorySpending[category]) {
+            categorySpending[category] = 0;
+          }
+          categorySpending[category] += Math.abs(t.amount);
+        });
+
+      // Calculate recent spending trends (last 30 days vs previous 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+      const recentSpending = transactions
+        .filter(t => t.amount < 0 && new Date(t.date) >= thirtyDaysAgo)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      const previousSpending = transactions
+        .filter(t => t.amount < 0 && new Date(t.date) >= sixtyDaysAgo && new Date(t.date) < thirtyDaysAgo)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+      // Prepare comprehensive data for AI analysis
+      const userData = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        accounts: accounts.map(account => ({
+          type: account.accountType,
+          balance: account.balance,
+          institution: account.institutionName,
+          accountName: account.accountName
+        })),
+        totalBalance,
+        totalExpenses,
+        recentSpending,
+        previousSpending,
+        spendingTrend: previousSpending > 0 ? ((recentSpending - previousSpending) / previousSpending * 100) : 0,
+        transactionCount: transactions.length,
+        spendingByCategory: categorySpending,
+        budgets: budgets.map(b => ({
+          category: b.category,
+          budgetAmount: b.budgetAmount,
+          spent: b.spent,
+          remaining: b.remaining
+        })),
+        savingsGoals: savingsGoals.map(g => ({
+          name: g.name,
+          target: g.targetAmount,
+          current: g.currentAmount,
+          progress: g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0
+        })),
+        creditScore: creditScore ? creditScore.score : null,
+        hasAccounts: accounts.length > 0,
+        hasTransactions: transactions.length > 0,
+        // Add context for better insights
+        accountCount: accounts.length,
+        budgetCount: budgets.length,
+        goalsCount: savingsGoals.length
+      };
+      
+      const insights = await generateProactiveInsights(userData);
+      res.json(insights);
+    } catch (error) {
+      console.error('Error generating proactive AI insights:', error);
+      res.status(500).json({ message: 'Failed to generate proactive insights' });
     }
   });
 
