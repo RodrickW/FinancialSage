@@ -67,8 +67,9 @@ export default function BudgetProgress() {
   const totalSpent = budgetData?.reduce((sum, cat) => sum + cat.spent, 0) || 0;
   const totalRemaining = totalBudget - totalSpent;
 
-  // Get top 3 categories for display
-  const topCategories = budgetData?.slice(0, 3) || [];
+  // Get categories with actual spending only (limit to 3 for dashboard display)
+  const categoriesWithSpending = budgetData?.filter(category => category.spent > 0) || [];
+  const topCategories = categoriesWithSpending.slice(0, 3);
   
   if (budgetLoading) {
     return (
@@ -91,7 +92,7 @@ export default function BudgetProgress() {
         <div className="flex items-center">
           <h3 className="text-lg font-semibold">Budget Progress</h3>
           <span className="ml-2 text-sm text-gray-500">
-            {budgetData?.length || 0} categories
+            {categoriesWithSpending.length || 0} categories with spending
           </span>
         </div>
         <Link href="/budget">
@@ -170,13 +171,21 @@ export default function BudgetProgress() {
             );
           })}
           
-          {budgetData.length > 3 && (
+          {categoriesWithSpending.length > 3 && (
             <Link href="/budget">
               <div className="flex items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                <span className="text-gray-600 mr-2">View all {budgetData.length} categories</span>
+                <span className="text-gray-600 mr-2">View all {categoriesWithSpending.length} categories with spending</span>
                 <ArrowRight className="w-4 h-4 text-gray-400" />
               </div>
             </Link>
+          )}
+          
+          {categoriesWithSpending.length === 0 && budgetData && budgetData.length > 0 && (
+            <div className="text-center py-6">
+              <DollarSign className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No spending in any budget categories yet.</p>
+              <p className="text-gray-400 text-xs mt-1">Connect your bank account or make some purchases to see budget progress.</p>
+            </div>
           )}
         </div>
       ) : (

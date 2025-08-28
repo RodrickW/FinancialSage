@@ -420,13 +420,22 @@ export default function Budget() {
             </div>
           </div>
 
-          {/* Budget Categories */}
+          {/* Budget Categories - Only show categories with actual spending */}
           <div className="space-y-6">
-            {budgetData.map((group, groupIndex) => (
+            {budgetData
+              .map((group) => ({
+                ...group,
+                categories: group.categories.filter(category => category.actualSpent > 0)
+              }))
+              .filter((group) => group.categories.length > 0)
+              .map((group, groupIndex) => (
               <Card key={group.name}>
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-gray-800">
                     {group.name}
+                    <span className="ml-2 text-sm font-normal text-gray-500">
+                      ({group.categories.length} categories with spending)
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
