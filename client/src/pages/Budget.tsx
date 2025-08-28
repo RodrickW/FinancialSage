@@ -346,27 +346,6 @@ export default function Budget() {
               <h1 className="text-2xl font-bold text-black">Budget Tracker</h1>
               <p className="text-gray-600">{currentMonth} • Real Spending Analysis</p>
             </div>
-            
-            <Button 
-              onClick={() => {
-                setIsAnalyzing(true);
-                analyzeMutation.mutate();
-              }}
-              disabled={isAnalyzing || transactions.length === 0}
-              className="mt-4 md:mt-0 bg-blue-600 text-white hover:bg-blue-700"
-            >
-              {isAnalyzing ? (
-                <>
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                  Analyzing Spending...
-                </>
-              ) : (
-                <>
-                  <Target className="w-4 h-4 mr-2" />
-                  Analyze My Spending
-                </>
-              )}
-            </Button>
           </div>
 
           {/* Budget Summary Cards */}
@@ -408,6 +387,37 @@ export default function Budget() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Prominent Analyze Spending Button */}
+          <div className="flex justify-center mb-8">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Ready to see where your money went?</h3>
+              <Button 
+                onClick={() => {
+                  setIsAnalyzing(true);
+                  analyzeMutation.mutate();
+                }}
+                disabled={isAnalyzing || transactions.length === 0}
+                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                size="lg"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
+                    Analyzing Your Spending...
+                  </>
+                ) : (
+                  <>
+                    <Target className="w-5 h-5 mr-3" />
+                    Analyze My Spending
+                  </>
+                )}
+              </Button>
+              {transactions.length === 0 && (
+                <p className="text-sm text-gray-500 mt-2">Connect your bank account to analyze spending</p>
+              )}
+            </div>
           </div>
 
           {/* Budget Categories */}
