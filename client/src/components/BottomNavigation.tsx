@@ -13,7 +13,6 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
   
   const navItems = [
     { name: 'Dashboard', path: '/', icon: 'dashboard' },
-    { name: 'Accounts', path: '/accounts', icon: 'account_balance_wallet' },
     { name: 'Budget', path: '/budget', icon: 'pie_chart' },
     { name: 'Credit', path: '/credit', icon: 'credit_score' },
     { name: 'Goals', path: '/goals', icon: 'savings' },

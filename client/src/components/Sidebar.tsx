@@ -15,7 +15,6 @@ export default function Sidebar({ user }: SidebarProps) {
   
   const navItems = [
     { name: 'Dashboard', path: '/', icon: 'dashboard' },
-    { name: 'Accounts', path: '/accounts', icon: 'account_balance_wallet' },
     { name: 'Budget', path: '/budget', icon: 'pie_chart' },
     { name: 'Goals', path: '/goals', icon: 'flag' },
     { name: 'Credit', path: '/credit', icon: 'credit_score' },
