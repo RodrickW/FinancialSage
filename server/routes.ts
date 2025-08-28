@@ -3002,9 +3002,9 @@ IMPORTANT:
           username: user.username,
           email: user.email
         },
-        accounts: await storage.getAccountsByUserId(user.id),
-        goals: await storage.getSavingsGoalsByUserId(user.id),
-        recentTransactions: await storage.getTransactionsByUserId(user.id)
+        accounts: await storage.getAccounts(user.id),
+        goals: await storage.getSavingsGoals(user.id),
+        recentTransactions: await storage.getTransactions(user.id, 50)
       };
 
       // Parse user message with AI
@@ -3012,8 +3012,10 @@ IMPORTANT:
 
       if (aiResponse.shouldCreateGoal && aiResponse.goalDetails) {
         // Create the goal in database
+        // Remove currentAmount from goalDetails if it exists since it's auto-generated
+        const { currentAmount, ...goalDataWithoutCurrent } = aiResponse.goalDetails;
         const goalData = {
-          ...aiResponse.goalDetails,
+          ...goalDataWithoutCurrent,
           userId: user.id,
           deadline: new Date(aiResponse.goalDetails.deadline)
         };
@@ -3059,7 +3061,7 @@ IMPORTANT:
       }
 
       // Get user's goals and financial data
-      const userGoals = await storage.getSavingsGoalsByUserId(user.id);
+      const userGoals = await storage.getSavingsGoals(user.id);
       const userData = {
         user: {
           id: user.id,
@@ -3078,7 +3080,22 @@ IMPORTANT:
         
         if (goal) {
           const newCurrentAmount = goal.currentAmount + aiResponse.amount;
-          await storage.updateGoalProgress(aiResponse.goalId, aiResponse.amount);
+          // Update the goal's current amount directly in database
+          await storage.updateSavingsGoal(aiResponse.goalId, { 
+            name: goal.name,
+            targetAmount: goal.targetAmount,
+            deadline: goal.deadline,
+            color: goal.color
+          });
+          
+          // Update currentAmount separately using direct database update
+          const { savingsGoals } = await import('@shared/schema');
+          const { eq } = await import('drizzle-orm');
+          const { db } = await import('./db');
+          
+          await db.update(savingsGoals)
+            .set({ currentAmount: newCurrentAmount })
+            .where(eq(savingsGoals.id, aiResponse.goalId));
           
           res.json({
             response: aiResponse.response,
