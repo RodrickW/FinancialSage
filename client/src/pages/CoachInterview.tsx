@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -367,70 +366,54 @@ export default function CoachInterview() {
 
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
-        <div className="lg:flex">
-          <div className="hidden lg:block lg:w-64 lg:fixed lg:inset-y-0">
-            <Sidebar user={user} />
-          </div>
-          
-          <div className="lg:pl-64 flex-1">
-            <TopNav title="Money Mind Interview" />
-            
-            <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <Card className="text-center bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200">
-                <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Check className="w-8 h-8 text-white" />
-                  </div>
-                  
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-4">
-                    Interview Complete! 🎉
-                  </h2>
-                  
-                  <p className="text-gray-600 mb-6">
-                    Thanks for sharing your financial journey with me! I'm now analyzing your responses 
-                    to create a personalized financial plan just for you.
-                  </p>
-                  
-                  <div className="bg-white p-4 rounded-lg mb-6 border border-teal-200">
-                    <div className="flex items-center mb-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-white text-sm font-bold">MM</span>
-                      </div>
-                      <span className="font-medium">Money Mind</span>
-                    </div>
-                    <p className="text-sm text-gray-600 italic">
-                      "Based on your responses, I'm excited to help you {responses['financial-goals']?.[0]?.toLowerCase() || 'achieve your financial goals'}. 
-                      Let's build a plan that works for your {responses['current-situation']?.toLowerCase() || 'unique situation'}!"
-                    </p>
-                  </div>
-                  
-                  <Button onClick={handleFinish} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white">
-                    See My Personalized Plan
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </main>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 pb-16">
+        <BottomNavigation user={user} />
+        <TopNav title="Money Mind Interview" />
         
-        <div className="lg:hidden">
-          <BottomNavigation user={user} />
-        </div>
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="text-center bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="w-8 h-8 text-white" />
+              </div>
+              
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+                Interview Complete! 🎉
+              </h2>
+              
+              <p className="text-gray-600 mb-6">
+                Thanks for sharing your financial journey with me! I'm now analyzing your responses 
+                to create a personalized financial plan just for you.
+              </p>
+              
+              <div className="bg-white p-4 rounded-lg mb-6 border border-teal-200">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm font-bold">MM</span>
+                  </div>
+                  <span className="font-medium">Money Mind</span>
+                </div>
+                <p className="text-sm text-gray-600 italic">
+                  "Based on your responses, I'm excited to help you {responses['financial-goals']?.[0]?.toLowerCase() || 'achieve your financial goals'}. 
+                  Let's build a plan that works for your {responses['current-situation']?.toLowerCase() || 'unique situation'}!"
+                </p>
+              </div>
+              
+              <Button onClick={handleFinish} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white">
+                See My Personalized Plan
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
-      <div className="lg:flex">
-        <div className="hidden lg:block lg:w-64 lg:fixed lg:inset-y-0">
-          <Sidebar user={user} />
-        </div>
-        
-        <div className="lg:pl-64 flex-1">
-          <TopNav title="Money Mind Interview" />
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 pb-16">
+      <BottomNavigation user={user} />
+      <TopNav title="Money Mind Interview" />
           
           <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Progress Header */}
@@ -526,12 +509,6 @@ export default function CoachInterview() {
               </CardContent>
             </Card>
           </main>
-        </div>
-      </div>
-      
-      <div className="lg:hidden">
-        <BottomNavigation user={user} />
-      </div>
     </div>
   );
 }

@@ -8,7 +8,6 @@ import { Check, Loader2 } from "lucide-react";
 import { MoneyMindLogo } from '@/components/Logo';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { useQuery } from '@tanstack/react-query';
 // Removed mock data imports - using real API data only
@@ -113,13 +112,11 @@ export default function Subscribe() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
-      <div className="lg:flex">
-        <div className="hidden lg:block lg:w-64 lg:fixed lg:inset-y-0">
-          <Sidebar user={user} />
-        </div>
+      <div className="flex flex-col">
+        <BottomNavigation user={user} />
+        <TopNav title="Choose Your Plan" isPremium={user?.isPremium || false} />
         
-        <div className="lg:pl-64 flex-1">
-          <TopNav title="Choose Your Plan" isPremium={user?.isPremium || false} />
+        <div className="flex-1">
           
           <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import TopNav from "@/components/TopNav";
-import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { UserProfile } from "@/types";
+import BottomNavigation from "@/components/BottomNavigation";
 import { 
   Dialog, 
   DialogContent, 
@@ -200,11 +200,10 @@ export default function GoalBuilder() {
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
+      <BottomNavigation user={user} />
       <TopNav title="Goal Builder" />
 
-      <div className="flex flex-1 overflow-hidden">
-        {user && <Sidebar user={user} />}
-
+      <div className="flex flex-1 overflow-hidden pb-16">
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="mx-auto max-w-5xl">
             <div className="mb-4 flex items-center gap-2">

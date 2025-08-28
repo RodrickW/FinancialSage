@@ -1,5 +1,4 @@
 import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
@@ -140,9 +139,8 @@ export default function Credit() {
 
   if (assessmentLoading) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
-        <Sidebar user={user} />
-        <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
+      <div className="flex flex-col min-h-screen bg-neutral-50">
+        <main className="flex-1 overflow-x-hidden pb-16">
           <BottomNavigation user={user} />
           <TopNav title="Credit Simulator" />
           <div className="p-6">
@@ -156,10 +154,8 @@ export default function Credit() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-neutral-50">
-      <Sidebar user={user} />
-      
-      <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
+    <div className="flex flex-col min-h-screen bg-neutral-50">
+      <main className="flex-1 overflow-x-hidden pb-16">
         <BottomNavigation user={user} />
         <TopNav title="Credit Simulator" />
         

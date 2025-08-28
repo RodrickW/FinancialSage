@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import FinancialOverview from '@/components/Dashboard/FinancialOverview';
 import SpendingTrends from '@/components/Dashboard/SpendingTrends';
