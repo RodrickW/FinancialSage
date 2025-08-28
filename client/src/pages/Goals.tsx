@@ -526,12 +526,12 @@ export default function Goals() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3">
-                    <div className="text-4xl font-bold text-white drop-shadow-lg">
+                    <div className="text-4xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5)' }}>
                       ${(trackingData.monthlyStats?.current || 0).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-4 w-4 text-white/90" />
-                      <p className="text-white/90 text-sm font-medium">
+                      <TrendingUp className="h-4 w-4 text-white" />
+                      <p className="text-white text-sm font-medium" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
                         Monthly savings streak!
                       </p>
                     </div>
@@ -552,12 +552,12 @@ export default function Goals() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3">
-                    <div className="text-4xl font-bold text-white drop-shadow-lg">
+                    <div className="text-4xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5)' }}>
                       ${(trackingData.yearlyStats?.current || 0).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Zap className="h-4 w-4 text-yellow-300" />
-                      <p className="text-white/90 text-sm font-medium">
+                      <p className="text-white text-sm font-medium" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
                         Year-to-date mastery!
                       </p>
                     </div>
