@@ -514,24 +514,24 @@ export default function Goals() {
           {trackingData && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Current Month Total */}
-              <Card className="gamified-card bg-gradient-to-br from-emerald-400 via-emerald-500 to-green-600 text-white shadow-2xl border-0 rounded-3xl overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+              <Card className="gamified-card bg-green-100 border-2 border-green-300 shadow-2xl rounded-3xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/30 rounded-full -mr-16 -mt-16" />
                 <CardHeader className="pb-3 relative">
-                  <CardTitle className="text-xl flex items-center">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
-                      <PiggyBank className="h-6 w-6" />
+                  <CardTitle className="text-xl flex items-center text-green-800">
+                    <div className="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mr-3">
+                      <PiggyBank className="h-6 w-6 text-green-700" />
                     </div>
                     {trackingData.monthlyStats?.monthName} Progress
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3">
-                    <div className="text-4xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5)' }}>
+                    <div className="text-4xl font-bold text-green-900">
                       ${(trackingData.monthlyStats?.current || 0).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-4 w-4 text-white" />
-                      <p className="text-white text-sm font-medium" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                      <TrendingUp className="h-4 w-4 text-green-700" />
+                      <p className="text-green-800 text-sm font-medium">
                         Monthly savings streak!
                       </p>
                     </div>
@@ -540,24 +540,24 @@ export default function Goals() {
               </Card>
 
               {/* Year-to-Date Total */}
-              <Card className="gamified-card bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white shadow-2xl border-0 rounded-3xl overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+              <Card className="gamified-card bg-blue-100 border-2 border-blue-300 shadow-2xl rounded-3xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 rounded-full -mr-16 -mt-16" />
                 <CardHeader className="pb-3 relative">
-                  <CardTitle className="text-xl flex items-center">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
-                      <Trophy className="h-6 w-6" />
+                  <CardTitle className="text-xl flex items-center text-blue-800">
+                    <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center mr-3">
+                      <Trophy className="h-6 w-6 text-blue-700" />
                     </div>
                     {trackingData.yearlyStats?.year} Champion
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3">
-                    <div className="text-4xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5)' }}>
+                    <div className="text-4xl font-bold text-blue-900">
                       ${(trackingData.yearlyStats?.current || 0).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Zap className="h-4 w-4 text-yellow-300" />
-                      <p className="text-white text-sm font-medium" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                      <Zap className="h-4 w-4 text-yellow-600" />
+                      <p className="text-blue-800 text-sm font-medium">
                         Year-to-date mastery!
                       </p>
                     </div>
