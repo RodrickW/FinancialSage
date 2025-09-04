@@ -11,7 +11,7 @@ import { servePlaidSDK } from "./plaid-proxy";
 import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
 import { registerSubscriptionRoutes } from "./routes-subscription";
 import { pool } from "./db";
-import { generatePasswordResetToken, verifyResetToken, resetPassword } from "./passwordReset";
+import { generatePasswordResetToken, verifyResetToken, resetPassword, sendUsernameReminder } from "./passwordReset";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
@@ -685,6 +685,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(200).json({ message: 'Password reset successful' });
     } catch (error) {
       console.error('Reset password error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Forgot username route
+  app.post('/api/auth/forgot-username', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Please enter a valid email address' });
+      }
+      
+      try {
+        const success = await sendUsernameReminder(email);
+        
+        // Always return the same message for security (don't reveal if user exists)
+        return res.status(200).json({ 
+          message: 'If an account with that email exists, your username(s) have been sent to your email address.' 
+        });
+      } catch (emailError) {
+        console.error('Email sending error:', emailError);
+        // Still return success message to avoid revealing user existence
+        return res.status(200).json({ 
+          message: 'If an account with that email exists, your username(s) have been sent to your email address.' 
+        });
+      }
+    } catch (error) {
+      console.error('Forgot username error:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   });

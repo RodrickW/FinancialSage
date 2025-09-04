@@ -15,6 +15,7 @@ import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
+import ForgotUsername from "@/pages/ForgotUsername";
 import ResetPassword from "@/pages/ResetPassword";
 import Accounts from "@/pages/Accounts";
 import FinancialCoach from "@/pages/Coach";
@@ -119,6 +120,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/forgot-username" component={ForgotUsername} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/demo" component={Dashboard} />
       <Route path="/dashboard">

@@ -254,3 +254,181 @@ This is an automated security email.`,
     throw new Error('Failed to send password reset email');
   }
 }
+
+/**
+ * Send username reminder email to user
+ * @param email User's email address
+ * @returns Success status
+ */
+export async function sendUsernameReminder(email: string): Promise<boolean> {
+  // Find all users with this email
+  const userAccounts = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email));
+  
+  if (userAccounts.length === 0) {
+    return false; // No users found with this email
+  }
+  
+  // Send username reminder email
+  await sendUsernameReminderEmail(email, userAccounts);
+  
+  return true;
+}
+
+/**
+ * Send username reminder email to user
+ * @param email User's email address
+ * @param userAccounts Array of user accounts associated with this email
+ */
+async function sendUsernameReminderEmail(email: string, userAccounts: any[]): Promise<void> {
+  // Use Replit domain temporarily until SSL certificate is fixed for custom domain
+  const replitDomains = process.env.REPLIT_DOMAINS;
+  const domain = replitDomains ? 
+    `https://${replitDomains.split(',')[0]}` : 
+    'http://localhost:5000';
+  const loginUrl = `${domain}/login`;
+  
+  // Get the first user's name for personalization
+  const firstName = userAccounts[0]?.firstName || 'User';
+  
+  // Format username list
+  const usernamesList = userAccounts.map(user => `• ${user.username}`).join('\n');
+  
+  const emailContent = {
+    to: email,
+    from: process.env.FROM_EMAIL!,
+    subject: 'Your Mind My Money Username(s)',
+    // Improved email deliverability headers
+    headers: {
+      'Message-ID': `<${Date.now()}-${Math.random()}@mindmymoney.com>`,
+      'List-Unsubscribe': '<mailto:unsubscribe@mindmymoney.com>',
+      'Precedence': 'bulk',
+      'X-Entity-Ref-ID': `username-reminder-${Date.now()}`,
+    },
+    text: `Hi ${firstName},
+
+You requested a username reminder for your Mind My Money account.
+
+Your username${userAccounts.length > 1 ? 's' : ''}:
+${usernamesList}
+
+You can now login using any of these usernames at:
+${loginUrl}
+
+If you didn't request this username reminder, please ignore this email.
+
+Best regards,
+The Mind My Money Team
+
+---
+Mind My Money - Personal Finance Management
+This is an automated security email.`,
+    html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Username - Mind My Money</title>
+      <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+      <![endif]-->
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 20px 0;">
+            <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <h1 style="color: white; margin: 0; font-size: 28px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Mind My Money</h1>
+                  <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Username Reminder</p>
+                </td>
+              </tr>
+              
+              <!-- Content -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${firstName},</h2>
+                  
+                  <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    You requested a username reminder for your Mind My Money account. Here ${userAccounts.length > 1 ? 'are your usernames' : 'is your username'}:
+                  </p>
+                  
+                  <!-- Username List -->
+                  <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;">
+                    ${userAccounts.map(user => `
+                      <div style="background: white; border-radius: 6px; padding: 12px 16px; margin: 8px 0; border-left: 4px solid #10b981;">
+                        <p style="margin: 0; font-family: 'Monaco', 'Courier New', monospace; font-size: 16px; font-weight: 600; color: #1f2937;">
+                          ${user.username}
+                        </p>
+                      </div>
+                    `).join('')}
+                  </div>
+                  
+                  <!-- CTA Button -->
+                  <table role="presentation" style="margin: 30px auto; text-align: center;">
+                    <tr>
+                      <td style="text-align: center;">
+                        <a href="${loginUrl}" 
+                           style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                  color: white; 
+                                  padding: 16px 32px; 
+                                  text-decoration: none; 
+                                  border-radius: 8px; 
+                                  font-weight: 600;
+                                  font-size: 16px;
+                                  display: inline-block;
+                                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                                  text-align: center;
+                                  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
+                          Login Now
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;">
+                  
+                  <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    If you didn't request this username reminder, please ignore this email. Your account remains secure.
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background: #f9fafb; padding: 30px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    Best regards,<br>
+                    <strong>The Mind My Money Team</strong>
+                  </p>
+                  <p style="color: #9ca3af; font-size: 12px; margin: 16px 0 0 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                    Mind My Money - Personal Finance Management<br>
+                    This is an automated security email.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    `
+  };
+
+  const success = await sendEmail(emailContent);
+  if (!success) {
+    throw new Error('Failed to send username reminder email');
+  }
+}
