@@ -17,8 +17,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
-// Define the Goal type to match API response
-interface Goal {
+// Define the Goal types to match API response
+interface SavingsGoal {
   id: number;
   name: string;
   currentAmount: number;
@@ -26,7 +26,23 @@ interface Goal {
   deadline?: string;
   color: string;
   progress: number;
+  type: 'savings';
 }
+
+interface DebtGoal {
+  id: number;
+  name: string;
+  currentAmount: number;
+  originalAmount: number;
+  targetDate?: string;
+  interestRate?: number;
+  minimumPayment?: number;
+  color: string;
+  progress: number;
+  type: 'debt';
+}
+
+type Goal = SavingsGoal | DebtGoal;
 
 // Define tracking data interface
 interface SavingsTrackingData {
@@ -75,58 +91,70 @@ export default function Goals() {
   // New users should have access by default (don't show trial gates on first login)
   const hasDefaultAccess = user && (!(user as any)?.hasSeenPaywall);
   
-  // Fetch real savings goals from API
-  const { data: savingsGoals = [] } = useQuery<Goal[]>({
+  // Fetch both savings and debt goals from API
+  const { data: savingsGoalsData = [] } = useQuery<SavingsGoal[]>({
     queryKey: ['/api/savings-goals'],
   });
+  
+  const { data: debtGoalsData = [] } = useQuery<DebtGoal[]>({
+    queryKey: ['/api/debt-goals'],
+  });
+  
+  // Combine and type both goal types
+  const savingsGoals: SavingsGoal[] = savingsGoalsData.map(goal => ({ ...goal, type: 'savings' as const }));
+  const debtGoals: DebtGoal[] = debtGoalsData.map(goal => ({ ...goal, type: 'debt' as const }));
+  const allGoals: Goal[] = [...savingsGoals, ...debtGoals];
   
   // Fetch savings tracking data
   const { data: trackingData } = useQuery<SavingsTrackingData>({
     queryKey: ['/api/savings-tracker']
   });
   
-  // Calculate user level based on total savings
+  // Calculate user level based on total savings and debt payoff progress
   const totalSaved = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const calculateUserLevel = (totalSaved: number) => {
-    const level = Math.floor(totalSaved / 1000) + 1; // Every $1000 = 1 level
+  const totalDebtPaidOff = debtGoals.reduce((sum, goal) => sum + (goal.originalAmount - goal.currentAmount), 0);
+  const totalProgress = totalSaved + totalDebtPaidOff;
+  
+  const calculateUserLevel = (totalProgress: number) => {
+    const level = Math.floor(totalProgress / 1000) + 1; // Every $1000 = 1 level
     const nextLevelTarget = level * 1000;
-    const currentLevelProgress = (totalSaved % 1000) / 1000 * 100;
+    const currentLevelProgress = (totalProgress % 1000) / 1000 * 100;
     return { level, nextLevelTarget, currentLevelProgress };
   };
-  const { level, nextLevelTarget, currentLevelProgress } = calculateUserLevel(totalSaved);
+  const { level, nextLevelTarget, currentLevelProgress } = calculateUserLevel(totalProgress);
   
   // Achievement system
   const achievements = [
     { 
       id: 'first_goal', 
       name: 'Goal Setter', 
-      description: 'Created your first savings goal',
+      description: 'Created your first financial goal',
       icon: Target,
-      unlocked: savingsGoals.length > 0,
+      unlocked: allGoals.length > 0,
       color: 'from-blue-500 to-purple-600'
     },
     { 
-      id: 'saver', 
-      name: 'Saver', 
-      description: 'Saved your first $100',
+      id: 'progress_maker', 
+      name: 'Progress Maker', 
+      description: 'Made $100 in financial progress',
       icon: PiggyBank,
-      unlocked: totalSaved >= 100,
+      unlocked: totalProgress >= 100,
       color: 'from-green-500 to-emerald-600'
     },
     { 
       id: 'milestone', 
       name: 'Milestone Master', 
-      description: 'Reached $1000 in total savings',
+      description: 'Reached $1000 in total financial progress',
       icon: Trophy,
-      unlocked: totalSaved >= 1000,
+      unlocked: totalProgress >= 1000,
       color: 'from-yellow-500 to-orange-600'
     },
     { 
       id: 'champion', 
-      name: 'Savings Champion', 
-      description: 'Reached $5000 in total savings',
+      name: 'Financial Champion', 
+      description: 'Reached $5000 in total financial progress',
       icon: Crown,
-      unlocked: totalSaved >= 5000,
+      unlocked: totalProgress >= 5000,
       color: 'from-purple-500 to-pink-600'
     }
   ];
@@ -217,21 +245,42 @@ export default function Goals() {
   const openEditGoalDialog = (goal: Goal) => {
     setSelectedGoal(goal);
     setGoalName(goal.name);
-    setTargetAmount(goal.targetAmount.toString());
-    setCurrentAmount(goal.currentAmount.toString());
-    setSelectedColor(goal.color);
-    // Parse deadline string to Date object for the calendar
-    try {
-      if (goal.deadline) {
-        // Handle different date formats
-        const dateObj = new Date(goal.deadline);
-        if (!isNaN(dateObj.getTime())) {
-          setSelectedDate(dateObj);
+    
+    // Handle different goal types
+    if (goal.type === 'savings') {
+      setTargetAmount(goal.targetAmount.toString());
+      setCurrentAmount(goal.currentAmount.toString());
+      setSelectedColor(goal.color);
+      // Parse deadline string to Date object for the calendar
+      try {
+        if (goal.deadline) {
+          // Handle different date formats
+          const dateObj = new Date(goal.deadline);
+          if (!isNaN(dateObj.getTime())) {
+            setSelectedDate(dateObj);
+          }
         }
+      } catch (e) {
+        console.error("Error parsing date:", e);
       }
-    } catch (e) {
-      console.error("Error parsing date:", e);
+    } else if (goal.type === 'debt') {
+      setTargetAmount(goal.originalAmount.toString());
+      setCurrentAmount(goal.currentAmount.toString());
+      setSelectedColor(goal.color);
+      // Parse targetDate string to Date object for the calendar
+      try {
+        if (goal.targetDate) {
+          // Handle different date formats
+          const dateObj = new Date(goal.targetDate);
+          if (!isNaN(dateObj.getTime())) {
+            setSelectedDate(dateObj);
+          }
+        }
+      } catch (e) {
+        console.error("Error parsing date:", e);
+      }
     }
+    
     setIsEditDialogOpen(true);
   };
   
@@ -599,10 +648,18 @@ export default function Goals() {
 
           
           {/* Goals Grid */}
-          {savingsGoals.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-              {savingsGoals.map((goal: any) => (
-                <div key={goal.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
+          {allGoals.length > 0 ? (
+            <div className="space-y-6 mb-6">
+              {/* Savings Goals Section */}
+              {savingsGoals.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                    <PiggyBank className="h-6 w-6 mr-2 text-green-600" />
+                    Savings Goals
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {savingsGoals.map((goal: SavingsGoal) => (
+                      <div key={goal.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-lg font-medium text-black">{goal.name}</h3>
                     <span className="inline-block bg-black text-white px-2 py-0.5 rounded-full text-sm font-medium">
@@ -688,6 +745,109 @@ export default function Goals() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+              
+              {/* Debt Goals Section */}
+              {debtGoals.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                    <span className="text-red-600 mr-2">💳</span>
+                    Debt Payoff Goals
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {debtGoals.map((goal: DebtGoal) => (
+                      <div key={goal.id} className="bg-white border border-red-200 p-5 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-lg font-medium text-black">{goal.name}</h3>
+                          <span className="inline-block bg-red-600 text-white px-2 py-0.5 rounded-full text-sm font-medium">
+                            {goal.progress}% paid off
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-3 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Original Debt</span>
+                            <span className="font-medium text-black">${goal.originalAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Remaining</span>
+                            <span className="font-medium text-red-600">${goal.currentAmount.toLocaleString()}</span>
+                          </div>
+                          {goal.targetDate && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Target Date</span>
+                              <span className="font-medium text-black">{goal.targetDate}</span>
+                            </div>
+                          )}
+                          {goal.interestRate && goal.interestRate > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Interest Rate</span>
+                              <span className="font-medium text-black">{goal.interestRate}%</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-neutral-500">Progress</span>
+                            <span className="font-medium">${(goal.originalAmount - goal.currentAmount).toLocaleString()} of ${goal.originalAmount.toLocaleString()} paid off</span>
+                          </div>
+                          <div className="h-2 w-full bg-gray-200 rounded-full">
+                            <div
+                              className="h-2 rounded-full bg-red-500"
+                              style={{ width: `${goal.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Quick Make Payment Section */}
+                        <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-100">
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="number"
+                              placeholder="Payment amount"
+                              value={addAmounts[goal.id] || ''}
+                              onChange={(e) => updateAddAmount(goal.id, e.target.value)}
+                              className="flex-1 text-sm"
+                              min="0"
+                              step="0.01"
+                            />
+                            <Button 
+                              size="sm"
+                              onClick={() => addMoneyToGoal(goal.id)}
+                              disabled={addMoneyMutation.isPending}
+                              className="bg-red-600 hover:bg-red-700 text-white px-4"
+                            >
+                              {addMoneyMutation.isPending ? 'Processing...' : 'Make Payment'}
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4 flex justify-between">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openEditGoalDialog(goal)}
+                            className="px-3 py-1"
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openDeleteGoalDialog(goal)}
+                            className="px-3 py-1 text-red-500 border-red-200 hover:bg-red-50"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             // Empty state when no goals exist
@@ -938,12 +1098,25 @@ export default function Goals() {
             <div className="py-4">
               <div className="p-4 bg-red-50 border border-red-100 rounded-md mb-4">
                 <h4 className="font-medium">{selectedGoal.name}</h4>
-                <p className="text-sm text-neutral-600">
-                  Target: ${selectedGoal.targetAmount.toLocaleString()}
-                </p>
-                <p className="text-sm text-neutral-600">
-                  Current progress: ${selectedGoal.currentAmount.toLocaleString()} ({selectedGoal.progress}%)
-                </p>
+                {selectedGoal.type === 'savings' ? (
+                  <>
+                    <p className="text-sm text-neutral-600">
+                      Target: ${selectedGoal.targetAmount.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-neutral-600">
+                      Current progress: ${selectedGoal.currentAmount.toLocaleString()} ({selectedGoal.progress}%)
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-neutral-600">
+                      Original debt: ${selectedGoal.originalAmount.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-neutral-600">
+                      Remaining balance: ${selectedGoal.currentAmount.toLocaleString()} ({selectedGoal.progress}% paid off)
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           )}
