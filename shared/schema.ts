@@ -106,6 +106,19 @@ export const savingsGoals = pgTable("savings_goals", {
   icon: text("icon"),
 });
 
+export const debtGoals = pgTable("debt_goals", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  originalAmount: doublePrecision("original_amount").notNull(),
+  currentAmount: doublePrecision("current_amount").notNull(),
+  targetDate: timestamp("target_date"),
+  interestRate: doublePrecision("interest_rate"),
+  minimumPayment: doublePrecision("minimum_payment"),
+  color: text("color").notNull().default("red"),
+  icon: text("icon"),
+});
+
 // Feedback schema for user feedback collection
 export const feedback = pgTable("feedback", {
   id: serial("id").primaryKey(),
@@ -161,6 +174,7 @@ export const insertBudgetSchema = createInsertSchema(budgets).omit({ id: true })
 export const insertInsightSchema = createInsertSchema(insights).omit({ id: true, createdAt: true, isRead: true });
 export const insertCreditScoreSchema = createInsertSchema(creditScores).omit({ id: true, reportDate: true });
 export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({ id: true, currentAmount: true });
+export const insertDebtGoalSchema = createInsertSchema(debtGoals).omit({ id: true, userId: true });
 export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCreditAssessmentSchema = createInsertSchema(creditAssessments).omit({ id: true, createdAt: true, updatedAt: true });
@@ -186,6 +200,9 @@ export type InsertCreditScore = z.infer<typeof insertCreditScoreSchema>;
 
 export type SavingsGoal = typeof savingsGoals.$inferSelect;
 export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
+
+export type DebtGoal = typeof debtGoals.$inferSelect;
+export type InsertDebtGoal = z.infer<typeof insertDebtGoalSchema>;
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;

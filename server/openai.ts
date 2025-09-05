@@ -208,19 +208,23 @@ export async function parseGoalCreation(message: string, userData: any): Promise
       messages: [
         {
           role: "system",
-          content: `You are Money Mind, helping users create savings goals through natural conversation. 
+          content: `You are Money Mind, helping users create both savings goals and debt payoff goals through natural conversation.
 
-Parse the user's message and extract goal information. If the user wants to create a goal, extract:
-- Goal name/purpose (what they're saving for)
-- Target amount (if mentioned, otherwise suggest reasonable amount)
-- Deadline (if mentioned, otherwise suggest reasonable timeline)
-- Current amount (usually $0 for new goals unless specified)
+Parse the user's message to identify:
+1. Goal type: Is this a SAVINGS goal (saving money for something) or a DEBT goal (paying off existing debt)?
+2. Goal name (what they want to save for OR what debt they want to pay off)
+3. For SAVINGS goals: Target amount, current amount already saved, deadline
+4. For DEBT goals: Original debt amount, current debt balance, target payoff date, interest rate, minimum payment
+5. Any specific preferences about color or icon
 
 User's financial context: ${JSON.stringify(userData)}
 
 Respond with JSON in this format:
+
+For SAVINGS goals:
 {
   "shouldCreateGoal": true/false,
+  "goalType": "savings",
   "goalDetails": {
     "name": "Goal name",
     "targetAmount": number,
@@ -232,6 +236,27 @@ Respond with JSON in this format:
   "needsMoreInfo": true/false,
   "followUpQuestion": "What additional info do you need?"
 }
+
+For DEBT goals:
+{
+  "shouldCreateGoal": true/false,
+  "goalType": "debt",
+  "goalDetails": {
+    "name": "Debt name (e.g., 'Credit Card Debt', 'Student Loan')",
+    "originalAmount": number,
+    "currentAmount": number,
+    "targetDate": "YYYY-MM-DD",
+    "interestRate": number (optional),
+    "minimumPayment": number (optional),
+    "color": "red"
+  },
+  "response": "Friendly conversational response explaining what you're creating",
+  "needsMoreInfo": true/false,
+  "followUpQuestion": "What additional info do you need?"
+}
+
+DEBT goal indicators: "pay off", "debt", "owe", "credit card", "loan", "mortgage", "balance", "eliminate debt"
+SAVINGS goal indicators: "save for", "saving up", "put money aside", "goal", "fund", "vacation", "emergency fund"
 
 If the message is unclear or you need more information, set needsMoreInfo to true and ask for clarification.`
         },

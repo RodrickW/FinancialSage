@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, feedback, savingsTracker, creditAssessments } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -48,6 +48,12 @@ export interface IStorage {
   createSavingsGoal(savingsGoal: InsertSavingsGoal): Promise<SavingsGoal>;
   updateSavingsGoal(id: number, data: Partial<InsertSavingsGoal>): Promise<SavingsGoal | undefined>;
   deleteSavingsGoal(id: number, userId: number): Promise<void>;
+
+  // Debt goal operations
+  getDebtGoals(userId: number): Promise<DebtGoal[]>;
+  createDebtGoal(debtGoal: InsertDebtGoal): Promise<DebtGoal>;
+  updateDebtGoal(id: number, data: Partial<InsertDebtGoal>): Promise<DebtGoal | undefined>;
+  deleteDebtGoal(id: number, userId: number): Promise<void>;
   
   // Feedback operations
   getFeedback(): Promise<Feedback[]>;
@@ -325,6 +331,44 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(savingsGoals)
       .where(and(eq(savingsGoals.id, id), eq(savingsGoals.userId, userId)));
+  }
+
+  // Debt Goal methods
+  async getDebtGoals(userId: number): Promise<DebtGoal[]> {
+    return await db.select().from(debtGoals).where(eq(debtGoals.userId, userId));
+  }
+  
+  async createDebtGoal(debtGoal: InsertDebtGoal): Promise<DebtGoal> {
+    const [newDebtGoal] = await db
+      .insert(debtGoals)
+      .values({
+        userId: debtGoal.userId,
+        name: debtGoal.name,
+        originalAmount: debtGoal.originalAmount,
+        currentAmount: debtGoal.currentAmount,
+        targetDate: debtGoal.targetDate,
+        interestRate: debtGoal.interestRate,
+        minimumPayment: debtGoal.minimumPayment,
+        color: debtGoal.color,
+        icon: debtGoal.icon
+      })
+      .returning();
+    return newDebtGoal;
+  }
+  
+  async updateDebtGoal(id: number, data: Partial<InsertDebtGoal>): Promise<DebtGoal | undefined> {
+    const [updatedDebtGoal] = await db
+      .update(debtGoals)
+      .set(data)
+      .where(eq(debtGoals.id, id))
+      .returning();
+    return updatedDebtGoal;
+  }
+  
+  async deleteDebtGoal(id: number, userId: number): Promise<void> {
+    await db
+      .delete(debtGoals)
+      .where(and(eq(debtGoals.id, id), eq(debtGoals.userId, userId)));
   }
 
   // Feedback operations

@@ -3020,6 +3020,158 @@ IMPORTANT:
     }
   });
 
+  // ============== DEBT GOALS ROUTES ==============
+
+  // Get debt goals
+  app.get("/api/debt-goals", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const debtGoals = await storage.getDebtGoals(user.id);
+      
+      // Transform data to match the expected interface for the component
+      const formattedGoals = debtGoals.map((goal) => ({
+        id: goal.id,
+        name: goal.name,
+        currentAmount: goal.currentAmount || 0,
+        originalAmount: goal.originalAmount || 0,
+        targetDate: goal.targetDate ? new Date(goal.targetDate).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No target date',
+        interestRate: goal.interestRate || 0,
+        minimumPayment: goal.minimumPayment || 0,
+        color: goal.color || 'red',
+        progress: goal.originalAmount > 0 ? Math.round(((goal.originalAmount - goal.currentAmount) / goal.originalAmount) * 100) : 0
+      }));
+      
+      res.json(formattedGoals);
+    } catch (error) {
+      console.error("Error fetching debt goals:", error);
+      res.status(500).json({ message: "Failed to fetch debt goals" });
+    }
+  });
+
+  // Create debt goal
+  app.post("/api/debt-goals", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { name, originalAmount, currentAmount, targetDate, interestRate, minimumPayment, color } = req.body;
+      
+      // Validate required fields
+      if (!name || !originalAmount) {
+        return res.status(400).json({ message: "Name and original amount are required" });
+      }
+      
+      const goalData = {
+        userId: user.id,
+        name,
+        originalAmount: parseFloat(originalAmount),
+        currentAmount: parseFloat(currentAmount || originalAmount), // Default to original amount if not provided
+        targetDate: targetDate ? new Date(targetDate) : null,
+        interestRate: parseFloat(interestRate || '0'),
+        minimumPayment: parseFloat(minimumPayment || '0'),
+        color: color || 'red'
+      };
+      
+      const newGoal = await storage.createDebtGoal(goalData);
+      
+      res.status(201).json({
+        id: newGoal.id,
+        name: newGoal.name,
+        currentAmount: newGoal.currentAmount || 0,
+        originalAmount: newGoal.originalAmount || 0,
+        targetDate: newGoal.targetDate ? new Date(newGoal.targetDate).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No target date',
+        interestRate: newGoal.interestRate || 0,
+        minimumPayment: newGoal.minimumPayment || 0,
+        color: newGoal.color || 'red',
+        progress: newGoal.originalAmount > 0 ? Math.round(((newGoal.originalAmount - newGoal.currentAmount) / newGoal.originalAmount) * 100) : 0
+      });
+    } catch (error) {
+      console.error("Error creating debt goal:", error);
+      res.status(500).json({ message: "Failed to create debt goal" });
+    }
+  });
+
+  // Update debt goal (subtract payment)
+  app.put("/api/debt-goals/:id/payment", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const goalId = parseInt(req.params.id);
+      const { amount } = req.body;
+      
+      if (!goalId || isNaN(goalId)) {
+        return res.status(400).json({ message: "Invalid goal ID" });
+      }
+      
+      if (!amount || parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Amount must be greater than 0" });
+      }
+      
+      // Get current goal to calculate new amount
+      const goals = await storage.getDebtGoals(user.id);
+      const currentGoal = goals.find(g => g.id === goalId);
+      
+      if (!currentGoal) {
+        return res.status(404).json({ message: "Debt goal not found" });
+      }
+      
+      const newCurrentAmount = Math.max(0, currentGoal.currentAmount - parseFloat(amount));
+      
+      const updatedGoal = await storage.updateDebtGoal(goalId, {
+        currentAmount: newCurrentAmount
+      });
+      
+      if (!updatedGoal) {
+        return res.status(404).json({ message: "Failed to update debt goal" });
+      }
+      
+      res.json({
+        id: updatedGoal.id,
+        name: updatedGoal.name,
+        currentAmount: updatedGoal.currentAmount || 0,
+        originalAmount: updatedGoal.originalAmount || 0,
+        targetDate: updatedGoal.targetDate ? new Date(updatedGoal.targetDate).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        }) : 'No target date',
+        interestRate: updatedGoal.interestRate || 0,
+        minimumPayment: updatedGoal.minimumPayment || 0,
+        color: updatedGoal.color || 'red',
+        progress: updatedGoal.originalAmount > 0 ? Math.round(((updatedGoal.originalAmount - updatedGoal.currentAmount) / updatedGoal.originalAmount) * 100) : 0
+      });
+    } catch (error) {
+      console.error("Error making debt payment:", error);
+      res.status(500).json({ message: "Failed to make debt payment" });
+    }
+  });
+
+  // Delete debt goal endpoint
+  app.delete('/api/debt-goals/:id', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const goalId = parseInt(req.params.id);
+      
+      if (!goalId || isNaN(goalId)) {
+        return res.status(400).json({ error: 'Invalid goal ID' });
+      }
+      
+      // Delete the goal for this user
+      await storage.deleteDebtGoal(goalId, user.id);
+      
+      res.json({ message: 'Debt goal deleted successfully' });
+      
+    } catch (error) {
+      console.error('Error deleting debt goal:', error);
+      res.status(500).json({ message: "Failed to delete debt goal" });
+    }
+  });
+
   // AI Goal Creation endpoint
   app.post('/api/goals/ai-create', requireAccess, async (req, res) => {
     try {
@@ -3046,22 +3198,46 @@ IMPORTANT:
       const aiResponse = await parseGoalCreation(message, userData);
 
       if (aiResponse.shouldCreateGoal && aiResponse.goalDetails) {
-        // Create the goal in database
-        // Remove currentAmount from goalDetails if it exists since it's auto-generated
-        const { currentAmount, ...goalDataWithoutCurrent } = aiResponse.goalDetails;
-        const goalData = {
-          ...goalDataWithoutCurrent,
-          userId: user.id,
-          deadline: new Date(aiResponse.goalDetails.deadline)
-        };
+        // Check if it's a debt goal or savings goal
+        if (aiResponse.goalType === 'debt') {
+          // Create debt goal
+          const goalData = {
+            userId: user.id,
+            name: aiResponse.goalDetails.name,
+            originalAmount: aiResponse.goalDetails.originalAmount || 0,
+            currentAmount: aiResponse.goalDetails.currentAmount || aiResponse.goalDetails.originalAmount || 0,
+            targetDate: aiResponse.goalDetails.targetDate ? new Date(aiResponse.goalDetails.targetDate) : null,
+            interestRate: aiResponse.goalDetails.interestRate || 0,
+            minimumPayment: aiResponse.goalDetails.minimumPayment || 0,
+            color: aiResponse.goalDetails.color || 'red'
+          };
 
-        const newGoal = await storage.createSavingsGoal(goalData);
-        
-        res.json({
-          response: aiResponse.response,
-          goalCreated: true,
-          goal: newGoal
-        });
+          const newDebtGoal = await storage.createDebtGoal(goalData);
+
+          res.json({
+            response: aiResponse.response,
+            goalCreated: true,
+            goalType: 'debt',
+            goal: newDebtGoal
+          });
+        } else {
+          // Create savings goal (default)
+          const { currentAmount, ...goalDataWithoutCurrent } = aiResponse.goalDetails;
+          const goalData = {
+            ...goalDataWithoutCurrent,
+            userId: user.id,
+            deadline: aiResponse.goalDetails.deadline ? new Date(aiResponse.goalDetails.deadline) : null
+          };
+
+          const newGoal = await storage.createSavingsGoal(goalData);
+          
+          res.json({
+            response: aiResponse.response,
+            goalCreated: true,
+            goalType: 'savings',
+            goal: newGoal
+          });
+        }
       } else if (aiResponse.needsMoreInfo) {
         res.json({
           response: aiResponse.followUpQuestion,
