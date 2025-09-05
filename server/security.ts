@@ -14,6 +14,19 @@ export function generateSecureToken(length: number = 32): string {
  * Validate request input to prevent injection attacks
  */
 export function validateInput(req: Request, res: Response, next: NextFunction) {
+  // Skip validation for AI endpoints that handle natural language
+  const aiEndpoints = [
+    '/api/goals/ai-create',
+    '/api/goals/ai-delete', 
+    '/api/goals/ai-progress',
+    '/api/ai-coach',
+    '/api/financial-insights'
+  ];
+  
+  if (aiEndpoints.some(endpoint => req.path === endpoint)) {
+    return next();
+  }
+
   const suspiciousPatterns = [
     /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
     /javascript:/gi,
