@@ -201,6 +201,62 @@ export async function analyzeCreditScore(creditData: any): Promise<any> {
 }
 
 // AI Goal Creation - Parse user message and extract goal details
+export async function parseGoalDeletion(message: string, goalData: { savingsGoals: any[], debtGoals: any[] }): Promise<any> {
+  try {
+    const { savingsGoals, debtGoals } = goalData;
+    const allGoals = [
+      ...savingsGoals.map(g => ({ ...g, type: 'savings' })),
+      ...debtGoals.map(g => ({ ...g, type: 'debt' }))
+    ];
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are a financial AI assistant helping users delete their financial goals. 
+
+Current goals:
+${allGoals.map(g => `- ${g.type === 'savings' ? 'Savings' : 'Debt'} Goal: "${g.name}" (ID: ${g.id})`).join('\n')}
+
+When a user wants to delete a goal:
+1. Identify which specific goal they want to delete by name
+2. Be very careful to match the exact goal name
+3. If multiple goals have similar names, ask for clarification
+4. Only delete goals that clearly match the user's intent
+
+Respond with JSON in this format:
+{
+  "shouldDeleteGoal": boolean,
+  "goalToDelete": {
+    "goalId": number,
+    "goalType": "savings" | "debt", 
+    "goalName": "exact goal name"
+  } | null,
+  "response": "confirmation message to user"
+}`
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    const aiResponse = JSON.parse(response.choices[0].message.content || '{}');
+    return aiResponse;
+
+  } catch (error) {
+    console.error('Error parsing goal deletion with AI:', error);
+    return {
+      shouldDeleteGoal: false,
+      goalToDelete: null,
+      response: "I'm having trouble understanding which goal you'd like to delete. Could you be more specific?"
+    };
+  }
+}
+
 export async function parseGoalCreation(message: string, userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({

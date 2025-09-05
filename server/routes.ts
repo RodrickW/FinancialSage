@@ -3261,6 +3261,64 @@ IMPORTANT:
     }
   });
 
+  // AI Goal Deletion endpoint
+  app.post('/api/goals/ai-delete', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { message } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Get user's current goals for context
+      const [savingsGoals, debtGoals] = await Promise.all([
+        storage.getSavingsGoals(user.id),
+        storage.getDebtGoals(user.id)
+      ]);
+
+      // Parse deletion request with AI
+      const aiResponse = await parseGoalDeletion(message, { savingsGoals, debtGoals });
+
+      if (aiResponse.shouldDeleteGoal && aiResponse.goalToDelete) {
+        const { goalType, goalId, goalName } = aiResponse.goalToDelete;
+        
+        try {
+          if (goalType === 'debt') {
+            await storage.deleteDebtGoal(goalId, user.id);
+          } else {
+            await storage.deleteSavingsGoal(goalId, user.id);
+          }
+
+          res.json({
+            response: aiResponse.response || `I've successfully deleted your ${goalType} goal "${goalName}".`,
+            goalDeleted: true,
+            deletedGoal: {
+              id: goalId,
+              name: goalName,
+              type: goalType
+            }
+          });
+        } catch (deleteError) {
+          console.error('Error deleting goal:', deleteError);
+          res.json({
+            response: "I'm sorry, I couldn't delete that goal. Please try using the delete button on the Goals page.",
+            goalDeleted: false
+          });
+        }
+      } else {
+        res.json({
+          response: aiResponse.response || "I couldn't identify which goal you want to delete. Could you be more specific about the goal name?",
+          goalDeleted: false
+        });
+      }
+
+    } catch (error) {
+      console.error('Error with AI goal deletion:', error);
+      res.status(500).json({ error: 'Failed to delete goal with AI' });
+    }
+  });
+
   // AI Progress Update endpoint
   app.post('/api/goals/ai-progress', requireAccess, async (req, res) => {
     try {
