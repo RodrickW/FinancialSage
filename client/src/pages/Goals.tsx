@@ -231,6 +231,35 @@ export default function Goals() {
     }
   });
 
+  // Payment mutation for debt goals
+  const payDebtMutation = useMutation({
+    mutationFn: async ({ id, amount }: { id: number; amount: string }) => {
+      return await apiRequest('PUT', `/api/debt-goals/${id}/payment`, { amount });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/debt-goals'] });
+      toast({
+        title: "Payment Made",
+        description: "Your debt payment has been processed successfully!"
+      });
+      // Clear the input field after successful payment
+      setAddAmounts({});
+      
+      // Show celebration after a short delay to allow data refresh
+      setTimeout(() => {
+        setShowCelebration(true);
+        setTimeout(() => setShowCelebration(false), 5000);
+      }, 500);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process debt payment",
+        variant: "destructive"
+      });
+    }
+  });
+
   // Functions for managing goals
   const openAddGoalDialog = () => {
     // Reset form fields
@@ -455,7 +484,7 @@ export default function Goals() {
   };
 
   // Add money to a specific goal
-  const addMoneyToGoal = (goalId: number) => {
+  const addMoneyToGoal = (goalId: number, goalType?: string) => {
     const amount = addAmounts[goalId];
     
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
@@ -467,7 +496,12 @@ export default function Goals() {
       return;
     }
     
-    addMoneyMutation.mutate({ id: goalId, amount });
+    // Use appropriate mutation based on goal type
+    if (goalType === 'debt') {
+      payDebtMutation.mutate({ id: goalId, amount });
+    } else {
+      addMoneyMutation.mutate({ id: goalId, amount });
+    }
   };
 
   // Update add amount for specific goal
@@ -716,7 +750,7 @@ export default function Goals() {
                       />
                       <Button 
                         size="sm"
-                        onClick={() => addMoneyToGoal(goal.id)}
+                        onClick={() => addMoneyToGoal(goal.id, 'savings')}
                         disabled={addMoneyMutation.isPending}
                         className="bg-green-600 hover:bg-green-700 text-white px-4"
                       >
@@ -816,11 +850,11 @@ export default function Goals() {
                             />
                             <Button 
                               size="sm"
-                              onClick={() => addMoneyToGoal(goal.id)}
-                              disabled={addMoneyMutation.isPending}
+                              onClick={() => addMoneyToGoal(goal.id, 'debt')}
+                              disabled={payDebtMutation.isPending}
                               className="bg-red-600 hover:bg-red-700 text-white px-4"
                             >
-                              {addMoneyMutation.isPending ? 'Processing...' : 'Make Payment'}
+                              {payDebtMutation.isPending ? 'Processing...' : 'Make Payment'}
                             </Button>
                           </div>
                         </div>
