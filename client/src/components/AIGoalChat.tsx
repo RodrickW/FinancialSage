@@ -80,6 +80,54 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
     }
   });
 
+  // AI Goal Deletion Mutation
+  const aiDeleteMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest('POST', '/api/goals/ai-delete', { message });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      // Refresh goals lists
+      queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/debt-goals'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/savings-tracker'] });
+      
+      // Add AI response to chat
+      const aiMessage: ChatMessage = {
+        id: Date.now().toString() + '_ai',
+        type: 'ai',
+        content: data.response,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, aiMessage]);
+      setIsProcessing(false);
+
+      if (data.goalDeleted) {
+        toast({
+          title: "Goal Deleted",
+          description: `Your ${data.deletedGoal?.type} goal "${data.deletedGoal?.name}" has been removed.`,
+          variant: "default"
+        });
+      }
+    },
+    onError: (error: any) => {
+      setIsProcessing(false);
+      const aiMessage: ChatMessage = {
+        id: Date.now().toString() + '_ai',
+        type: 'ai',
+        content: "I couldn't delete that goal right now. Please try using the delete button on the Goals page.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, aiMessage]);
+      
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete goal",
+        variant: "destructive"
+      });
+    }
+  });
+
   // AI Progress Update Mutation
   const aiProgressMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -142,13 +190,20 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
     setInputMessage('');
     setIsProcessing(true);
 
-    // Determine if this is a goal creation or progress update request
+    // Determine the type of request
     const progressKeywords = ['saved', 'added', 'deposited', 'put in', 'progress', 'update'];
+    const deleteKeywords = ['delete', 'remove', 'cancel', 'stop', 'get rid of'];
+    
     const isProgressUpdate = progressKeywords.some(keyword => 
       message.toLowerCase().includes(keyword)
     );
+    const isDeletion = deleteKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword)
+    );
 
-    if (isProgressUpdate) {
+    if (isDeletion) {
+      aiDeleteMutation.mutate(message);
+    } else if (isProgressUpdate) {
       aiProgressMutation.mutate(message);
     } else {
       aiGoalMutation.mutate(message);
@@ -256,6 +311,7 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
         <p className="mb-1"><strong>Try saying:</strong></p>
         <p>• "I want to save $5000 for a vacation by next summer"</p>
         <p>• "I saved $200 more for my emergency fund"</p>
+        <p>• "Delete my credit card debt goal"</p>
         <p>• "Help me create a goal for a new car"</p>
       </div>
     </Card>
