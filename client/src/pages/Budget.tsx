@@ -243,7 +243,7 @@ export default function Budget() {
         };
       })
     }));
-    console.log('Updated budget groups:', updatedGroups);
+    console.log('Updated budget groups: structure with', updatedGroups.length, 'groups');
     setBudgetData(updatedGroups);
   };
 
