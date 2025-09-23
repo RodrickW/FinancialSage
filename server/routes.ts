@@ -88,6 +88,57 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
           
           updatedAccountsCount++;
           console.log(`✓ Updated ${account.institutionName} balance: $${newBalance.toFixed(2)}`);
+          
+          // Sync recent transactions (last 7 days) during login
+          try {
+            const { getTransactions } = await import('./plaid');
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7); // Last 7 days
+            
+            const transactionsResponse = await getTransactions(
+              account.plaidAccessToken!,
+              startDate.toISOString().split('T')[0],
+              endDate.toISOString().split('T')[0]
+            );
+            
+            // Helper function to format transaction data
+            const formatPlaidTransactionData = (plaidTransaction: any, userId: number, accountId: number) => ({
+              userId,
+              accountId,
+              amount: -plaidTransaction.amount, // Plaid uses negative for outflows, we want positive for expenses
+              category: plaidTransaction.category?.[0] || 'Other',
+              description: plaidTransaction.name || 'Unknown transaction',
+              date: new Date(plaidTransaction.date),
+              merchantName: plaidTransaction.merchant_name || plaidTransaction.name || 'Unknown',
+              merchantIcon: 'receipt',
+              plaidTransactionId: plaidTransaction.transaction_id
+            });
+            
+            let newTransactionsCount = 0;
+            const existingTransactions = await storage.getTransactions(userId);
+            
+            for (const plaidTransaction of transactionsResponse.transactions) {
+              // Check if transaction already exists by Plaid ID
+              const existingByPlaidId = existingTransactions.find(
+                tx => tx.plaidTransactionId === plaidTransaction.transaction_id
+              );
+              
+              if (!existingByPlaidId) {
+                const transactionData = formatPlaidTransactionData(plaidTransaction, userId, account.id);
+                await storage.createTransaction(transactionData);
+                newTransactionsCount++;
+              }
+            }
+            
+            if (newTransactionsCount > 0) {
+              console.log(`✓ Synced ${newTransactionsCount} new transactions for ${account.institutionName}`);
+            }
+            
+          } catch (transactionError: any) {
+            console.error(`Failed to sync transactions for ${account.institutionName}:`, transactionError.message);
+            // Don't fail the entire process if transaction sync fails
+          }
         }
         
       } catch (accountError: any) {
