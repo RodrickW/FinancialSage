@@ -157,10 +157,10 @@ export default function Login() {
                     <div className="flex items-center justify-between">
                       <FormLabel>Password</FormLabel>
                       <div className="flex flex-col items-end text-xs space-y-1">
-                        <Link href="/forgot-password" className="text-primary-600 hover:underline">
+                        <Link href="/forgot-password" className="text-blue-600 hover:underline">
                           Forgot password?
                         </Link>
-                        <Link href="/forgot-username" className="text-primary-600 hover:underline">
+                        <Link href="/forgot-username" className="text-blue-600 hover:underline">
                           Forgot username?
                         </Link>
                       </div>
@@ -191,7 +191,7 @@ export default function Login() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <span className="material-icons animate-spin mr-2">refresh</span>
@@ -210,7 +210,7 @@ export default function Login() {
         <CardFooter className="flex flex-col space-y-2">
           <div className="text-sm text-neutral-500 text-center">
             Don't have an account?{' '}
-            <Link href="/register" className="text-primary-600 hover:underline">
+            <Link href="/register" className="text-blue-600 hover:underline">
               Register here
             </Link>
           </div>
