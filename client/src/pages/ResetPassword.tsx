@@ -140,8 +140,8 @@ export default function ResetPassword() {
           {isSuccess ? (
             <div className="text-center py-6 space-y-4">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-emerald-600" />
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-primary" />
                 </div>
               </div>
               <h3 className="text-lg font-medium">Password Reset Complete</h3>
@@ -149,7 +149,7 @@ export default function ResetPassword() {
                 Your password has been updated successfully. You can now log in with your new password.
               </p>
               <Button 
-                className="mt-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+                className="mt-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                 onClick={() => navigate('/login')}
               >
                 Go to Login
@@ -189,7 +189,7 @@ export default function ResetPassword() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <span className="material-icons animate-spin mr-2">refresh</span>

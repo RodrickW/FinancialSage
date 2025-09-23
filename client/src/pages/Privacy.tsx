@@ -8,21 +8,21 @@ export default function Privacy() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-primary/8 to-primary/10">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-teal-100 sticky top-0 z-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-primary/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <ChessCrownLogo className="w-8 h-8" color="text-teal-600" />
-              <span className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              <ChessCrownLogo className="w-8 h-8" color="text-primary" />
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 Mind My Money
               </span>
             </div>
             <Button 
               variant="outline" 
               onClick={() => setLocation('/')}
-              className="border-teal-200 text-teal-600 hover:bg-teal-50"
+              className="border-primary/20 text-primary hover:bg-primary/5"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
@@ -34,10 +34,10 @@ export default function Privacy() {
       {/* Header */}
       <section className="pt-16 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto mb-6">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             Privacy Policy
           </h1>
           <p className="text-xl text-gray-600 mb-8">
@@ -54,11 +54,11 @@ export default function Privacy() {
         <div className="max-w-4xl mx-auto space-y-8">
           
           {/* Information We Collect */}
-          <Card className="border-teal-100">
+          <Card className="border-primary/20">
             <CardContent className="p-8">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-lg flex items-center justify-center mr-4">
-                  <Database className="w-6 h-6 text-teal-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg flex items-center justify-center mr-4">
+                  <Database className="w-6 h-6 text-primary" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">Information We Collect</h2>
               </div>
@@ -101,18 +101,18 @@ export default function Privacy() {
           </Card>
 
           {/* How We Use Your Information */}
-          <Card className="border-teal-100">
+          <Card className="border-primary/20">
             <CardContent className="p-8">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-cyan-100 rounded-lg flex items-center justify-center mr-4">
-                  <UserCheck className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg flex items-center justify-center mr-4">
+                  <UserCheck className="w-6 h-6 text-primary" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">How We Use Your Information</h2>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <div>
                     <h3 className="font-semibold text-gray-800">Provide AI-Powered Financial Coaching</h3>
                     <p className="text-gray-600">Analyze your spending patterns and provide personalized recommendations through Money Mind AI.</p>
@@ -120,7 +120,7 @@ export default function Privacy() {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <div>
                     <h3 className="font-semibold text-gray-800">Track Financial Goals</h3>
                     <p className="text-gray-600">Monitor your progress toward savings goals, budgets, and financial milestones.</p>
@@ -128,7 +128,7 @@ export default function Privacy() {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <div>
                     <h3 className="font-semibold text-gray-800">Generate Insights and Analytics</h3>
                     <p className="text-gray-600">Create spending reports, budget recommendations, and financial health assessments.</p>
@@ -136,7 +136,7 @@ export default function Privacy() {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <div>
                     <h3 className="font-semibold text-gray-800">Improve Our Services</h3>
                     <p className="text-gray-600">Enhance app functionality, develop new features, and improve user experience.</p>
@@ -144,7 +144,7 @@ export default function Privacy() {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <div>
                     <h3 className="font-semibold text-gray-800">Communicate with You</h3>
                     <p className="text-gray-600">Send account updates, security notifications, and important service announcements.</p>
@@ -155,7 +155,7 @@ export default function Privacy() {
           </Card>
 
           {/* Data Security */}
-          <Card className="border-teal-100">
+          <Card className="border-primary/20">
             <CardContent className="p-8">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -165,7 +165,7 @@ export default function Privacy() {
               </div>
               
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-6 rounded-lg border border-teal-200">
+                <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-6 rounded-lg border border-primary/20">
                   <h3 className="text-lg font-semibold mb-3 text-gray-800">Bank-Level Encryption</h3>
                   <p className="text-gray-600">
                     All your financial data is protected with 256-bit SSL encryption, the same security standard used by major banks and financial institutions.
@@ -194,7 +194,7 @@ export default function Privacy() {
           </Card>
 
           {/* Data Sharing */}
-          <Card className="border-teal-100">
+          <Card className="border-primary/20">
             <CardContent className="p-8">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center mr-4">
@@ -226,7 +226,7 @@ export default function Privacy() {
           </Card>
 
           {/* Your Rights */}
-          <Card className="border-teal-100">
+          <Card className="border-primary/20">
             <CardContent className="p-8">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-teal-100 rounded-lg flex items-center justify-center mr-4">
@@ -260,7 +260,7 @@ export default function Privacy() {
           </Card>
 
           {/* Contact Information */}
-          <Card className="border-teal-100 bg-gradient-to-r from-teal-50 to-emerald-50">
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
             <CardContent className="p-8 text-center">
               <h2 className="text-2xl font-bold mb-4 text-gray-900">Questions About Privacy?</h2>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
@@ -272,7 +272,7 @@ export default function Privacy() {
               <div className="mt-6">
                 <Button 
                   onClick={() => setLocation('/')}
-                  className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
+                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white"
                 >
                   Return to Homepage
                 </Button>

@@ -14,7 +14,7 @@ export default function InstallApp() {
   const user = userData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10">
       <div className="lg:flex">
         <div className="hidden lg:block lg:w-64 lg:fixed lg:inset-y-0">
           <Sidebar user={user} />
@@ -25,7 +25,7 @@ export default function InstallApp() {
           
           <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
                 Install Mind My Money
               </h1>
               <p className="text-gray-600">

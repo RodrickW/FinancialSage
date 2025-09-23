@@ -135,7 +135,7 @@ export default function Accounts() {
   
   // Show account details
   const handleViewDetails = (accountId: number) => {
-    const account = accounts.find((acc: ConnectedAccount) => acc.id === accountId);
+    const account = (accounts as ConnectedAccount[]).find((acc: ConnectedAccount) => acc.id === accountId);
     if (account) {
       setSelectedAccount(account);
       setDetailsDialogOpen(true);

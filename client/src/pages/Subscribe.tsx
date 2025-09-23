@@ -111,7 +111,7 @@ export default function Subscribe() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10">
       <div className="flex flex-col">
         <BottomNavigation user={user} />
         <TopNav title="Choose Your Plan" isPremium={user?.isPremium || false} />
@@ -120,10 +120,10 @@ export default function Subscribe() {
           
           <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 p-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto mb-6 p-3">
                 <MoneyMindLogo className="w-10 h-10" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 Unlock Your Financial Potential
               </h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -133,10 +133,10 @@ export default function Subscribe() {
 
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {plans.map((plan, index) => (
-                <Card key={index} className={`relative border-2 shadow-lg ${plan.popular ? 'border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50' : 'border-teal-200'}`}>
+                <Card key={index} className={`relative border-2 shadow-lg ${plan.popular ? 'border-primary bg-gradient-to-br from-primary/5 to-primary/10' : 'border-primary/20'}`}>
                   {plan.popular && plan.available && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-1">
+                      <Badge className="bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-1">
                         Best Value - {plan.savings}
                       </Badge>
                     </div>
@@ -182,7 +182,7 @@ export default function Subscribe() {
                   <CardFooter>
                     <Button 
                       className={`w-full py-3 text-base font-medium ${plan.available 
-                        ? 'bg-teal-500 hover:bg-teal-600 text-white' 
+                        ? 'bg-primary hover:bg-primary/90 text-white' 
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
                       variant={plan.available ? 'default' : 'secondary'}

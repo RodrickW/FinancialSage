@@ -251,7 +251,7 @@ const AccountsScreen: React.FC = () => {
         )}
 
         <TouchableOpacity 
-          style={[styles.connectButton, isConnecting && styles.disabledButton]}
+          style={[styles.connectButton, isConnecting && { opacity: 0.5 }]}
           onPress={handleConnectAccount}
           disabled={isConnecting}
         >
