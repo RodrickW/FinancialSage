@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, TrendingUp, TrendingDown, AlertTriangle, Target, Star } from 'lucide-react';
+import { Loader2, Brain, TrendingUp, TrendingDown, AlertTriangle, Target, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { UserProfile } from '@/types';
 
 interface AIInsightsProps {
@@ -24,6 +25,8 @@ interface AIInsightsResponse {
 }
 
 export default function AIInsights({ user }: AIInsightsProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   const { data: aiInsights, isLoading, error } = useQuery<AIInsightsResponse>({
     queryKey: ['/api/ai/proactive-insights'],
     retry: false,
@@ -60,124 +63,135 @@ export default function AIInsights({ user }: AIInsightsProps) {
     }
   };
 
+  // Render collapsible button
+  const renderButton = () => (
+    <Button
+      onClick={() => setIsExpanded(!isExpanded)}
+      className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white font-medium py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+      size="lg"
+    >
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <Brain className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-lg">Click Here for Personalized AI Insights</span>
+          {!isLoading && aiInsights?.insights?.length > 0 && (
+            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+              {aiInsights.insights.length} insights
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </div>
+      </div>
+    </Button>
+  );
+
   if (isLoading) {
     return (
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-white" />
-            </div>
-            Money Mind Insights
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="ml-2 text-gray-600">Analyzing your financial data...</span>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mb-6">
+        {renderButton()}
+        {isExpanded && (
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 mt-3 animate-in slide-in-from-top-2 duration-300">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <span className="ml-2 text-gray-600">Analyzing your financial data...</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     );
   }
 
   if (error || !aiInsights?.insights?.length) {
     return (
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-white" />
-            </div>
-            Money Mind Insights
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">
-            <p className="text-gray-600 mb-4">
-              Connect your bank accounts to receive personalized AI insights about your spending patterns and financial opportunities.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mb-6">
+        {renderButton()}
+        {isExpanded && (
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 mt-3 animate-in slide-in-from-top-2 duration-300">
+            <CardContent className="pt-6">
+              <div className="text-center py-4">
+                <p className="text-gray-600 mb-4">
+                  Connect your bank accounts to receive personalized AI insights about your spending patterns and financial opportunities.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     );
   }
 
   return (
-    <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-white" />
-            </div>
-            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              Money Mind Insights
-            </span>
-          </div>
-          <Badge variant="secondary" className="bg-white/50 text-primary border-primary/20">
-            {aiInsights.insights.length} insights
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* AI Summary */}
-        {aiInsights.summary && (
-          <div className="mb-6 p-4 bg-white/60 rounded-lg border border-primary/20">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
-                <span className="text-white text-xs font-bold">MM</span>
-              </div>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {aiInsights.summary}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* AI Insights */}
-        <div className="space-y-3">
-          {aiInsights.insights.map((insight, index) => (
-            <div
-              key={index}
-              className={`p-4 rounded-lg border ${getColorForType(insight.type, insight.priority)}`}
-            >
-              <div className="flex items-start justify-between gap-3">
+    <div className="mb-6">
+      {renderButton()}
+      {isExpanded && (
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 mt-3 animate-in slide-in-from-top-2 duration-300">
+          <CardContent className="pt-6">
+            {/* AI Summary */}
+            {aiInsights.summary && (
+              <div className="mb-6 p-4 bg-white/60 rounded-lg border border-primary/20">
                 <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-full ${getColorForType(insight.type, insight.priority)} bg-opacity-20`}>
-                    {getIconForInsight(insight.icon)}
+                  <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                    <span className="text-white text-xs font-bold">MM</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-sm">{insight.title}</h4>
-                      <Badge 
-                        variant="secondary" 
-                        className={`text-xs px-2 py-0 ${
-                          insight.priority === 'high' 
-                            ? 'bg-red-100 text-red-700' 
-                            : insight.priority === 'medium'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {insight.priority}
-                      </Badge>
-                    </div>
-                    <p className="text-sm mb-2 opacity-90">
-                      {insight.message}
-                    </p>
-                    {insight.action && (
-                      <p className="text-xs font-medium">
-                        💡 {insight.action}
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {aiInsights.summary}
+                  </p>
                 </div>
               </div>
+            )}
+
+            {/* AI Insights */}
+            <div className="space-y-3">
+              {aiInsights.insights.map((insight, index) => (
+                <div
+                  key={index}
+                  className={`p-4 rounded-lg border ${getColorForType(insight.type, insight.priority)}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-full ${getColorForType(insight.type, insight.priority)} bg-opacity-20`}>
+                        {getIconForInsight(insight.icon)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-sm">{insight.title}</h4>
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-xs px-2 py-0 ${
+                              insight.priority === 'high' 
+                                ? 'bg-red-100 text-red-700' 
+                                : insight.priority === 'medium'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {insight.priority}
+                          </Badge>
+                        </div>
+                        <p className="text-sm mb-2 opacity-90">
+                          {insight.message}
+                        </p>
+                        {insight.action && (
+                          <p className="text-xs font-medium">
+                            💡 {insight.action}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
