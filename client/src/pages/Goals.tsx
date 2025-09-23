@@ -139,7 +139,7 @@ export default function Goals() {
       description: 'Made $100 in financial progress',
       icon: PiggyBank,
       unlocked: totalProgress >= 100,
-      color: 'from-green-500 to-emerald-600'
+      color: 'from-green-500 to-blue-600'
     },
     { 
       id: 'milestone', 

@@ -454,14 +454,14 @@ Money Mind 💰`);
     return (
       <div className="space-y-6">
         {/* Interview Starter Card */}
-        <Card className="bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200">
+        <Card className="bg-gradient-to-r from-blue-50 to-blue-50 border-blue-200">
           <CardContent className="p-6">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-500 rounded-full flex items-center justify-center mr-4">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">Get Your Personalized Financial Plan</h3>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">Get Your Personalized Financial Plan</h3>
                 <p className="text-sm text-gray-600">Let Money Mind understand your unique goals</p>
               </div>
             </div>
@@ -470,21 +470,21 @@ Money Mind 💰`);
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="flex items-center text-sm text-gray-600">
-                <Target className="w-4 h-4 mr-2 text-teal-500" />
+                <Target className="w-4 h-4 mr-2 text-blue-500" />
                 Personalized goal setting
               </div>
               <div className="flex items-center text-sm text-gray-600">
-                <TrendingUp className="w-4 h-4 mr-2 text-teal-500" />
+                <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
                 Custom budget recommendations
               </div>
               <div className="flex items-center text-sm text-gray-600">
-                <MessageCircle className="w-4 h-4 mr-2 text-teal-500" />
+                <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
                 AI-powered insights
               </div>
             </div>
             <Button 
               onClick={() => setLocation('/coach/interview')}
-              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
+              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white"
             >
               Start Financial Interview
             </Button>
@@ -592,7 +592,7 @@ Money Mind 💰`);
               <Card className="p-6">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                       <MessageCircle className="w-4 h-4 text-white" />
                     </div>
                     <span>Welcome to Your AI Financial Coach!</span>
@@ -604,9 +604,9 @@ Money Mind 💰`);
                     I'll ask you a few quick questions to understand your goals and provide better recommendations.
                   </p>
                   
-                  <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-4 rounded-lg border border-teal-100">
-                    <h3 className="font-semibold text-teal-800 mb-2">What I'll help you with:</h3>
-                    <ul className="text-sm text-teal-700 space-y-1">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-50 p-4 rounded-lg border border-blue-100">
+                    <h3 className="font-semibold text-blue-800 mb-2">What I'll help you with:</h3>
+                    <ul className="text-sm text-blue-700 space-y-1">
                       <li>• Create a personalized budget based on your spending patterns</li>
                       <li>• Set up savings goals that match your lifestyle</li>
                       <li>• Identify areas where you can optimize your spending</li>
@@ -620,7 +620,7 @@ Money Mind 💰`);
                       window.history.replaceState({}, '', '/coach');
                       setSelectedTab('ask');
                     }}
-                    className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                   >
                     Start Financial Interview
                   </Button>
