@@ -13,7 +13,7 @@ const GoalsScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <LinearGradient
-        colors={['#0F766E', '#14B8A6']}
+        colors={['#1565C0', '#1877F2']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Savings Goals</Text>

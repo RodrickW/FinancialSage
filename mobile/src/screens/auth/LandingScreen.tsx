@@ -147,7 +147,7 @@ const LandingScreen: React.FC = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Hero Section */}
       <LinearGradient
-        colors={['#0F766E', '#14B8A6']}
+        colors={['#1565C0', '#1877F2']}
         style={styles.heroSection}
       >
         <View style={styles.heroContent}>
@@ -163,7 +163,7 @@ const LandingScreen: React.FC = () => {
             onPress={() => navigation.navigate('Register' as never)}
           >
             <Text style={styles.ctaButtonText}>Start Your 14-Day Free Trial</Text>
-            <Icon name="arrow-forward" size={20} color="#14B8A6" />
+            <Icon name="arrow-forward" size={20} color="#1877F2" />
           </TouchableOpacity>
           <Text style={styles.trialNote}>
             No credit card required • Cancel anytime
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   ctaButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
     marginRight: 8,
   },
   trialNote: {
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   planButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
     marginRight: 8,
   },
   popularPlanButtonText: {
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
   },
 });
 

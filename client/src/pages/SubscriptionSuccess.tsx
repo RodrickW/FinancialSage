@@ -23,7 +23,7 @@ export default function SubscriptionSuccess() {
 
   return (
     <div className="container max-w-md mx-auto h-[80vh] flex flex-col items-center justify-center text-center px-4">
-      <div className="bg-gradient-to-br from-teal-500 to-emerald-500 w-20 h-20 rounded-full flex items-center justify-center mb-6">
+      <div className="bg-gradient-to-br from-primary to-primary/80 w-20 h-20 rounded-full flex items-center justify-center mb-6">
         <CheckCircle className="w-12 h-12 text-white" />
       </div>
       
@@ -39,7 +39,7 @@ export default function SubscriptionSuccess() {
       
       <Button 
         onClick={() => setLocation("/")}
-        className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600"
+        className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
       >
         Go to Dashboard ({countdown})
       </Button>

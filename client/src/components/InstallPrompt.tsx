@@ -49,11 +49,11 @@ export function InstallPrompt() {
   }
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-sm border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50">
+    <Card className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-sm border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mr-3">
               <Smartphone className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -74,7 +74,7 @@ export function InstallPrompt() {
       <CardContent className="pt-0">
         <Button
           onClick={handleInstallClick}
-          className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
+          className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white"
           size="sm"
         >
           <Download className="w-4 h-4 mr-2" />
@@ -87,10 +87,10 @@ export function InstallPrompt() {
 
 export function InstallInstructions() {
   return (
-    <Card className="border-teal-200">
+    <Card className="border-primary/20">
       <CardHeader>
         <CardTitle className="text-lg flex items-center">
-          <Smartphone className="w-5 h-5 mr-2 text-teal-600" />
+          <Smartphone className="w-5 h-5 mr-2 text-primary" />
           Add to Home Screen
         </CardTitle>
         <CardDescription>
@@ -116,8 +116,8 @@ export function InstallInstructions() {
           </ol>
         </div>
 
-        <div className="bg-teal-50 p-3 rounded-lg border border-teal-200">
-          <p className="text-xs text-teal-700">
+        <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+          <p className="text-xs text-primary/80">
             💡 <strong>Tip:</strong> Once installed, Mind My Money will work like a native app with offline capabilities and push notifications!
           </p>
         </div>

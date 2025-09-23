@@ -20,7 +20,7 @@ export default function SubscriptionCancel() {
       <div className="space-y-4">
         <Button 
           onClick={() => setLocation("/subscribe")}
-          className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 w-full"
+          className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 w-full"
         >
           Try Again
         </Button>

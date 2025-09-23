@@ -28,8 +28,8 @@ const Tab = createBottomTabNavigator();
 
 const theme = {
   colors: {
-    primary: '#14B8A6',
-    accent: '#10B981',
+    primary: '#1877F2',
+    accent: '#1565C0',
     background: '#FFFFFF',
     surface: '#F8FAFC',
     text: '#1F2937',
@@ -69,7 +69,7 @@ const MainTabs = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#14B8A6',
+        tabBarActiveTintColor: '#1877F2',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
           backgroundColor: '#FFFFFF',

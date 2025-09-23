@@ -55,7 +55,7 @@ const ForgotPasswordScreen: React.FC = () => {
     return (
       <View style={styles.successContainer}>
         <LinearGradient
-          colors={['#0F766E', '#14B8A6']}
+          colors={['#1565C0', '#1877F2']}
           style={styles.successHeader}
         >
           <View style={styles.successIconContainer}>
@@ -94,7 +94,7 @@ const ForgotPasswordScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
       >
         <LinearGradient
-          colors={['#0F766E', '#14B8A6']}
+          colors={['#1565C0', '#1877F2']}
           style={styles.header}
         >
           <TouchableOpacity 

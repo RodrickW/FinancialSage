@@ -75,12 +75,12 @@ export default function Feedback() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4">
         <div className="max-w-2xl mx-auto pt-20">
           <Card className="text-center">
             <CardContent className="pt-8 pb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 rounded-full flex items-center justify-center">
-                <MessageSquare className="w-8 h-8 text-emerald-600" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <MessageSquare className="w-8 h-8 text-primary" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
               <p className="text-gray-600 mb-6">
@@ -91,7 +91,7 @@ export default function Feedback() {
                   Submit More Feedback
                 </Button>
                 <Link href="/dashboard">
-                  <Button className="bg-gradient-to-r from-emerald-600 to-teal-600">
+                  <Button className="bg-gradient-to-r from-primary to-primary/90">
                     Back to Dashboard
                   </Button>
                 </Link>
@@ -104,7 +104,7 @@ export default function Feedback() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4">
       <div className="max-w-2xl mx-auto pt-8">
         <div className="mb-6">
           <Link href="/dashboard">
@@ -124,7 +124,7 @@ export default function Feedback() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-emerald-600" />
+              <MessageSquare className="w-5 h-5 text-primary" />
               Tell Us What You Think
             </CardTitle>
             <CardDescription>
@@ -238,7 +238,7 @@ export default function Feedback() {
                 <Button
                   type="submit"
                   disabled={submitFeedback.isPending}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                  className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                 >
                   {submitFeedback.isPending ? "Submitting..." : "Submit Feedback"}
                 </Button>
