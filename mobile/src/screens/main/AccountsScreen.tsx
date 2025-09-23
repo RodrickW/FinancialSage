@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  RefreshControl,
   Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
@@ -20,14 +19,11 @@ interface Account {
   balance: number;
   institutionName: string;
   lastRefreshed: string;
-  canRefresh: boolean;
-  nextRefreshAllowed?: string;
 }
 
 const AccountsScreen: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   const fetchAccounts = async () => {
@@ -44,7 +40,6 @@ const AccountsScreen: React.FC = () => {
       Alert.alert('Error', 'Failed to load accounts');
     } finally {
       setIsLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -52,10 +47,6 @@ const AccountsScreen: React.FC = () => {
     fetchAccounts();
   }, []);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchAccounts();
-  };
 
   const handleConnectAccount = async () => {
     setIsConnecting(true);
@@ -88,21 +79,6 @@ const AccountsScreen: React.FC = () => {
     }
   };
 
-  const handleRefreshAccount = async (accountId: string) => {
-    try {
-      const response = await apiRequest('POST', `/api/accounts/${accountId}/refresh`);
-      if (response.ok) {
-        Alert.alert('Success', 'Account refreshed successfully!');
-        fetchAccounts();
-      } else {
-        const errorData = await response.json();
-        Alert.alert('Error', errorData.message || 'Failed to refresh account');
-      }
-    } catch (error) {
-      console.error('Refresh account error:', error);
-      Alert.alert('Error', 'Failed to refresh account');
-    }
-  };
 
   const handleDisconnectAccount = async (accountId: string, accountName: string) => {
     Alert.alert(
@@ -166,9 +142,9 @@ const AccountsScreen: React.FC = () => {
   const getAccountColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'checking':
-        return '#14B8A6';
+        return '#1877F2';
       case 'savings':
-        return '#10B981';
+        return '#1565C0';
       case 'credit':
         return '#EF4444';
       case 'investment':
@@ -209,17 +185,6 @@ const AccountsScreen: React.FC = () => {
           </Text>
           <View style={styles.actionButtons}>
             <TouchableOpacity
-              style={[styles.actionButton, !account.canRefresh && styles.disabledButton]}
-              onPress={() => handleRefreshAccount(account.id)}
-              disabled={!account.canRefresh}
-            >
-              <Icon name="refresh" size={20} color={account.canRefresh ? '#14B8A6' : '#6B7280'} />
-              <Text style={[styles.actionButtonText, !account.canRefresh && styles.disabledText]}>
-                Refresh
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
               style={styles.actionButton}
               onPress={() => handleDisconnectAccount(account.id, account.name)}
             >
@@ -231,14 +196,6 @@ const AccountsScreen: React.FC = () => {
           </View>
         </View>
 
-        {!account.canRefresh && account.nextRefreshAllowed && (
-          <View style={styles.refreshWarning}>
-            <Icon name="schedule" size={16} color="#F59E0B" />
-            <Text style={styles.refreshWarningText}>
-              Next refresh available: {formatDate(account.nextRefreshAllowed)}
-            </Text>
-          </View>
-        )}
       </View>
     </Card>
   );
@@ -254,13 +211,10 @@ const AccountsScreen: React.FC = () => {
   return (
     <ScrollView 
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient
-        colors={['#0F766E', '#14B8A6']}
+        colors={['#1565C0', '#1877F2']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Your Accounts</Text>
@@ -282,7 +236,7 @@ const AccountsScreen: React.FC = () => {
             <View style={styles.rateLimitInfo}>
               <Icon name="info" size={20} color="#6B7280" />
               <Text style={styles.rateLimitText}>
-                Balance refreshes are limited to once every 12 hours to prevent excessive charges.
+                Account balances are automatically refreshed when you log in to ensure you always see current data.
               </Text>
             </View>
           </>
@@ -302,7 +256,7 @@ const AccountsScreen: React.FC = () => {
           disabled={isConnecting}
         >
           <LinearGradient
-            colors={['#14B8A6', '#10B981']}
+            colors={['#1877F2', '#1565C0']}
             style={styles.buttonGradient}
           >
             <Icon name="add" size={24} color="#FFFFFF" />
@@ -453,31 +407,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#F8FAFC',
   },
-  disabledButton: {
-    opacity: 0.5,
-  },
   actionButtonText: {
     fontSize: 12,
     fontWeight: '500',
     marginLeft: 4,
-    color: '#14B8A6',
-  },
-  disabledText: {
-    color: '#6B7280',
-  },
-  refreshWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-  },
-  refreshWarningText: {
-    fontSize: 12,
-    color: '#D97706',
-    marginLeft: 8,
-    flex: 1,
+    color: '#1877F2',
   },
   emptyState: {
     alignItems: 'center',
