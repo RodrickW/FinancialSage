@@ -37,11 +37,6 @@ export default function Accounts() {
     queryKey: ['/api/accounts'],
   });
 
-  // Get refresh status data
-  const { data: refreshStatus } = useQuery({
-    queryKey: ['/api/accounts/refresh-status'],
-    refetchInterval: 30000, // Update every 30 seconds
-  });
   
   // Check if this is demo mode
   const isDemoMode = !userData;
@@ -135,90 +130,8 @@ export default function Accounts() {
 
 
 
-  // Transaction refresh mutation - gets latest transactions
-  const refreshTransactionsMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('POST', '/api/plaid/refresh-transactions', { days: 7 });
-    },
-    onSuccess: async (response: any) => {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
-      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
-      toast({
-        title: "Transactions Updated",
-        description: `Added ${response.newTransactions} new transactions from the last 7 days.`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Refresh Failed",
-        description: error.message || "Failed to refresh transactions. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Full sync mutation - refreshes balances and syncs recent transactions
-  const fullSyncMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('POST', '/api/plaid/full-sync', { days: 7 });
-    },
-    onSuccess: async (response: any) => {
-      // Small delay to ensure database update is complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-      // Force fresh data fetch instead of just invalidating cache
-      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
-      queryClient.refetchQueries({ queryKey: ['/api/transactions'] });
-      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
-      toast({
-        title: "Sync Complete",
-        description: `Updated ${response.updatedBalances} balances and added ${response.newTransactions} new transactions.`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Sync Failed",
-        description: error.message || "Failed to sync account data. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Balance refresh mutation - only refreshes account balances
-  const refreshBalancesMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('POST', '/api/plaid/refresh-balances', {});
-    },
-    onSuccess: async (response: any) => {
-      // Small delay to ensure database update is complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-      // Force fresh data fetch instead of just invalidating cache
-      queryClient.refetchQueries({ queryKey: ['/api/accounts'] });
-      queryClient.refetchQueries({ queryKey: ['/api/financial-overview'] });
-      toast({
-        title: "Balances Updated",
-        description: `Refreshed ${response.updatedAccounts} account balances.`,
-      });
-    },
-    onError: (error: any) => {
-      console.error('Balance refresh error:', error);
-      
-      // Handle rate limiting specifically
-      if (error.status === 429) {
-        toast({
-          title: "Rate Limited",
-          description: `Please wait ${error.remainingMinutes || 720} minutes before refreshing again to avoid excessive API charges.`,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Refresh Failed",
-          description: error.message || "Failed to refresh balances. Please try again.",
-          variant: "destructive",
-        });
-      }
-    },
-  });
   
   // Show account details
   const handleViewDetails = (accountId: number) => {
@@ -274,99 +187,11 @@ export default function Accounts() {
                 </PlaidLinkButton>
               </TrialGate>
               
-              <Button 
-                variant="outline" 
-                onClick={() => refreshTransactionsMutation.mutate()}
-                disabled={refreshTransactionsMutation.isPending || fullSyncMutation.isPending}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white border-none hover:from-green-700 hover:to-emerald-700"
-              >
-                {refreshTransactionsMutation.isPending ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    Refreshing...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-icons mr-2">receipt</span>
-                    Refresh Transactions
-                  </>
-                )}
-              </Button>
-
-              <Button 
-                variant="outline" 
-                onClick={() => fullSyncMutation.mutate()}
-                disabled={fullSyncMutation.isPending || refreshBalancesMutation.isPending || refreshTransactionsMutation.isPending}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-none hover:from-purple-700 hover:to-blue-700"
-              >
-                {fullSyncMutation.isPending ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    Syncing All...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-icons mr-2">sync</span>
-                    Sync All Accounts
-                  </>
-                )}
-              </Button>
               
 
             </div>
           </div>
 
-          {/* Balance Refresh Status Card */}
-          {refreshStatus && refreshStatus.hasPlaidAccounts && (
-            <Card className="mb-6 border-l-4 border-l-blue-500">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-blue-100 rounded-full">
-                      <span className="material-icons text-blue-600 text-lg">schedule</span>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">Balance Refresh Status</h3>
-                      <p className="text-sm text-gray-600">
-                        Last updated: {formatDateTime(refreshStatus.lastBalanceUpdate)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    {refreshStatus.canRefresh ? (
-                      <div className="flex items-center text-green-600">
-                        <span className="material-icons text-sm mr-1">check_circle</span>
-                        <span className="text-sm font-medium">Available now</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-amber-600">
-                        <span className="material-icons text-sm mr-1">access_time</span>
-                        <span className="text-sm font-medium">
-                          Available in {getTimeUntilRefresh(refreshStatus.nextRefreshAllowed)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {!refreshStatus.automaticRefreshStatus.enabled && (
-                  <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                    <div className="flex items-start space-x-2">
-                      <span className="material-icons text-amber-600 text-sm mt-0.5">info</span>
-                      <div>
-                        <p className="text-sm text-amber-800 font-medium">
-                          Automatic updates disabled
-                        </p>
-                        <p className="text-xs text-amber-700 mt-1">
-                          {refreshStatus.automaticRefreshStatus.disabledReason}. 
-                          Manual refreshes available every 12 hours to control API costs.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
           
           <TrialGate feature="Account Management" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode}>
             {accountsLoading ? (
@@ -415,25 +240,6 @@ export default function Accounts() {
                         </span>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-xs" 
-                          onClick={() => refreshBalancesMutation.mutate()}
-                          disabled={refreshBalancesMutation.isPending}
-                        >
-                          {refreshBalancesMutation.isPending ? (
-                            <>
-                              <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full mr-1" />
-                              Syncing...
-                            </>
-                          ) : (
-                            <>
-                              <span className="material-icons text-sm mr-1">sync</span>
-                              Refresh
-                            </>
-                          )}
-                        </Button>
                         <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewDetails(account.id)}>
                           <span className="material-icons text-sm mr-1">more_horiz</span>
                           Details
@@ -577,18 +383,6 @@ export default function Accounts() {
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-xs text-muted-foreground mb-3">Quick Actions</p>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => {
-                      setDetailsDialogOpen(false);
-                      refreshBalancesMutation.mutate();
-                    }}
-                  >
-                    <span className="material-icons text-sm mr-1">sync</span>
-                    Refresh Balance
-                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
