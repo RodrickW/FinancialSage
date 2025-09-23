@@ -181,11 +181,11 @@ export default function Landing() {
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-transparent leading-tight">
-            Finally, Take Control of Your Money — Without the Stress.
+            Master your money. Live with purpose.
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Mind My Money helps you track spending, build savings, and improve your financial health — all in one simple app.
+            More than budgeting — Mind My Money helps you align your finances with your goals and values.
           </p>
           
           <div className="flex flex-col gap-4 justify-center mb-12 max-w-md mx-auto">
