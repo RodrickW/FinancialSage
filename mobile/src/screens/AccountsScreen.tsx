@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
@@ -34,22 +34,6 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ navigation }) =>
     }
   };
 
-  const handleRefreshBalances = async () => {
-    try {
-      await refetch();
-      Alert.alert('Success', 'Account balances refreshed successfully!');
-    } catch (error: any) {
-      // Handle rate limiting specifically  
-      if (error.status === 429) {
-        Alert.alert(
-          'Rate Limited', 
-          `Please wait ${error.remainingMinutes || 720} minutes before refreshing again to avoid excessive API charges.`
-        );
-      } else {
-        Alert.alert('Error', 'Failed to refresh balances. Please try again.');
-      }
-    }
-  };
 
   const handleDisconnectAccount = (accountId: string, accountName: string) => {
     Alert.alert(
@@ -81,9 +65,6 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ navigation }) =>
   return (
     <ScrollView 
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-      }
     >
       <View style={styles.header}>
         <Text style={styles.title}>Connected Accounts</Text>
@@ -108,12 +89,6 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ navigation }) =>
         </Card>
       ) : (
         <>
-          <Button
-            title="Refresh All Balances"
-            onPress={handleRefreshBalances}
-            variant="secondary"
-            style={styles.refreshButton}
-          />
 
           {accounts?.map((account: any) => (
             <Card key={account.id} style={styles.accountCard}>
@@ -137,13 +112,6 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ navigation }) =>
                 <Button
                   title="View Details"
                   onPress={() => Alert.alert('Account Details', 'Account details would be shown here.')}
-                  variant="secondary"
-                  size="sm"
-                  style={styles.actionButton}
-                />
-                <Button
-                  title="Refresh"
-                  onPress={handleRefreshBalances}
                   variant="secondary"
                   size="sm"
                   style={styles.actionButton}
