@@ -119,7 +119,7 @@ export default function TrialNotificationBanner() {
                 <Button 
                   size="sm"
                   onClick={() => setLocation('/subscribe')}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                 >
                   <CreditCard className="w-4 h-4 mr-1" />
                   Upgrade Now

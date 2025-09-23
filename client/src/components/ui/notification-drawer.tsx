@@ -131,7 +131,7 @@ function NotificationList({ notifications, markAsRead }: NotificationListProps) 
   const getNotificationIcon = (type: NotificationItem['type']) => {
     switch (type) {
       case 'alert': return <span className="material-icons text-red-500">warning</span>;
-      case 'success': return <span className="material-icons text-emerald-500">check_circle</span>;
+      case 'success': return <span className="material-icons text-primary">check_circle</span>;
       default: return <span className="material-icons text-blue-500">info</span>;
     }
   };

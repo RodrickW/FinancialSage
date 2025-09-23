@@ -62,10 +62,10 @@ export default function AIInsights({ user }: AIInsightsProps) {
 
   if (isLoading) {
     return (
-      <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-teal-200">
+      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-white" />
             </div>
             Money Mind Insights
@@ -73,7 +73,7 @@ export default function AIInsights({ user }: AIInsightsProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
             <span className="ml-2 text-gray-600">Analyzing your financial data...</span>
           </div>
         </CardContent>
@@ -83,10 +83,10 @@ export default function AIInsights({ user }: AIInsightsProps) {
 
   if (error || !aiInsights?.insights?.length) {
     return (
-      <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-teal-200">
+      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-white" />
             </div>
             Money Mind Insights
@@ -104,18 +104,18 @@ export default function AIInsights({ user }: AIInsightsProps) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-teal-200">
+    <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-white" />
             </div>
-            <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
               Money Mind Insights
             </span>
           </div>
-          <Badge variant="secondary" className="bg-white/50 text-teal-700 border-teal-200">
+          <Badge variant="secondary" className="bg-white/50 text-primary border-primary/20">
             {aiInsights.insights.length} insights
           </Badge>
         </CardTitle>
@@ -123,9 +123,9 @@ export default function AIInsights({ user }: AIInsightsProps) {
       <CardContent>
         {/* AI Summary */}
         {aiInsights.summary && (
-          <div className="mb-6 p-4 bg-white/60 rounded-lg border border-teal-100">
+          <div className="mb-6 p-4 bg-white/60 rounded-lg border border-primary/20">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+              <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                 <span className="text-white text-xs font-bold">MM</span>
               </div>
               <p className="text-gray-700 text-sm leading-relaxed">

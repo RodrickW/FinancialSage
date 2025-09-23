@@ -241,20 +241,6 @@ export default function Dashboard() {
                   </Link>
                 </TrialGate>
                 
-                {/* Refresh Transactions Button */}
-                <TrialGate feature="Transaction Sync" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center border-blue-300 text-blue-600 hover:bg-blue-50 shadow-md btn-animate card-hover"
-                    onClick={() => refreshTransactionsMutation.mutate()}
-                    disabled={refreshTransactionsMutation.isPending}
-                  >
-                    <span className="material-icons text-sm mr-1">
-                      {refreshTransactionsMutation.isPending ? 'sync' : 'refresh'}
-                    </span>
-                    {refreshTransactionsMutation.isPending ? 'Syncing...' : 'Refresh Data'}
-                  </Button>
-                </TrialGate>
 
                 {/* Money Mind Interview Button */}
                 <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>

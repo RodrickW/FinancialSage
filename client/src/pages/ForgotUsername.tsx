@@ -102,7 +102,7 @@ export default function ForgotUsername() {
             <div className="flex flex-col space-y-2">
               <Button 
                 onClick={() => navigate('/login')}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
               >
                 Back to Login
               </Button>
@@ -157,7 +157,7 @@ export default function ForgotUsername() {
               />
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600" 
+                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80" 
                 disabled={isLoading}
               >
                 {isLoading ? (

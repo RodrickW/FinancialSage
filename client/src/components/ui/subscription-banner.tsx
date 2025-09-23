@@ -95,7 +95,7 @@ export function SubscriptionBanner() {
   }
 
   return (
-    <div className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3 px-4 shadow-md">
+    <div className="w-full bg-gradient-to-r from-primary to-primary/90 text-white p-3 px-4 shadow-md">
       <div className="flex flex-col md:flex-row items-center justify-between">
         <div className="text-center md:text-left mb-3 md:mb-0">
           <p className="font-medium">
@@ -114,14 +114,14 @@ export function SubscriptionBanner() {
             <>
               <Button 
                 variant="secondary" 
-                className="bg-white text-teal-700 hover:bg-white/90 hover:text-teal-800"
+                className="bg-white text-primary hover:bg-white/90 hover:text-primary/90"
                 onClick={() => setLocation("/subscribe")}
               >
                 Upgrade Now
               </Button>
               <Button 
                 variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-teal-700"
+                className="border-white text-white hover:bg-white hover:text-primary"
                 onClick={() => setLocation("/cancel-trial")}
               >
                 Cancel Trial

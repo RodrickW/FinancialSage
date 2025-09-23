@@ -366,18 +366,18 @@ export default function CoachInterview() {
 
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 pb-16">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 pb-16">
         <BottomNavigation user={user} />
         <TopNav title="Money Mind Interview" />
         
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="text-center bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200">
+          <Card className="text-center bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
             <CardContent className="p-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Check className="w-8 h-8 text-white" />
               </div>
               
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
                 Interview Complete! 🎉
               </h2>
               
@@ -386,9 +386,9 @@ export default function CoachInterview() {
                 to create a personalized financial plan just for you.
               </p>
               
-              <div className="bg-white p-4 rounded-lg mb-6 border border-teal-200">
+              <div className="bg-white p-4 rounded-lg mb-6 border border-primary/20">
                 <div className="flex items-center mb-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mr-3">
                     <span className="text-white text-sm font-bold">MM</span>
                   </div>
                   <span className="font-medium">Money Mind</span>
@@ -399,7 +399,7 @@ export default function CoachInterview() {
                 </p>
               </div>
               
-              <Button onClick={handleFinish} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white">
+              <Button onClick={handleFinish} className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white">
                 See My Personalized Plan
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -411,20 +411,20 @@ export default function CoachInterview() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 pb-16">
       <BottomNavigation user={user} />
       <TopNav title="Money Mind Interview" />
           
           <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Progress Header */}
-            <Card className="mb-6 bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200">
+            <Card className="mb-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mr-4">
                     <MessageCircle className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                       Money Mind Interview
                     </h1>
                     <p className="text-sm text-gray-600">Let's get to know your financial goals</p>
@@ -472,7 +472,7 @@ export default function CoachInterview() {
               <Button
                 onClick={handleNext}
                 disabled={saveInterviewMutation.isPending}
-                className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white flex items-center z-10 relative"
+                className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white flex items-center z-10 relative"
               >
                 {saveInterviewMutation.isPending ? (
                   <>
@@ -497,7 +497,7 @@ export default function CoachInterview() {
             <Card className="mt-6 bg-blue-50 border-blue-200">
               <CardContent className="p-4">
                 <div className="flex items-start">
-                  <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">
                     <span className="text-white text-xs font-bold">MM</span>
                   </div>
                   <div>
