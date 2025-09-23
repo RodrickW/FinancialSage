@@ -188,7 +188,7 @@ export default function Budget() {
         
         return result;
       } catch (error) {
-        console.error('Mutation error:', error);
+        console.error('Mutation error:', error instanceof Error ? error.message : String(error));
         throw error;
       }
     },
@@ -212,7 +212,7 @@ export default function Budget() {
       setIsAnalyzing(false);
     },
     onError: (error) => {
-      console.error('Spending analysis error:', error);
+      console.error('Spending analysis error:', error instanceof Error ? error.message : String(error));
       toast({
         title: "Analysis Failed", 
         description: error?.message || "Unable to analyze your spending patterns. Please try again.",
@@ -225,7 +225,7 @@ export default function Budget() {
   // Update budget categories with analyzed spending
   const updateBudgetWithAnalysis = (analysis: SpendingAnalysis[]) => {
     if (!analysis || !Array.isArray(analysis)) {
-      console.error('Invalid analysis data:', analysis);
+      console.error('Invalid analysis data: received', typeof analysis, 'instead of array');
       return;
     }
     
