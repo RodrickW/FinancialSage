@@ -88,7 +88,7 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
           // Update account with new balance and timestamp
           await storage.updateAccount(account.id, {
             balance: newBalance,
-            lastBalanceUpdate: new Date().toISOString()
+            lastBalanceUpdate: new Date()
           });
           
           updatedAccountsCount++;
