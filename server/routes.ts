@@ -78,7 +78,12 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
         );
         
         if (matchingAccount) {
-          const newBalance = matchingAccount.balances.current || 0;
+          // Use available balance (what user can actually spend) if available, otherwise current balance
+          const availableBalance = matchingAccount.balances.available;
+          const currentBalance = matchingAccount.balances.current;
+          const newBalance = availableBalance !== null && availableBalance !== undefined 
+            ? availableBalance 
+            : (currentBalance || 0);
           
           // Update account with new balance and timestamp
           await storage.updateAccount(account.id, {
@@ -87,7 +92,7 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
           });
           
           updatedAccountsCount++;
-          console.log(`✓ Updated ${account.institutionName} balance: $${newBalance.toFixed(2)}`);
+          console.log(`✓ Updated ${account.institutionName} balance: $${newBalance.toFixed(2)} (using ${availableBalance !== null && availableBalance !== undefined ? 'available' : 'current'} balance)`);
           
           // Sync recent transactions (last 7 days) during login
           try {
@@ -804,7 +809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => {
           const transactionDate = new Date(t.date);
           const amount = parseFloat(t.amount.toString());
-          return amount < 0 && 
+          return amount > 0 && 
                  transactionDate.getMonth() === currentMonth &&
                  transactionDate.getFullYear() === currentYear;
         })
@@ -816,7 +821,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => {
           const transactionDate = new Date(t.date);
           const amount = parseFloat(t.amount.toString());
-          return amount < 0 && transactionDate >= weekAgo;
+          return amount > 0 && transactionDate >= weekAgo;
         })
         .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount.toString())), 0);
       
@@ -827,7 +832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => {
           const transactionDate = new Date(t.date);
           const amount = parseFloat(t.amount.toString());
-          return amount < 0 && 
+          return amount > 0 && 
                  transactionDate >= todayStart && 
                  transactionDate < todayEnd;
         })
@@ -838,7 +843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const previousMonthSpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
-          return t.amount < 0 && 
+          return t.amount > 0 && 
                  transactionDate.getMonth() === lastMonth.getMonth() &&
                  transactionDate.getFullYear() === lastMonth.getFullYear();
         })
@@ -882,8 +887,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currentYear,
           todayStart: todayStart.toISOString(),
           weekAgo: weekAgo.toISOString(),
-          negativeTransactions: userTransactions.filter(t => t.amount < 0).length,
-          sampleTransaction: userTransactions.filter(t => t.amount < 0)[0]
+          expenseTransactions: userTransactions.filter(t => t.amount > 0).length,
+          sampleExpense: userTransactions.filter(t => t.amount > 0)[0]
         }
       });
       
