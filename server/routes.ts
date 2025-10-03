@@ -53,23 +53,31 @@ function isWithinLastMonth(date: Date): boolean {
 }
 
 // Login balance refresh function - bypasses manual rate limiting
+// PRODUCTION-READY with comprehensive error handling
 async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
+  const startTime = Date.now();
+  console.log(`🔄 [User ${userId}] Starting automatic balance refresh on login`);
+  
   try {
-    console.log(`🔄 Auto-refreshing balances on login for user ${userId}`);
-    
     const accounts = await storage.getAccounts(userId);
     const plaidAccounts = accounts.filter(account => account.plaidAccessToken);
     
     if (plaidAccounts.length === 0) {
-      console.log(`No Plaid accounts found for user ${userId} - skipping login refresh`);
+      console.log(`ℹ️ [User ${userId}] No Plaid accounts found - skipping login refresh`);
       return;
     }
     
+    console.log(`📊 [User ${userId}] Found ${plaidAccounts.length} connected account(s) to refresh`);
+    
     let updatedAccountsCount = 0;
+    let failedAccountsCount = 0;
+    let disconnectedAccountsCount = 0;
     
     for (const account of plaidAccounts) {
+      const accountIdentifier = `${account.institutionName} - ${account.accountName}`;
+      
       try {
-        console.log(`Refreshing login balance for ${account.institutionName} - ${account.accountName}`);
+        console.log(`🔄 [User ${userId}] Refreshing: ${accountIdentifier}`);
         
         // Get fresh account data from Plaid
         const accountsResponse = await getAccounts(account.plaidAccessToken!);
@@ -77,86 +85,148 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
           plaidAcc => plaidAcc.account_id === account.plaidAccountId
         );
         
-        if (matchingAccount) {
-          // Use available balance (what user can actually spend) if available, otherwise current balance
-          const availableBalance = matchingAccount.balances.available;
-          const currentBalance = matchingAccount.balances.current;
-          const newBalance = availableBalance !== null && availableBalance !== undefined 
-            ? availableBalance 
-            : (currentBalance || 0);
+        if (!matchingAccount) {
+          console.warn(`⚠️ [User ${userId}] Account not found in Plaid response: ${accountIdentifier}`);
+          failedAccountsCount++;
+          continue;
+        }
+        
+        // Use available balance (what user can actually spend) if available, otherwise current balance
+        const availableBalance = matchingAccount.balances.available;
+        const currentBalance = matchingAccount.balances.current;
+        const newBalance = availableBalance !== null && availableBalance !== undefined 
+          ? availableBalance 
+          : (currentBalance || 0);
+        
+        const oldBalance = account.balance;
+        const balanceChanged = Math.abs(newBalance - oldBalance) > 0.01;
+        
+        // Update account with new balance, timestamp, and mark as connected
+        await storage.updateAccount(account.id, {
+          balance: newBalance,
+          lastBalanceUpdate: new Date(),
+          isConnected: true
+        });
+        
+        updatedAccountsCount++;
+        
+        if (balanceChanged) {
+          console.log(`✅ [User ${userId}] ${accountIdentifier}: $${oldBalance.toFixed(2)} → $${newBalance.toFixed(2)} (${availableBalance !== null && availableBalance !== undefined ? 'available' : 'current'} balance)`);
+        } else {
+          console.log(`✅ [User ${userId}] ${accountIdentifier}: No change ($${newBalance.toFixed(2)})`);
+        }
+        
+        // Sync recent transactions (last 7 days) during login
+        try {
+          const { getTransactions } = await import('./plaid');
+          const endDate = new Date();
+          const startDate = new Date();
+          startDate.setDate(startDate.getDate() - 7);
           
-          // Update account with new balance and timestamp
-          await storage.updateAccount(account.id, {
-            balance: newBalance,
-            lastBalanceUpdate: new Date()
+          const transactionsResponse = await getTransactions(
+            account.plaidAccessToken!,
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0]
+          );
+          
+          const formatPlaidTransactionData = (plaidTransaction: any, userId: number, accountId: number) => ({
+            userId,
+            accountId,
+            amount: -plaidTransaction.amount,
+            category: plaidTransaction.category?.[0] || 'Other',
+            description: plaidTransaction.name || 'Unknown transaction',
+            date: new Date(plaidTransaction.date),
+            merchantName: plaidTransaction.merchant_name || plaidTransaction.name || 'Unknown',
+            merchantIcon: 'receipt',
+            plaidTransactionId: plaidTransaction.transaction_id
           });
           
-          updatedAccountsCount++;
-          console.log(`✓ Updated ${account.institutionName} balance: $${newBalance.toFixed(2)} (using ${availableBalance !== null && availableBalance !== undefined ? 'available' : 'current'} balance)`);
+          let newTransactionsCount = 0;
+          const existingTransactions = await storage.getTransactions(userId);
           
-          // Sync recent transactions (last 7 days) during login
-          try {
-            const { getTransactions } = await import('./plaid');
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - 7); // Last 7 days
-            
-            const transactionsResponse = await getTransactions(
-              account.plaidAccessToken!,
-              startDate.toISOString().split('T')[0],
-              endDate.toISOString().split('T')[0]
+          for (const plaidTransaction of transactionsResponse.transactions) {
+            const existingByPlaidId = existingTransactions.find(
+              tx => tx.plaidTransactionId === plaidTransaction.transaction_id
             );
             
-            // Helper function to format transaction data
-            const formatPlaidTransactionData = (plaidTransaction: any, userId: number, accountId: number) => ({
-              userId,
-              accountId,
-              amount: -plaidTransaction.amount, // Plaid uses negative for outflows, we want positive for expenses
-              category: plaidTransaction.category?.[0] || 'Other',
-              description: plaidTransaction.name || 'Unknown transaction',
-              date: new Date(plaidTransaction.date),
-              merchantName: plaidTransaction.merchant_name || plaidTransaction.name || 'Unknown',
-              merchantIcon: 'receipt',
-              plaidTransactionId: plaidTransaction.transaction_id
-            });
-            
-            let newTransactionsCount = 0;
-            const existingTransactions = await storage.getTransactions(userId);
-            
-            for (const plaidTransaction of transactionsResponse.transactions) {
-              // Check if transaction already exists by Plaid ID
-              const existingByPlaidId = existingTransactions.find(
-                tx => tx.plaidTransactionId === plaidTransaction.transaction_id
-              );
-              
-              if (!existingByPlaidId) {
-                const transactionData = formatPlaidTransactionData(plaidTransaction, userId, account.id);
-                await storage.createTransaction(transactionData);
-                newTransactionsCount++;
-              }
+            if (!existingByPlaidId) {
+              const transactionData = formatPlaidTransactionData(plaidTransaction, userId, account.id);
+              await storage.createTransaction(transactionData);
+              newTransactionsCount++;
             }
-            
-            if (newTransactionsCount > 0) {
-              console.log(`✓ Synced ${newTransactionsCount} new transactions for ${account.institutionName}`);
-            }
-            
-          } catch (transactionError: any) {
-            console.error(`Failed to sync transactions for ${account.institutionName}:`, transactionError.message);
-            // Don't fail the entire process if transaction sync fails
           }
+          
+          if (newTransactionsCount > 0) {
+            console.log(`💳 [User ${userId}] ${accountIdentifier}: Synced ${newTransactionsCount} new transaction(s)`);
+          }
+          
+        } catch (transactionError: any) {
+          console.warn(`⚠️ [User ${userId}] ${accountIdentifier}: Transaction sync failed - ${transactionError.message}`);
         }
         
       } catch (accountError: any) {
-        console.error(`Failed to refresh login balance for ${account.institutionName}:`, accountError.message);
-        // Continue with other accounts even if one fails
+        // Detect specific Plaid errors that require user action
+        const errorCode = accountError.error_code || accountError.code;
+        const errorType = accountError.error_type;
+        const errorMessage = accountError.message || 'Unknown error';
+        
+        // Common Plaid errors that indicate disconnected accounts
+        const REQUIRES_RECONNECTION_ERRORS = [
+          'ITEM_LOGIN_REQUIRED',
+          'INVALID_ACCESS_TOKEN', 
+          'INVALID_CREDENTIALS',
+          'ITEM_LOCKED',
+          'ITEM_NOT_FOUND'
+        ];
+        
+        if (REQUIRES_RECONNECTION_ERRORS.includes(errorCode)) {
+          // Mark account as disconnected
+          console.error(`🔴 [User ${userId}] ${accountIdentifier}: DISCONNECTED - ${errorCode}`);
+          console.error(`   ↳ User needs to reconnect their bank account`);
+          
+          try {
+            await storage.updateAccount(account.id, {
+              isConnected: false
+            });
+            disconnectedAccountsCount++;
+          } catch (updateError) {
+            console.error(`❌ [User ${userId}] Failed to mark account as disconnected:`, updateError);
+          }
+          
+        } else {
+          // Other errors (rate limiting, network issues, etc.)
+          console.error(`❌ [User ${userId}] ${accountIdentifier}: ${errorCode || 'ERROR'} - ${errorMessage}`);
+          failedAccountsCount++;
+        }
       }
     }
     
-    console.log(`✓ Login refresh complete: ${updatedAccountsCount}/${plaidAccounts.length} accounts updated`);
+    const duration = Date.now() - startTime;
+    const summary = `
+╔═══════════════════════════════════════════════════════════════════
+║ LOGIN BALANCE REFRESH COMPLETE [User ${userId}]
+╠═══════════════════════════════════════════════════════════════════
+║ ✅ Successfully updated: ${updatedAccountsCount}/${plaidAccounts.length} account(s)
+║ 🔴 Disconnected (need reconnection): ${disconnectedAccountsCount}
+║ ❌ Failed (temporary errors): ${failedAccountsCount}
+║ ⏱️  Duration: ${duration}ms
+╚═══════════════════════════════════════════════════════════════════`;
+    
+    console.log(summary);
+    
+    // Alert if any accounts need attention
+    if (disconnectedAccountsCount > 0) {
+      console.warn(`⚠️  [User ${userId}] ACTION REQUIRED: ${disconnectedAccountsCount} account(s) need to be reconnected`);
+    }
     
   } catch (error: any) {
-    console.error('Error in refreshUserBalancesOnLogin:', error.message);
-    throw error;
+    console.error(`💥 [User ${userId}] CRITICAL ERROR in refreshUserBalancesOnLogin:`, error);
+    console.error(`   ↳ Error details:`, {
+      message: error.message,
+      code: error.code,
+      stack: error.stack?.split('\n')[0]
+    });
+    // Don't throw - let login succeed even if balance refresh fails
   }
 }
 
