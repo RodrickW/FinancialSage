@@ -210,7 +210,7 @@ export async function parseGoalDeletion(message: string, goalData: { savingsGoal
     ];
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
           role: "system",
