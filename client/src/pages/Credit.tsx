@@ -59,6 +59,7 @@ interface CreditAssessment {
 
 export default function Credit() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
   
   // Get user profile for sidebar
@@ -108,6 +109,7 @@ export default function Credit() {
         description: "Your personalized improvement plan has been generated.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/credit/assessment'] });
+      setShowForm(false);
       setActiveTab("plan");
     },
     onError: (error: any) => {
@@ -161,7 +163,7 @@ export default function Credit() {
         
         <div className="p-6">
           <div className="max-w-6xl mx-auto">
-            {!creditAssessment ? (
+            {!creditAssessment || showForm ? (
               // Credit Interview Form
               <div className="max-w-2xl mx-auto">
                 <div className="text-center mb-8">
@@ -871,8 +873,7 @@ export default function Credit() {
                               </p>
                               <Button 
                                 onClick={() => {
-                                  setHasCreditAssessment(false);
-                                  setCreditAssessment(null);
+                                  setShowForm(true);
                                   setActiveTab("overview");
                                 }}
                                 className="w-full"
