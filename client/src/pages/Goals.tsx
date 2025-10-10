@@ -454,11 +454,20 @@ export default function Goals() {
     if (!selectedGoal) return;
     
     try {
-      await apiRequest('DELETE', `/api/savings-goals/${selectedGoal.id}`);
+      // Use correct endpoint based on goal type
+      const endpoint = selectedGoal.type === 'debt' 
+        ? `/api/debt-goals/${selectedGoal.id}`
+        : `/api/savings-goals/${selectedGoal.id}`;
+      
+      await apiRequest('DELETE', endpoint);
       setIsDeleteDialogOpen(false);
       
-      // Refresh the goals list
-      queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      // Refresh the appropriate goals list
+      if (selectedGoal.type === 'debt') {
+        queryClient.invalidateQueries({ queryKey: ['/api/debt-goals'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      }
       
       toast({
         title: "Goal Deleted",
