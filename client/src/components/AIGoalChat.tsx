@@ -41,8 +41,9 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
       return await response.json();
     },
     onSuccess: (data) => {
-      // Refresh goals list
+      // Refresh BOTH savings and debt goals lists (AI can create either type)
       queryClient.invalidateQueries({ queryKey: ['/api/savings-goals'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/debt-goals'] });
       queryClient.invalidateQueries({ queryKey: ['/api/savings-tracker'] });
       
       // Add AI response to chat
@@ -56,9 +57,10 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
       setIsProcessing(false);
 
       if (data.goalCreated) {
+        const goalTypeLabel = data.goalType === 'debt' ? 'debt payoff' : 'savings';
         toast({
           title: "Goal Created! 🎉",
-          description: "Your new savings goal has been set up successfully."
+          description: `Your new ${goalTypeLabel} goal has been set up successfully.`
         });
       }
     },
