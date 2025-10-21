@@ -73,6 +73,9 @@ export default function Goals() {
   const [currentAmount, setCurrentAmount] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedColor, setSelectedColor] = useState('blue');
+  const [goalType, setGoalType] = useState<'savings' | 'debt'>('savings');
+  const [interestRate, setInterestRate] = useState('');
+  const [minimumPayment, setMinimumPayment] = useState('');
   
   // Add money functionality states
   const [addAmounts, setAddAmounts] = useState<Record<number, string>>({});
@@ -159,7 +162,7 @@ export default function Goals() {
     }
   ];
   
-  // Create mutation for adding goals
+  // Create mutation for adding savings goals
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: any) => {
       return await apiRequest('POST', '/api/savings-goals', goalData);
@@ -175,6 +178,27 @@ export default function Goals() {
       toast({
         title: "Error",
         description: error.message || "Failed to create goal",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Create mutation for adding debt goals
+  const createDebtGoalMutation = useMutation({
+    mutationFn: async (goalData: any) => {
+      return await apiRequest('POST', '/api/debt-goals', goalData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/debt-goals'] });
+      toast({
+        title: "Debt Goal Created",
+        description: "Your debt payoff goal has been created successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create debt goal",
         variant: "destructive"
       });
     }
@@ -268,6 +292,9 @@ export default function Goals() {
     setCurrentAmount('0');
     setSelectedDate(undefined);
     setSelectedColor('blue');
+    setGoalType('savings');
+    setInterestRate('');
+    setMinimumPayment('');
     setIsAddDialogOpen(true);
   };
   
@@ -343,7 +370,7 @@ export default function Goals() {
     
     if (isNaN(targetAmt) || targetAmt <= 0) {
       toast({
-        title: "Invalid Target Amount",
+        title: goalType === 'debt' ? "Invalid Debt Amount" : "Invalid Target Amount",
         description: "Please enter a valid positive number.",
         variant: "destructive"
       });
@@ -358,8 +385,30 @@ export default function Goals() {
       });
       return;
     }
+
+    // Validate debt-specific fields if provided
+    if (goalType === 'debt') {
+      if (interestRate && (isNaN(parseFloat(interestRate)) || parseFloat(interestRate) < 0 || parseFloat(interestRate) > 100)) {
+        toast({
+          title: "Invalid Interest Rate",
+          description: "Please enter a valid interest rate between 0 and 100.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (minimumPayment && (isNaN(parseFloat(minimumPayment)) || parseFloat(minimumPayment) < 0)) {
+        toast({
+          title: "Invalid Minimum Payment",
+          description: "Please enter a valid positive minimum payment amount.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
     
-    if (currentAmt > targetAmt) {
+    // Validation depends on goal type
+    if (goalType === 'savings' && currentAmt > targetAmt) {
       toast({
         title: "Invalid Amount",
         description: "Current amount cannot exceed target amount.",
@@ -368,20 +417,46 @@ export default function Goals() {
       return;
     }
     
+    if (goalType === 'debt' && currentAmt > targetAmt) {
+      toast({
+        title: "Invalid Amount",
+        description: "Current debt cannot exceed original debt amount.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Format the deadline date
-    const formattedDeadline = format(selectedDate, 'yyyy-MM-dd');
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
     
-    // Create goal data for API
-    const goalData = {
-      name: goalName,
-      targetAmount: targetAmt,
-      currentAmount: currentAmt,
-      deadline: formattedDeadline,
-      color: selectedColor
-    };
+    if (goalType === 'debt') {
+      // Create debt goal data for API
+      const debtGoalData = {
+        name: goalName,
+        originalAmount: targetAmt,
+        currentAmount: currentAmt,
+        targetDate: formattedDate,
+        interestRate: interestRate ? parseFloat(interestRate) : undefined,
+        minimumPayment: minimumPayment ? parseFloat(minimumPayment) : undefined,
+        color: selectedColor
+      };
+      
+      // Submit to API
+      createDebtGoalMutation.mutate(debtGoalData);
+    } else {
+      // Create savings goal data for API
+      const savingsGoalData = {
+        name: goalName,
+        targetAmount: targetAmt,
+        currentAmount: currentAmt,
+        deadline: formattedDate,
+        color: selectedColor
+      };
+      
+      // Submit to API
+      createGoalMutation.mutate(savingsGoalData);
+    }
     
-    // Submit to API
-    createGoalMutation.mutate(goalData);
     setIsAddDialogOpen(false);
     
     // Clear form
@@ -490,6 +565,9 @@ export default function Goals() {
     setCurrentAmount('');
     setSelectedDate(undefined);
     setSelectedColor('blue');
+    setGoalType('savings');
+    setInterestRate('');
+    setMinimumPayment('');
   };
 
   // Add money to a specific goal
@@ -562,6 +640,7 @@ export default function Goals() {
                 <Button 
                   className="mt-6 md:mt-0 btn-gamified px-8 py-3 rounded-2xl font-bold text-lg shadow-lg"
                   onClick={openAddGoalDialog}
+                  data-testid="button-open-create-goal"
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
                   Create New Goal
@@ -921,30 +1000,63 @@ export default function Goals() {
       
       {/* Add Goal Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <span className="material-icons mr-2 text-blue-500">add</span>
-              Add New Savings Goal
+              {goalType === 'debt' ? 'Add New Debt Payoff Goal' : 'Add New Savings Goal'}
             </DialogTitle>
             <DialogDescription>
-              Create a new savings goal to track your financial progress.
+              {goalType === 'debt' 
+                ? 'Create a debt payoff goal to track your journey to becoming debt-free.'
+                : 'Create a savings goal to track your financial progress.'
+              }
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
+            {/* Goal Type Selector */}
+            <div className="space-y-2">
+              <Label>Goal Type</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={goalType === 'savings' ? 'default' : 'outline'}
+                  onClick={() => setGoalType('savings')}
+                  className={goalType === 'savings' ? 'bg-blue-600' : ''}
+                  data-testid="button-goal-type-savings"
+                >
+                  <PiggyBank className="mr-2 h-4 w-4" />
+                  Savings
+                </Button>
+                <Button
+                  type="button"
+                  variant={goalType === 'debt' ? 'default' : 'outline'}
+                  onClick={() => setGoalType('debt')}
+                  className={goalType === 'debt' ? 'bg-red-600' : ''}
+                  data-testid="button-goal-type-debt"
+                >
+                  <Target className="mr-2 h-4 w-4" />
+                  Debt Payoff
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="goalName">Goal Name</Label>
               <Input
                 id="goalName"
                 value={goalName}
                 onChange={(e) => setGoalName(e.target.value)}
-                placeholder="e.g., Vacation, Emergency Fund"
+                placeholder={goalType === 'debt' ? 'e.g., Credit Card, Student Loan' : 'e.g., Vacation, Emergency Fund'}
+                data-testid="input-goal-name"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="targetAmount">Target Amount ($)</Label>
+              <Label htmlFor="targetAmount">
+                {goalType === 'debt' ? 'Original Debt Amount ($)' : 'Target Amount ($)'}
+              </Label>
               <Input
                 id="targetAmount"
                 type="number"
@@ -952,11 +1064,15 @@ export default function Goals() {
                 onChange={(e) => setTargetAmount(e.target.value)}
                 placeholder="0.00"
                 min="0"
+                step="0.01"
+                data-testid="input-target-amount"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="currentAmount">Current Amount ($)</Label>
+              <Label htmlFor="currentAmount">
+                {goalType === 'debt' ? 'Current Debt Remaining ($)' : 'Current Amount ($)'}
+              </Label>
               <Input
                 id="currentAmount"
                 type="number"
@@ -964,8 +1080,44 @@ export default function Goals() {
                 onChange={(e) => setCurrentAmount(e.target.value)}
                 placeholder="0.00"
                 min="0"
+                step="0.01"
+                data-testid="input-current-amount"
               />
             </div>
+
+            {/* Debt-specific fields */}
+            {goalType === 'debt' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="interestRate">Interest Rate (%) - Optional</Label>
+                  <Input
+                    id="interestRate"
+                    type="number"
+                    value={interestRate}
+                    onChange={(e) => setInterestRate(e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    data-testid="input-interest-rate"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="minimumPayment">Minimum Payment ($) - Optional</Label>
+                  <Input
+                    id="minimumPayment"
+                    type="number"
+                    value={minimumPayment}
+                    onChange={(e) => setMinimumPayment(e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    data-testid="input-minimum-payment"
+                  />
+                </div>
+              </>
+            )}
             
             <div className="space-y-2">
               <Label>Target Date</Label>
@@ -974,6 +1126,7 @@ export default function Goals() {
                   <Button
                     variant="outline"
                     className="w-full justify-start text-left font-normal"
+                    data-testid="button-target-date"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
@@ -1006,6 +1159,7 @@ export default function Goals() {
                       'bg-orange-500'
                     } ${selectedColor === color ? 'ring-2 ring-offset-2 ring-blue-600' : ''}`}
                     onClick={() => setSelectedColor(color)}
+                    data-testid={`button-color-${color}`}
                   />
                 ))}
               </div>
@@ -1013,10 +1167,14 @@ export default function Goals() {
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} data-testid="button-cancel">
               Cancel
             </Button>
-            <Button onClick={addNewGoal} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+            <Button 
+              onClick={addNewGoal} 
+              className={goalType === 'debt' ? 'bg-gradient-to-r from-red-600 to-rose-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}
+              data-testid="button-submit-goal"
+            >
               Create Goal
             </Button>
           </DialogFooter>
