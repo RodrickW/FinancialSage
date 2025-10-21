@@ -166,6 +166,16 @@ export const savingsTracker = pgTable("savings_tracker", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Interview responses schema for Money Mind financial coaching
+export const interviews = pgTable("interviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  responses: jsonb("responses").notNull(), // Store all interview responses as JSON
+  completedAt: timestamp("completed_at").notNull(),
+  personalizedPlan: jsonb("personalized_plan"), // AI-generated personalized plan
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true });
@@ -178,6 +188,7 @@ export const insertDebtGoalSchema = createInsertSchema(debtGoals).omit({ id: tru
 export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCreditAssessmentSchema = createInsertSchema(creditAssessments).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertInterviewSchema = createInsertSchema(interviews).omit({ id: true, createdAt: true });
 
 // Type definitions
 export type User = typeof users.$inferSelect;
@@ -212,3 +223,6 @@ export type InsertSavingsTracker = z.infer<typeof insertSavingsTrackerSchema>;
 
 export type CreditAssessment = typeof creditAssessments.$inferSelect;
 export type InsertCreditAssessment = z.infer<typeof insertCreditAssessmentSchema>;
+
+export type Interview = typeof interviews.$inferSelect;
+export type InsertInterview = z.infer<typeof insertInterviewSchema>;

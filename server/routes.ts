@@ -2044,7 +2044,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { responses, completedAt } = req.body;
       const user = req.user as User;
       
-      if (!responses) {
+      // Validate request body
+      if (!responses || typeof responses !== 'object') {
         return res.status(400).json({ message: 'Interview responses are required' });
       }
       
@@ -2062,6 +2063,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userName: user.firstName || user.username
       });
       
+      // Save interview responses and personalized plan to database
+      const interview = await storage.createInterview({
+        userId: user.id,
+        responses,
+        completedAt: completedAt ? new Date(completedAt) : new Date(),
+        personalizedPlan
+      });
+      
       // Store the interview completion as an insight
       const interviewInsight = await storage.createInsight({
         userId: user.id,
@@ -2074,7 +2083,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: 'Interview responses saved successfully',
-        interviewId: interviewInsight.id,
+        interviewId: interview.id,
         personalizedPlan 
       });
     } catch (error) {

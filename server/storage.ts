@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments, interviews } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment, Interview, InsertInterview } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -70,6 +70,10 @@ export interface IStorage {
   getCreditAssessment(userId: number): Promise<CreditAssessment | undefined>;
   createCreditAssessment(assessment: InsertCreditAssessment): Promise<CreditAssessment>;
   updateCreditAssessment(id: number, data: Partial<InsertCreditAssessment>): Promise<CreditAssessment | undefined>;
+
+  // Interview operations
+  getLatestInterview(userId: number): Promise<Interview | undefined>;
+  createInterview(interview: InsertInterview): Promise<Interview>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -486,6 +490,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(creditAssessments.id, id))
       .returning();
     return updated;
+  }
+
+  // Interview operations
+  async getLatestInterview(userId: number): Promise<Interview | undefined> {
+    const [interview] = await db.select().from(interviews)
+      .where(eq(interviews.userId, userId))
+      .orderBy(desc(interviews.createdAt));
+    return interview;
+  }
+
+  async createInterview(interview: InsertInterview): Promise<Interview> {
+    const [created] = await db.insert(interviews).values(interview).returning();
+    return created;
   }
 }
 

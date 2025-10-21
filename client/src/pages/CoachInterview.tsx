@@ -194,7 +194,8 @@ export default function CoachInterview() {
   // Save interview responses
   const saveInterviewMutation = useMutation({
     mutationFn: async (interviewData: any) => {
-      return apiRequest('POST', '/api/ai/interview', interviewData);
+      const response = await apiRequest('POST', '/api/ai/interview', interviewData);
+      return response.json();
     },
     onSuccess: () => {
       toast({
