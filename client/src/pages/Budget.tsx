@@ -230,7 +230,8 @@ export default function Budget() {
     }
     
     console.log('Updating budget with analysis:', analysis);
-    const updatedGroups = defaultBudgetGroups.map(group => ({
+    // Use current budgetData to preserve user's planned amounts
+    const updatedGroups = budgetData.map(group => ({
       ...group,
       categories: group.categories.map(category => {
         const spending = analysis.find(a => a.categoryId === category.id);
