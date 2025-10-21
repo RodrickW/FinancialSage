@@ -35,6 +35,7 @@ Preferred communication style: Simple, everyday language.
 - **Complete Trial System**: Implemented comprehensive 14-day no-credit-card trial system with automatic access granting, trial status tracking, expiration handling, and seamless upgrade prompts. All premium features (Plaid, AI coaching, analytics) are protected by `requireAccess` middleware. Updated all landing pages and subscription messaging to reflect "14-day free trial" and "No credit card required" instead of the old "30-day trial" and "Credit card required" messaging (Aug 20, 2025).
 - **Chase Bank Integration**: Removed outdated Chase bank connection disclaimers from web and mobile apps. Chase banks now connect normally through Plaid without restrictions (Aug 21, 2025).
 - **Enhanced Transaction Sync**: Integrated automatic transaction syncing with balance refreshes. Every 12-hour balance update now includes 7-day transaction sync with proper duplicate prevention using Plaid transaction IDs, ensuring users always see current financial data (Aug 21, 2025).
+- **Interview Data Persistence**: Created interviews table in database to permanently store user onboarding responses and AI-generated personalized plans. Fixed frontend mutation to properly parse JSON responses. Added database index for performance optimization on user queries (Oct 21, 2025).
 
 ### Feature Specifications
 - **Dashboard**: Overview of accounts, recent transactions, spending trends, and savings goals summary.
