@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
-import LinearGradient from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { apiRequest } from '../../services/api';

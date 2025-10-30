@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import LinearGradient from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';

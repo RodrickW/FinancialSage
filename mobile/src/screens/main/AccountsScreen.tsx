@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
-import LinearGradient from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { apiRequest } from '../../services/api';
 
