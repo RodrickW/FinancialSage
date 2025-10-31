@@ -9,7 +9,6 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
-import { Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -18,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { TrialStatus } from '../../components/TrialStatus';
 
 const { width } = Dimensions.get('window');
+const CARD_MARGIN = 16;
 
 interface Account {
   id: string;
@@ -105,133 +105,90 @@ const DashboardScreen: React.FC = () => {
     });
   };
 
-  const OverviewCard = ({ title, amount, icon, color, onPress }: {
-    title: string;
-    amount: number;
-    icon: string;
-    color: string;
-    onPress?: () => void;
-  }) => (
-    <TouchableOpacity style={styles.overviewCard} onPress={onPress}>
-      <Card style={[styles.card, { borderLeftColor: color, borderLeftWidth: 4 }]}>
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <Icon name={icon} size={24} color={color} />
-            <Text style={styles.cardTitle}>{title}</Text>
-          </View>
-          <Text style={[styles.cardAmount, { color }]}>
-            {formatCurrency(amount)}
-          </Text>
-        </View>
-      </Card>
-    </TouchableOpacity>
-  );
-
-  const AccountCard = ({ account }: { account: Account }) => (
-    <TouchableOpacity 
-      style={styles.accountCard}
-      onPress={() => navigation.navigate('Accounts' as never)}
-    >
-      <Card style={styles.card}>
-        <View style={styles.cardContent}>
-          <View style={styles.accountHeader}>
-            <View>
-              <Text style={styles.accountName}>{account.name}</Text>
-              <Text style={styles.accountType}>{account.type}</Text>
-            </View>
-            <Text style={styles.accountBalance}>
-              {formatCurrency(account.balance)}
-            </Text>
-          </View>
-          <Text style={styles.lastRefreshed}>
-            Last updated: {formatDate(account.lastRefreshed)}
-          </Text>
-        </View>
-      </Card>
-    </TouchableOpacity>
-  );
-
-  const TransactionItem = ({ transaction }: { transaction: RecentTransaction }) => (
-    <View style={styles.transactionItem}>
-      <View style={styles.transactionInfo}>
-        <Text style={styles.transactionDescription} numberOfLines={1}>
-          {transaction.description}
-        </Text>
-        <Text style={styles.transactionCategory}>{transaction.category}</Text>
-      </View>
-      <View style={styles.transactionRight}>
-        <Text style={[
-          styles.transactionAmount,
-          { color: transaction.amount < 0 ? '#EF4444' : '#10B981' }
-        ]}>
-          {formatCurrency(Math.abs(transaction.amount))}
-        </Text>
-        <Text style={styles.transactionDate}>
-          {formatDate(transaction.date)}
-        </Text>
-      </View>
-    </View>
-  );
+  const getCategoryIcon = (category: string) => {
+    const categoryMap: { [key: string]: string } = {
+      'Food & Dining': 'restaurant',
+      'Shopping': 'shopping-bag',
+      'Transportation': 'directions-car',
+      'Entertainment': 'movie',
+      'Bills & Utilities': 'receipt',
+      'Health': 'local-hospital',
+      'Income': 'attach-money',
+    };
+    return categoryMap[category] || 'category';
+  };
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading your financial overview...</Text>
+        <LinearGradient
+          colors={['#1877F2', '#0D5DBF']}
+          style={styles.loadingGradient}
+        >
+          <Icon name="account-balance-wallet" size={64} color="#FFFFFF" />
+          <Text style={styles.loadingText}>Loading your financial overview...</Text>
+        </LinearGradient>
       </View>
     );
   }
 
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      showsVerticalScrollIndicator={false}
-    >
-      <TrialStatus />
-      
-      <LinearGradient
-        colors={['#0F766E', '#14B8A6']}
-        style={styles.header}
+    <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#1877F2"
+          />
+        }
       >
-        <Text style={styles.welcomeText}>Welcome back, {user?.username}!</Text>
-        <Text style={styles.headerSubtitle}>Here's your financial overview</Text>
-      </LinearGradient>
+        <TrialStatus />
 
-      <View style={styles.content}>
-        {/* Financial Overview */}
+        {/* Hero Balance Card */}
         {overview && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Financial Overview</Text>
-            <View style={styles.overviewGrid}>
-              <OverviewCard
-                title="Total Balance"
-                amount={overview.totalBalance}
-                icon="account-balance-wallet"
-                color="#14B8A6"
-                onPress={() => navigation.navigate('Accounts' as never)}
-              />
-              <OverviewCard
-                title="Monthly Income"
-                amount={overview.monthlyIncome}
-                icon="trending-up"
-                color="#10B981"
-              />
-              <OverviewCard
-                title="Monthly Expenses"
-                amount={overview.monthlyExpenses}
-                icon="trending-down"
-                color="#EF4444"
-                onPress={() => navigation.navigate('Budget' as never)}
-              />
-              <OverviewCard
-                title="Savings"
-                amount={overview.savings}
-                icon="savings"
-                color="#8B5CF6"
-                onPress={() => navigation.navigate('Goals' as never)}
-              />
+          <LinearGradient
+            colors={['#1877F2', '#0D5DBF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroCard}
+          >
+            <View style={styles.heroContent}>
+              <Text style={styles.heroLabel}>Total Balance</Text>
+              <Text style={styles.heroAmount}>{formatCurrency(overview.totalBalance)}</Text>
+              <Text style={styles.heroSubtitle}>
+                Across {accounts.length} {accounts.length === 1 ? 'account' : 'accounts'}
+              </Text>
+            </View>
+          </LinearGradient>
+        )}
+
+        {/* Quick Stats Grid */}
+        {overview && (
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <View style={[styles.statIconContainer, { backgroundColor: '#D1FAE5' }]}>
+                <Icon name="trending-up" size={24} color="#10B981" />
+              </View>
+              <Text style={styles.statLabel}>Income</Text>
+              <Text style={styles.statAmount}>{formatCurrency(overview.monthlyIncome)}</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <View style={[styles.statIconContainer, { backgroundColor: '#FEE2E2' }]}>
+                <Icon name="trending-down" size={24} color="#EF4444" />
+              </View>
+              <Text style={styles.statLabel}>Expenses</Text>
+              <Text style={styles.statAmount}>{formatCurrency(overview.monthlyExpenses)}</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <View style={[styles.statIconContainer, { backgroundColor: '#E0E7FF' }]}>
+                <Icon name="savings" size={24} color="#6366F1" />
+              </View>
+              <Text style={styles.statLabel}>Savings</Text>
+              <Text style={styles.statAmount}>{formatCurrency(overview.savings)}</Text>
             </View>
           </View>
         )}
@@ -239,57 +196,45 @@ const DashboardScreen: React.FC = () => {
         {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActions}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Coach' as never)}
+          <View style={styles.quickActionsGrid}>
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => navigation.navigate('Accounts' as never)}
             >
-              <LinearGradient
-                colors={['#8B5CF6', '#A855F7']}
-                style={styles.actionGradient}
-              >
-                <Icon name="psychology" size={32} color="#FFFFFF" />
-                <Text style={styles.actionText}>AI Coach</Text>
-              </LinearGradient>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#DBEAFE' }]}>
+                <Icon name="account-balance" size={28} color="#1877F2" />
+              </View>
+              <Text style={styles.quickActionLabel}>Accounts</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
+
+            <TouchableOpacity
+              style={styles.quickActionCard}
               onPress={() => navigation.navigate('Budget' as never)}
             >
-              <LinearGradient
-                colors={['#F59E0B', '#FBBF24']}
-                style={styles.actionGradient}
-              >
-                <Icon name="pie-chart" size={32} color="#FFFFFF" />
-                <Text style={styles.actionText}>Budget</Text>
-              </LinearGradient>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#FEF3C7' }]}>
+                <Icon name="pie-chart" size={28} color="#F59E0B" />
+              </View>
+              <Text style={styles.quickActionLabel}>Budget</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
+
+            <TouchableOpacity
+              style={styles.quickActionCard}
               onPress={() => navigation.navigate('Goals' as never)}
             >
-              <LinearGradient
-                colors={['#06B6D4', '#0891B2']}
-                style={styles.actionGradient}
-              >
-                <Icon name="flag" size={32} color="#FFFFFF" />
-                <Text style={styles.actionText}>Goals</Text>
-              </LinearGradient>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#E0E7FF' }]}>
+                <Icon name="flag" size={28} color="#6366F1" />
+              </View>
+              <Text style={styles.quickActionLabel}>Goals</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Credit' as never)}
+
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => navigation.navigate('Coach' as never)}
             >
-              <LinearGradient
-                colors={['#EC4899', '#F472B6']}
-                style={styles.actionGradient}
-              >
-                <Icon name="credit-score" size={32} color="#FFFFFF" />
-                <Text style={styles.actionText}>Credit</Text>
-              </LinearGradient>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#F3E8FF' }]}>
+                <Icon name="psychology" size={28} color="#A855F7" />
+              </View>
+              <Text style={styles.quickActionLabel}>AI Coach</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -300,63 +245,91 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent Transactions</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Transactions' as never)}>
-                <Text style={styles.seeAllText}>See All</Text>
+                <Text style={styles.viewAllText}>View All</Text>
               </TouchableOpacity>
             </View>
-            <Card style={styles.transactionsCard}>
+            <View style={styles.transactionsCard}>
               {recentTransactions.map((transaction, index) => (
                 <View key={transaction.id}>
-                  <TransactionItem transaction={transaction} />
+                  <View style={styles.transactionRow}>
+                    <View style={styles.transactionLeft}>
+                      <View style={[
+                        styles.categoryIconContainer,
+                        { backgroundColor: transaction.amount < 0 ? '#FEE2E2' : '#D1FAE5' }
+                      ]}>
+                        <Icon
+                          name={getCategoryIcon(transaction.category)}
+                          size={20}
+                          color={transaction.amount < 0 ? '#EF4444' : '#10B981'}
+                        />
+                      </View>
+                      <View style={styles.transactionInfo}>
+                        <Text style={styles.transactionDescription} numberOfLines={1}>
+                          {transaction.description}
+                        </Text>
+                        <Text style={styles.transactionCategory}>{transaction.category}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.transactionRight}>
+                      <Text style={[
+                        styles.transactionAmount,
+                        { color: transaction.amount < 0 ? '#EF4444' : '#10B981' }
+                      ]}>
+                        {transaction.amount < 0 ? '-' : '+'}
+                        {formatCurrency(Math.abs(transaction.amount))}
+                      </Text>
+                      <Text style={styles.transactionDate}>
+                        {formatDate(transaction.date)}
+                      </Text>
+                    </View>
+                  </View>
                   {index < recentTransactions.length - 1 && (
                     <View style={styles.transactionDivider} />
                   )}
                 </View>
               ))}
-            </Card>
+            </View>
           </View>
         )}
 
-        {/* Connected Accounts */}
+        {/* Your Accounts */}
         {accounts.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Your Accounts</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Accounts' as never)}>
-                <Text style={styles.seeAllText}>Manage</Text>
+                <Text style={styles.viewAllText}>Manage</Text>
               </TouchableOpacity>
             </View>
-            {accounts.slice(0, 3).map((account) => (
-              <AccountCard key={account.id} account={account} />
+            {accounts.map((account) => (
+              <TouchableOpacity
+                key={account.id}
+                style={styles.accountCard}
+                onPress={() => navigation.navigate('Accounts' as never)}
+              >
+                <View style={styles.accountContent}>
+                  <View style={styles.accountLeft}>
+                    <View style={styles.accountIconContainer}>
+                      <Icon name="account-balance" size={24} color="#1877F2" />
+                    </View>
+                    <View>
+                      <Text style={styles.accountName}>{account.name}</Text>
+                      <Text style={styles.accountType}>{account.type}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.accountBalance}>
+                    {formatCurrency(account.balance)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
 
-        {/* Connect Account CTA */}
-        {accounts.length === 0 && (
-          <View style={styles.section}>
-            <Card style={styles.ctaCard}>
-              <LinearGradient
-                colors={['#0F766E', '#14B8A6']}
-                style={styles.ctaGradient}
-              >
-                <Icon name="account-balance" size={48} color="#FFFFFF" />
-                <Text style={styles.ctaTitle}>Connect Your Bank Account</Text>
-                <Text style={styles.ctaSubtitle}>
-                  Get started by connecting your bank account to see your financial overview
-                </Text>
-                <TouchableOpacity 
-                  style={styles.ctaButton}
-                  onPress={() => navigation.navigate('Accounts' as never)}
-                >
-                  <Text style={styles.ctaButtonText}>Connect Account</Text>
-                  <Icon name="arrow-forward" size={20} color="#14B8A6" />
-                </TouchableOpacity>
-              </LinearGradient>
-            </Card>
-          </View>
-        )}
-      </View>
-    </ScrollView>
+        {/* Bottom spacing */}
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -369,32 +342,91 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+  },
+  loadingGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
+    marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#FFFFFF',
+  },
+  heroCard: {
+    marginHorizontal: CARD_MARGIN,
+    marginTop: 16,
+    marginBottom: 20,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#1877F2',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  heroAmount: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    marginHorizontal: CARD_MARGIN,
+    marginBottom: 24,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  statIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748B',
     marginBottom: 4,
   },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#F0FDFA',
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+  statAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
   },
   section: {
+    marginHorizontal: CARD_MARGIN,
     marginBottom: 24,
   },
   sectionHeader: {
@@ -405,177 +437,150 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '700',
+    color: '#0F172A',
   },
-  seeAllText: {
+  viewAllText: {
     fontSize: 14,
-    color: '#14B8A6',
     fontWeight: '600',
+    color: '#1877F2',
   },
-  overviewGrid: {
+  quickActionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 12,
   },
-  overviewCard: {
-    width: (width - 60) / 2,
-    marginBottom: 16,
-  },
-  card: {
+  quickActionCard: {
+    width: (width - CARD_MARGIN * 2 - 12) / 2,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  cardContent: {
-    padding: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginLeft: 8,
-    fontWeight: '500',
-  },
-  cardAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  quickActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  actionButton: {
-    width: (width - 80) / 2,
-    marginBottom: 16,
-  },
-  actionGradient: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  actionText: {
-    color: '#FFFFFF',
+  quickActionIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  quickActionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    marginTop: 8,
+    color: '#0F172A',
   },
   transactionsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  transactionItem: {
+  transactionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
   },
+  transactionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  categoryIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   transactionInfo: {
     flex: 1,
-    marginRight: 16,
   },
   transactionDescription: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1F2937',
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0F172A',
+    marginBottom: 2,
   },
   transactionCategory: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#64748B',
   },
   transactionRight: {
     alignItems: 'flex-end',
+    marginLeft: 12,
   },
   transactionAmount: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   transactionDate: {
     fontSize: 12,
-    color: '#6B7280',
+    fontWeight: '400',
+    color: '#64748B',
   },
   transactionDivider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: -16,
+    backgroundColor: '#F1F5F9',
   },
   accountCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  accountHeader: {
+  accountContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+  },
+  accountLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  accountIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   accountName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
+    color: '#0F172A',
+    marginBottom: 2,
   },
   accountType: {
-    fontSize: 14,
-    color: '#6B7280',
-    textTransform: 'capitalize',
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#64748B',
   },
   accountBalance: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#14B8A6',
-  },
-  lastRefreshed: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  ctaCard: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  ctaGradient: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  ctaTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  ctaSubtitle: {
-    fontSize: 16,
-    color: '#F0FDFA',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  ctaButton: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ctaButtonText: {
-    color: '#14B8A6',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
+    fontWeight: '700',
+    color: '#1877F2',
   },
 });
 

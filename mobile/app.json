@@ -4,6 +4,12 @@
     "slug": "mind-my-money",
     "version": "2.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1877F2"
+    },
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
@@ -15,7 +21,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1877F2"
       },
       "package": "com.mindmymoney.app",
       "permissions": [
