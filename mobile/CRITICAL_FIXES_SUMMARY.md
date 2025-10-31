@@ -29,7 +29,15 @@
 
 ### 5. **Plaid Connection Error**
 **Problem**: Clicking "Connect Account" showed error
-**Fix**: Changed to informative message: "To connect a bank account, please use the web app. Accounts you connect will automatically sync to the mobile app."
+**Fix**: Changed to informative alert with two options:
+- "Cancel" to dismiss
+- "Open Web App" button that opens www.mindmymoneyapp.com directly in their phone browser
+
+### 6. **Added Web App Links Throughout**
+**Enhancement**: Added clickable links to www.mindmymoneyapp.com so users can easily access features that require the web
+- **Accounts screen**: "Connect Account" button opens alert with direct link to web app
+- **Budget screen**: Empty state mentions web app URL for managing budgets  
+- **Goals screen**: Clickable button in empty state to create goals on web app
 
 ---
 
@@ -99,12 +107,12 @@ eas build --platform ios --profile preview
 
 ## 📝 Remaining Limitations
 
-These features still require the web app:
-- **Creating new goals** (savings or debt)
-- **Connecting new bank accounts** (Plaid Link SDK not on mobile)
+These features still require the web app at **www.mindmymoneyapp.com**:
+- **Creating new goals** (savings or debt) - Tap the "Open Web App" button in Goals screen
+- **Connecting new bank accounts** (Plaid Link SDK not on mobile) - Use "Connect Account" button which opens web app
 - **Editing budgets** (can view and use AI to create, but editing is web-only)
 
-Once created on web, everything syncs automatically to mobile! 🔄
+**The app now has clickable links throughout to make accessing the web app easy!** Once you create/edit on web, everything syncs automatically to mobile! 🔄
 
 ---
 

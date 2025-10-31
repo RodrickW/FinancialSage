@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -50,8 +51,14 @@ const AccountsScreen: React.FC = () => {
   const handleConnectAccount = async () => {
     Alert.alert(
       'Connect Account',
-      'To connect a bank account, please use the web app. Accounts you connect will automatically sync to the mobile app.',
-      [{ text: 'Got it', style: 'default' }]
+      'To connect a bank account, please use the web app at www.mindmymoneyapp.com. Accounts you connect will automatically sync to the mobile app.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Open Web App',
+          onPress: () => Linking.openURL('https://www.mindmymoneyapp.com'),
+        },
+      ]
     );
   };
 

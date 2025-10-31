@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -247,6 +248,9 @@ const BudgetScreen: React.FC = () => {
             <Text style={styles.emptyText}>
               Create a budget to start tracking your spending and reach your financial goals
             </Text>
+            <Text style={styles.emptyHint}>
+              Use AI to create a budget below, or manage budgets on the web app at www.mindmymoneyapp.com
+            </Text>
             <TouchableOpacity style={styles.aiButton} onPress={handleCreateAIBudget}>
               <Icon name="auto-awesome" size={20} color="#FFFFFF" />
               <Text style={styles.aiButtonText}>Create AI Budget</Text>
@@ -422,6 +426,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  emptyHint: {
+    fontSize: 13,
+    color: '#94A3B8',
     textAlign: 'center',
     marginBottom: 24,
   },

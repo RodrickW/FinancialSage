@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -306,9 +307,15 @@ const GoalsScreen: React.FC = () => {
             <Text style={styles.emptyText}>
               Set savings goals and track debt payoff to reach your financial milestones
             </Text>
-            <Text style={styles.emptyHint}>
-              Create your first goal on the web app to get started
-            </Text>
+            <TouchableOpacity
+              style={styles.webLinkButton}
+              onPress={() => Linking.openURL('https://www.mindmymoneyapp.com')}
+            >
+              <Icon name="open-in-new" size={18} color="#1877F2" />
+              <Text style={styles.webLinkText}>
+                Create goals on the web app at www.mindmymoneyapp.com
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -506,6 +513,23 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  webLinkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  webLinkText: {
+    fontSize: 13,
+    color: '#1877F2',
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'center',
   },
 });
 
