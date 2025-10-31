@@ -29,9 +29,17 @@ interface Account {
 
 interface FinancialOverview {
   totalBalance: number;
-  monthlyIncome: number;
-  monthlyExpenses: number;
-  savings: number;
+  monthlySpending: number;
+  weeklySpending: number;
+  dailySpending: number;
+  previousMonthBalance: number;
+  previousMonthSpending: number;
+  creditScore: number;
+  savingsProgress: {
+    current: number;
+    target: number;
+    name: string;
+  };
 }
 
 interface RecentTransaction {
@@ -173,7 +181,9 @@ const DashboardScreen: React.FC = () => {
                 <Icon name="trending-up" size={24} color="#10B981" />
               </View>
               <Text style={styles.statLabel}>Income</Text>
-              <Text style={styles.statAmount}>{formatCurrency(overview.monthlyIncome)}</Text>
+              <Text style={styles.statAmount}>
+                {formatCurrency(overview.totalBalance + overview.monthlySpending)}
+              </Text>
             </View>
 
             <View style={styles.statCard}>
@@ -181,7 +191,7 @@ const DashboardScreen: React.FC = () => {
                 <Icon name="trending-down" size={24} color="#EF4444" />
               </View>
               <Text style={styles.statLabel}>Expenses</Text>
-              <Text style={styles.statAmount}>{formatCurrency(overview.monthlyExpenses)}</Text>
+              <Text style={styles.statAmount}>{formatCurrency(overview.monthlySpending)}</Text>
             </View>
 
             <View style={styles.statCard}>
@@ -189,7 +199,9 @@ const DashboardScreen: React.FC = () => {
                 <Icon name="savings" size={24} color="#6366F1" />
               </View>
               <Text style={styles.statLabel}>Savings</Text>
-              <Text style={styles.statAmount}>{formatCurrency(overview.savings)}</Text>
+              <Text style={styles.statAmount}>
+                {formatCurrency(overview.savingsProgress.current)}
+              </Text>
             </View>
           </View>
         )}

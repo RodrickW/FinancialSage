@@ -6,8 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
-import { Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { apiRequest } from '../../services/api';
@@ -47,38 +47,13 @@ const AccountsScreen: React.FC = () => {
     fetchAccounts();
   }, []);
 
-
   const handleConnectAccount = async () => {
-    setIsConnecting(true);
-    try {
-      const response = await apiRequest('POST', '/api/plaid/link-token');
-      if (response.ok) {
-        const data = await response.json();
-        // In a real React Native app, you would use the Plaid Link SDK
-        // For now, we'll show an alert
-        Alert.alert(
-          'Connect Account',
-          'Plaid Link would open here to connect your bank account.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Demo Connect', onPress: () => {
-              // For demo purposes, we'll simulate a successful connection
-              Alert.alert('Success', 'Account connected successfully!');
-              fetchAccounts();
-            }}
-          ]
-        );
-      } else {
-        Alert.alert('Error', 'Failed to initialize account connection');
-      }
-    } catch (error) {
-      console.error('Connect account error:', error);
-      Alert.alert('Error', 'Failed to connect account');
-    } finally {
-      setIsConnecting(false);
-    }
+    Alert.alert(
+      'Connect Account',
+      'To connect a bank account, please use the web app. Accounts you connect will automatically sync to the mobile app.',
+      [{ text: 'Got it', style: 'default' }]
+    );
   };
-
 
   const handleDisconnectAccount = async (accountId: string, accountName: string) => {
     Alert.alert(
@@ -86,8 +61,8 @@ const AccountsScreen: React.FC = () => {
       `Are you sure you want to disconnect ${accountName}? This will remove all transaction data for this account.`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Disconnect', 
+        {
+          text: 'Disconnect',
           style: 'destructive',
           onPress: async () => {
             try {
@@ -102,8 +77,8 @@ const AccountsScreen: React.FC = () => {
               console.error('Disconnect account error:', error);
               Alert.alert('Error', 'Failed to disconnect account');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -154,129 +129,118 @@ const AccountsScreen: React.FC = () => {
     }
   };
 
-  const AccountCard = ({ account }: { account: Account }) => (
-    <Card style={styles.accountCard}>
-      <View style={styles.cardContent}>
-        <View style={styles.accountHeader}>
-          <View style={styles.accountInfo}>
-            <View style={[styles.accountIcon, { backgroundColor: getAccountColor(account.type) + '20' }]}>
-              <Icon 
-                name={getAccountIcon(account.type)} 
-                size={24} 
-                color={getAccountColor(account.type)} 
-              />
-            </View>
-            <View style={styles.accountDetails}>
-              <Text style={styles.accountName}>{account.name}</Text>
-              <Text style={styles.institutionName}>{account.institutionName}</Text>
-              <Text style={styles.accountType}>{account.type}</Text>
-            </View>
-          </View>
-          <View style={styles.balanceContainer}>
-            <Text style={[styles.balance, { color: getAccountColor(account.type) }]}>
-              {formatCurrency(account.balance)}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.accountFooter}>
-          <Text style={styles.lastRefreshed}>
-            Last updated: {formatDate(account.lastRefreshed)}
-          </Text>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleDisconnectAccount(account.id, account.name)}
-            >
-              <Icon name="link-off" size={20} color="#EF4444" />
-              <Text style={[styles.actionButtonText, { color: '#EF4444' }]}>
-                Disconnect
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-      </View>
-    </Card>
-  );
-
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading your accounts...</Text>
+        <LinearGradient colors={['#1877F2', '#0D5DBF']} style={styles.loadingGradient}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Loading your accounts...</Text>
+        </LinearGradient>
       </View>
     );
   }
 
   return (
-    <ScrollView 
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      <LinearGradient
-        colors={['#1565C0', '#1877F2']}
-        style={styles.header}
-      >
+    <View style={styles.container}>
+      <LinearGradient colors={['#1877F2', '#0D5DBF']} style={styles.header}>
         <Text style={styles.headerTitle}>Your Accounts</Text>
-        <Text style={styles.headerSubtitle}>
-          Manage your connected bank accounts
-        </Text>
+        <Text style={styles.headerSubtitle}>Manage your connected bank accounts</Text>
       </LinearGradient>
 
-      <View style={styles.content}>
-        {accounts.length > 0 ? (
-          <>
-            <View style={styles.accountsSection}>
-              <Text style={styles.sectionTitle}>Connected Accounts ({accounts.length})</Text>
-              {accounts.map((account) => (
-                <AccountCard key={account.id} account={account} />
-              ))}
-            </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {accounts.length > 0 ? (
+            <>
+              <View style={styles.accountsSection}>
+                <Text style={styles.sectionTitle}>Connected Accounts ({accounts.length})</Text>
+                {accounts.map((account) => (
+                  <View key={account.id} style={styles.accountCard}>
+                    <View style={styles.accountHeader}>
+                      <View style={styles.accountInfo}>
+                        <View
+                          style={[
+                            styles.accountIcon,
+                            { backgroundColor: getAccountColor(account.type) + '20' },
+                          ]}
+                        >
+                          <Icon
+                            name={getAccountIcon(account.type)}
+                            size={24}
+                            color={getAccountColor(account.type)}
+                          />
+                        </View>
+                        <View style={styles.accountDetails}>
+                          <Text style={styles.accountName}>{account.name}</Text>
+                          <Text style={styles.institutionName}>{account.institutionName}</Text>
+                          <Text style={styles.accountType}>{account.type}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.balanceContainer}>
+                        <Text style={[styles.balance, { color: getAccountColor(account.type) }]}>
+                          {formatCurrency(account.balance)}
+                        </Text>
+                      </View>
+                    </View>
 
-            <View style={styles.rateLimitInfo}>
-              <Icon name="info" size={20} color="#6B7280" />
-              <Text style={styles.rateLimitText}>
-                Account balances are automatically refreshed when you log in to ensure you always see current data.
+                    <View style={styles.accountFooter}>
+                      <Text style={styles.lastRefreshed}>
+                        Last updated: {formatDate(account.lastRefreshed)}
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.disconnectButton}
+                        onPress={() => handleDisconnectAccount(account.id, account.name)}
+                      >
+                        <Icon name="link-off" size={18} color="#EF4444" />
+                        <Text style={styles.disconnectText}>Disconnect</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.rateLimitInfo}>
+                <Icon name="info" size={20} color="#1877F2" />
+                <Text style={styles.rateLimitText}>
+                  Account balances refresh automatically when you log in.
+                </Text>
+              </View>
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Icon name="account-balance" size={64} color="#CBD5E1" />
+              <Text style={styles.emptyTitle}>No Accounts Connected</Text>
+              <Text style={styles.emptyDescription}>
+                Connect your bank accounts to start tracking your finances with AI-powered insights.
               </Text>
             </View>
-          </>
-        ) : (
-          <View style={styles.emptyState}>
-            <Icon name="account-balance" size={64} color="#6B7280" />
-            <Text style={styles.emptyTitle}>No Accounts Connected</Text>
-            <Text style={styles.emptyDescription}>
-              Connect your bank accounts to start tracking your finances with AI-powered insights.
-            </Text>
-          </View>
-        )}
+          )}
 
-        <TouchableOpacity 
-          style={[styles.connectButton, isConnecting && { opacity: 0.5 }]}
-          onPress={handleConnectAccount}
-          disabled={isConnecting}
-        >
-          <LinearGradient
-            colors={['#1877F2', '#1565C0']}
-            style={styles.buttonGradient}
+          <TouchableOpacity
+            style={[styles.connectButton, isConnecting && { opacity: 0.5 }]}
+            onPress={handleConnectAccount}
+            disabled={isConnecting}
           >
-            <Icon name="add" size={24} color="#FFFFFF" />
-            <Text style={styles.connectButtonText}>
-              {isConnecting ? 'Connecting...' : 'Connect New Account'}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient colors={['#1877F2', '#0D5DBF']} style={styles.buttonGradient}>
+              <Icon name="add" size={24} color="#FFFFFF" />
+              <Text style={styles.connectButtonText}>
+                {isConnecting ? 'Connecting...' : 'Connect New Account'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <View style={styles.securityInfo}>
-          <Icon name="security" size={24} color="#10B981" />
-          <View style={styles.securityText}>
-            <Text style={styles.securityTitle}>Bank-Level Security</Text>
-            <Text style={styles.securityDescription}>
-              Your data is protected with 256-bit encryption and we never store your banking credentials.
-            </Text>
+          <View style={styles.securityInfo}>
+            <Icon name="security" size={24} color="#10B981" />
+            <View style={styles.securityTextContainer}>
+              <Text style={styles.securityTitle}>Bank-Level Security</Text>
+              <Text style={styles.securityDescription}>
+                Your data is protected with 256-bit encryption and we never store your banking
+                credentials.
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -287,65 +251,64 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+  },
+  loadingGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
   },
   loadingText: {
+    marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 30,
+    paddingBottom: 24,
     paddingHorizontal: 20,
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: '#F0FDFA',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
+    padding: 16,
   },
   accountsSection: {
-    marginTop: 20,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 16,
   },
   accountCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 2,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  cardContent: {
-    padding: 20,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   accountHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginBottom: 12,
   },
   accountInfo: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     flex: 1,
   },
   accountIcon: {
@@ -358,133 +321,122 @@ const styles = StyleSheet.create({
   },
   accountDetails: {
     flex: 1,
+    justifyContent: 'center',
   },
   accountName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
+    color: '#0F172A',
+    marginBottom: 2,
   },
   institutionName: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    color: '#64748B',
     marginBottom: 2,
   },
   accountType: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 12,
+    color: '#94A3B8',
     textTransform: 'capitalize',
   },
   balanceContainer: {
     alignItems: 'flex-end',
   },
   balance: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
   },
   accountFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#F1F5F9',
   },
   lastRefreshed: {
     fontSize: 12,
-    color: '#6B7280',
-    flex: 1,
+    color: '#64748B',
   },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  actionButton: {
+  disconnectButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: '#F8FAFC',
+    gap: 4,
   },
-  actionButtonText: {
-    fontSize: 12,
+  disconnectText: {
+    fontSize: 13,
     fontWeight: '500',
-    marginLeft: 4,
-    color: '#1877F2',
+    color: '#EF4444',
+  },
+  rateLimitInfo: {
+    flexDirection: 'row',
+    backgroundColor: '#DBEAFE',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    gap: 12,
+  },
+  rateLimitText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1E40AF',
+    lineHeight: 18,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
+    paddingHorizontal: 32,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyDescription: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: '#64748B',
     textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   connectButton: {
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
+    gap: 8,
   },
   connectButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginLeft: 8,
-  },
-  rateLimitInfo: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
-  },
-  rateLimitText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginLeft: 12,
-    flex: 1,
-    lineHeight: 20,
   },
   securityInfo: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#F0FDF4',
+    padding: 16,
     borderRadius: 12,
-    padding: 20,
+    gap: 12,
   },
-  securityText: {
-    marginLeft: 16,
+  securityTextContainer: {
     flex: 1,
   },
   securityTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#065F46',
     marginBottom: 4,
   },
   securityDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#047857',
-    lineHeight: 20,
+    lineHeight: 18,
   },
 });
 

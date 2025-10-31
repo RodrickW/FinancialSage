@@ -16,9 +16,11 @@ interface BudgetCategory {
   id: number;
   userId: number;
   category: string;
-  budgetAmount: number;
+  amount: number;
+  period: string;
   spent: number;
   remaining: number;
+  icon?: string;
 }
 
 const BudgetScreen: React.FC = () => {
@@ -36,8 +38,8 @@ const BudgetScreen: React.FC = () => {
         setBudgets(data);
         
         // Calculate totals
-        const budget = data.reduce((sum: number, b: BudgetCategory) => sum + b.budgetAmount, 0);
-        const spent = data.reduce((sum: number, b: BudgetCategory) => sum + b.spent, 0);
+        const budget = data.reduce((sum: number, b: BudgetCategory) => sum + (b.amount || 0), 0);
+        const spent = data.reduce((sum: number, b: BudgetCategory) => sum + (b.spent || 0), 0);
         setTotalBudget(budget);
         setTotalSpent(spent);
       }
@@ -182,9 +184,11 @@ const BudgetScreen: React.FC = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Budget Categories</Text>
             {budgets.map((budget) => {
-              const progress = getProgressPercentage(budget.spent, budget.budgetAmount);
+              const budgetAmount = budget.amount || 0;
+              const budgetSpent = budget.spent || 0;
+              const progress = getProgressPercentage(budgetSpent, budgetAmount);
               const color = getCategoryColor(budget.category);
-              const isOverBudget = budget.spent > budget.budgetAmount;
+              const isOverBudget = budgetSpent > budgetAmount;
 
               return (
                 <View key={budget.id} style={styles.budgetCard}>
@@ -200,7 +204,7 @@ const BudgetScreen: React.FC = () => {
                       <Text style={styles.budgetCategory}>{budget.category}</Text>
                     </View>
                     <Text style={[styles.budgetAmount, isOverBudget && { color: '#EF4444' }]}>
-                      {formatCurrency(budget.budgetAmount)}
+                      {formatCurrency(budgetAmount)}
                     </Text>
                   </View>
 
@@ -220,7 +224,7 @@ const BudgetScreen: React.FC = () => {
 
                   <View style={styles.budgetFooter}>
                     <Text style={styles.budgetSpent}>
-                      Spent: {formatCurrency(budget.spent)}
+                      Spent: {formatCurrency(budgetSpent)}
                     </Text>
                     <Text
                       style={[
@@ -229,7 +233,7 @@ const BudgetScreen: React.FC = () => {
                       ]}
                     >
                       {isOverBudget ? 'Over by: ' : 'Left: '}
-                      {formatCurrency(Math.abs(budget.remaining))}
+                      {formatCurrency(Math.abs(budget.remaining || 0))}
                     </Text>
                   </View>
                 </View>
