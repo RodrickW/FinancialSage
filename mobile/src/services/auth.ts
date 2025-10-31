@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Keychain from 'react-native-keychain';
 
 export class AuthService {
   private static readonly AUTH_TOKEN_KEY = 'authToken';
@@ -8,7 +7,6 @@ export class AuthService {
   static async saveAuthToken(token: string): Promise<void> {
     try {
       await AsyncStorage.setItem(this.AUTH_TOKEN_KEY, token);
-      await Keychain.setInternetCredentials('mindmymoney', 'user', token);
     } catch (error) {
       console.error('Failed to save auth token:', error);
     }
@@ -48,7 +46,6 @@ export class AuthService {
     try {
       await AsyncStorage.removeItem(this.AUTH_TOKEN_KEY);
       await AsyncStorage.removeItem(this.USER_DATA_KEY);
-      await Keychain.resetInternetCredentials('mindmymoney');
     } catch (error) {
       console.error('Failed to clear auth:', error);
     }

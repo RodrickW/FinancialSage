@@ -8,7 +8,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mindmymoney.app"
+      "bundleIdentifier": "com.mindmymoney.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,6 +22,11 @@
         "INTERNET",
         "ACCESS_NETWORK_STATE"
       ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4a34e0fe-3a75-411d-a739-5637883800b1"
+      }
     }
   }
 }
