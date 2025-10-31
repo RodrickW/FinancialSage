@@ -1,40 +1,203 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { apiRequest } from '../../services/api';
+
+interface Message {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
 
 const CoachScreen: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: "Hi! I'm Money Mind, your AI financial coach. Ask me anything about budgeting, saving, investing, or managing your money!",
+      isUser: false,
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputText, setInputText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const suggestedQuestions = [
+    "How can I save more money?",
+    "Help me create a budget",
+    "How do I improve my credit score?",
+    "What's a good emergency fund?",
+  ];
+
+  useEffect(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText,
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputText('');
+    setIsLoading(true);
+
+    try {
+      const response = await apiRequest('POST', '/api/ai/coaching', {
+        question: inputText,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: data.answer,
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to get response');
+      }
+    } catch (error) {
+      console.error('Coach error:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm having trouble connecting right now. Please try again in a moment.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSuggestedQuestion = (question: string) => {
+    setInputText(question);
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100}
+    >
       <LinearGradient
-        colors={['#1565C0', '#1877F2']}
+        colors={['#1877F2', '#0D5DBF']}
         style={styles.header}
       >
-        <Text style={styles.headerTitle}>AI Financial Coach</Text>
-        <Text style={styles.headerSubtitle}>
-          Personalized advice powered by AI
-        </Text>
+        <Icon name="psychology" size={32} color="#FFFFFF" />
+        <Text style={styles.headerTitle}>Money Mind</Text>
+        <Text style={styles.headerSubtitle}>Your AI Financial Coach</Text>
       </LinearGradient>
 
-      <View style={styles.content}>
-        <View style={styles.comingSoon}>
-          <Icon name="psychology" size={64} color="#6B7280" />
-          <Text style={styles.comingSoonTitle}>AI Coach Feature</Text>
-          <Text style={styles.comingSoonDescription}>
-            AI-powered financial coaching and chat features are coming soon to the mobile app.
-          </Text>
-          <TouchableOpacity style={styles.notifyButton}>
-            <Text style={styles.notifyButtonText}>Get Notified</Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.messagesContainer}
+        contentContainerStyle={styles.messagesContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {messages.map((message) => (
+          <View
+            key={message.id}
+            style={[
+              styles.messageWrapper,
+              message.isUser ? styles.userMessageWrapper : styles.aiMessageWrapper,
+            ]}
+          >
+            {!message.isUser && (
+              <View style={styles.aiAvatar}>
+                <Icon name="psychology" size={20} color="#1877F2" />
+              </View>
+            )}
+            <View
+              style={[
+                styles.messageBubble,
+                message.isUser ? styles.userMessage : styles.aiMessage,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.messageText,
+                  message.isUser ? styles.userMessageText : styles.aiMessageText,
+                ]}
+              >
+                {message.text}
+              </Text>
+            </View>
+          </View>
+        ))}
+
+        {isLoading && (
+          <View style={styles.loadingWrapper}>
+            <View style={styles.aiAvatar}>
+              <Icon name="psychology" size={20} color="#1877F2" />
+            </View>
+            <View style={styles.loadingBubble}>
+              <ActivityIndicator size="small" color="#1877F2" />
+            </View>
+          </View>
+        )}
+
+        {messages.length === 1 && (
+          <View style={styles.suggestionsContainer}>
+            <Text style={styles.suggestionsTitle}>Try asking:</Text>
+            {suggestedQuestions.map((question, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.suggestionButton}
+                onPress={() => handleSuggestedQuestion(question)}
+              >
+                <Text style={styles.suggestionText}>{question}</Text>
+                <Icon name="arrow-forward" size={16} color="#1877F2" />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Ask me anything about your finances..."
+          value={inputText}
+          onChangeText={setInputText}
+          onSubmitEditing={handleSendMessage}
+          returnKeyType="send"
+          multiline
+          maxLength={500}
+        />
+        <TouchableOpacity
+          style={[styles.sendButton, (!inputText.trim() || isLoading) && styles.sendButtonDisabled]}
+          onPress={handleSendMessage}
+          disabled={!inputText.trim() || isLoading}
+        >
+          <Icon
+            name="send"
+            size={24}
+            color={inputText.trim() && !isLoading ? '#FFFFFF' : '#94A3B8'}
+          />
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -45,53 +208,148 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 30,
+    paddingBottom: 24,
     paddingHorizontal: 20,
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 4,
+    marginTop: 12,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: '#F0FDFA',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 4,
   },
-  content: {
+  messagesContainer: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
   },
-  comingSoon: {
+  messagesContent: {
+    padding: 16,
+    paddingBottom: 80,
+  },
+  messageWrapper: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'flex-end',
+  },
+  userMessageWrapper: {
+    justifyContent: 'flex-end',
+  },
+  aiMessageWrapper: {
+    justifyContent: 'flex-start',
+  },
+  aiAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    marginRight: 8,
   },
-  comingSoonTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginTop: 16,
-    marginBottom: 8,
+  messageBubble: {
+    maxWidth: '75%',
+    padding: 12,
+    borderRadius: 16,
   },
-  comingSoonDescription: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
-    marginBottom: 32,
-  },
-  notifyButton: {
+  userMessage: {
     backgroundColor: '#1877F2',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    borderBottomRightRadius: 4,
   },
-  notifyButtonText: {
+  aiMessage: {
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  userMessageText: {
     color: '#FFFFFF',
-    fontSize: 16,
+  },
+  aiMessageText: {
+    color: '#0F172A',
+  },
+  loadingWrapper: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'flex-end',
+  },
+  loadingBubble: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderBottomLeftRadius: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  suggestionsContainer: {
+    marginTop: 16,
+  },
+  suggestionsTitle: {
+    fontSize: 14,
     fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 12,
+  },
+  suggestionButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  suggestionText: {
+    fontSize: 14,
+    color: '#0F172A',
+    flex: 1,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    alignItems: 'flex-end',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    maxHeight: 100,
+    marginRight: 8,
+  },
+  sendButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#1877F2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#E2E8F0',
   },
 });
 
