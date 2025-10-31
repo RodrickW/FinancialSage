@@ -1,6 +1,5 @@
-const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:5000' // For development/testing
-  : 'https://mindmymoney.replit.app';
+// Force production URL for mobile builds
+const API_BASE_URL = 'https://mindmymoney.replit.app';
 
 import { AuthService } from './auth';
 
