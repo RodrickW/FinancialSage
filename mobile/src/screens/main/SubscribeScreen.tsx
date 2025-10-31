@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -94,19 +95,20 @@ const SubscribeScreen: React.FC = () => {
         const data = await response.json();
         
         if (data.checkoutUrl) {
-          // In a real React Native app, you would use a WebView or redirect
-          // For now, we'll show an alert
+          // Open Stripe checkout in browser
           Alert.alert(
-            'Redirect to Payment',
-            'You will be redirected to complete your subscription setup.',
+            'Complete Your Subscription',
+            'You will be redirected to Stripe to securely complete your payment setup.',
             [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Continue', onPress: () => {
-                // TODO: Open WebView with data.checkoutUrl
-                console.log('Would open checkout URL:', data.checkoutUrl);
-                // For demo, navigate to success screen
-                navigation.navigate('SubscriptionSuccess' as never);
-              }}
+              { 
+                text: 'Continue to Stripe', 
+                onPress: () => {
+                  Linking.openURL(data.checkoutUrl).catch(() => {
+                    Alert.alert('Error', 'Unable to open payment page. Please try again.');
+                  });
+                }
+              }
             ]
           );
         } else {
@@ -177,7 +179,7 @@ const SubscribeScreen: React.FC = () => {
           >
             {plan.popular && plan.available ? (
               <LinearGradient
-                colors={['#14B8A6', '#10B981']}
+                colors={['#1877F2', '#0D5DBF']}
                 style={styles.buttonGradient}
               >
                 <Text style={styles.popularSelectButtonText}>
@@ -194,7 +196,7 @@ const SubscribeScreen: React.FC = () => {
                   {!plan.available ? 'Coming Soon' : isLoading ? 'Processing...' : 'Start Free Trial'}
                 </Text>
                 {plan.available && (
-                  <Icon name="arrow-forward" size={20} color="#14B8A6" />
+                  <Icon name="arrow-forward" size={20} color="#1877F2" />
                 )}
               </View>
             )}
@@ -207,7 +209,7 @@ const SubscribeScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <LinearGradient
-        colors={['#0F766E', '#14B8A6']}
+        colors={['#1877F2', '#0D5DBF']}
         style={styles.header}
       >
         <TouchableOpacity 
@@ -253,7 +255,7 @@ const SubscribeScreen: React.FC = () => {
           <Text style={styles.featuresSectionTitle}>What's included in your free trial:</Text>
           <View style={styles.includedFeatures}>
             <View style={styles.includedFeatureItem}>
-              <Icon name="psychology" size={24} color="#8B5CF6" />
+              <Icon name="psychology" size={24} color="#1877F2" />
               <View style={styles.includedFeatureText}>
                 <Text style={styles.includedFeatureTitle}>AI Financial Coach</Text>
                 <Text style={styles.includedFeatureDescription}>
@@ -263,7 +265,7 @@ const SubscribeScreen: React.FC = () => {
             </View>
             
             <View style={styles.includedFeatureItem}>
-              <Icon name="account-balance" size={24} color="#14B8A6" />
+              <Icon name="account-balance" size={24} color="#0D5DBF" />
               <View style={styles.includedFeatureText}>
                 <Text style={styles.includedFeatureTitle}>Bank Integration</Text>
                 <Text style={styles.includedFeatureDescription}>
@@ -273,7 +275,7 @@ const SubscribeScreen: React.FC = () => {
             </View>
             
             <View style={styles.includedFeatureItem}>
-              <Icon name="insights" size={24} color="#F59E0B" />
+              <Icon name="insights" size={24} color="#1877F2" />
               <View style={styles.includedFeatureText}>
                 <Text style={styles.includedFeatureTitle}>Smart Analytics</Text>
                 <Text style={styles.includedFeatureDescription}>
@@ -283,7 +285,7 @@ const SubscribeScreen: React.FC = () => {
             </View>
             
             <View style={styles.includedFeatureItem}>
-              <Icon name="flag" size={24} color="#06B6D4" />
+              <Icon name="flag" size={24} color="#0D5DBF" />
               <View style={styles.includedFeatureText}>
                 <Text style={styles.includedFeatureTitle}>Goal Tracking</Text>
                 <Text style={styles.includedFeatureDescription}>
@@ -495,13 +497,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#14B8A6',
+    borderColor: '#1877F2',
     borderRadius: 12,
   },
   selectButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
     marginRight: 8,
   },
   popularSelectButtonText: {
