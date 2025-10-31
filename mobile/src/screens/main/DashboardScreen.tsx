@@ -54,9 +54,9 @@ const DashboardScreen: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       const [overviewRes, accountsRes, transactionsRes] = await Promise.all([
-        apiRequest('GET', '/api/dashboard/overview'),
+        apiRequest('GET', '/api/financial-overview'),
         apiRequest('GET', '/api/accounts'),
-        apiRequest('GET', '/api/transactions/recent?limit=5'),
+        apiRequest('GET', '/api/transactions'),
       ]);
 
       if (overviewRes.ok) {
@@ -71,7 +71,8 @@ const DashboardScreen: React.FC = () => {
 
       if (transactionsRes.ok) {
         const transactionsData = await transactionsRes.json();
-        setRecentTransactions(transactionsData);
+        // Only show first 5 transactions on dashboard
+        setRecentTransactions(transactionsData.slice(0, 5));
       }
     } catch (error) {
       console.error('Dashboard data fetch error:', error);
