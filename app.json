@@ -4,6 +4,9 @@
       "eas": {
         "projectId": "27eeee9f-1f57-42d9-8b16-b854e831d2c9"
       }
+    },
+    "android": {
+      "package": "com.RodrickW.mindmymoney"
     }
   }
 }
