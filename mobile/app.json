@@ -20,6 +20,11 @@
         "INTERNET",
         "ACCESS_NETWORK_STATE"
       ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "91cfbbb7-1c6f-493f-9fa4-95c4a080e523"
+      }
     }
   }
 }
