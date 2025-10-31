@@ -129,7 +129,7 @@ const ForgotPasswordScreen: React.FC = () => {
                   style={styles.input}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="email" />}
                 />
               )}
@@ -144,7 +144,7 @@ const ForgotPasswordScreen: React.FC = () => {
               disabled={isLoading}
             >
               <LinearGradient
-                colors={['#14B8A6', '#10B981']}
+                colors={['#1877F2', '#1877F2']}
                 style={styles.buttonGradient}
               >
                 {isLoading ? (
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   helpLinkText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
   },
   // Success screen styles
   successContainer: {
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   backButton: {
-    backgroundColor: '#14B8A6',
+    backgroundColor: '#1877F2',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,

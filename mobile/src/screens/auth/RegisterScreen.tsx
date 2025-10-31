@@ -87,7 +87,7 @@ const RegisterScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
       >
         <LinearGradient
-          colors={['#0F766E', '#14B8A6']}
+          colors={['#0D5DBF', '#1877F2']}
           style={styles.header}
         >
           <View style={styles.logoContainer}>
@@ -101,7 +101,7 @@ const RegisterScreen: React.FC = () => {
 
         <View style={styles.formContainer}>
           <View style={styles.trialBanner}>
-            <Icon name="celebration" size={24} color="#10B981" />
+            <Icon name="celebration" size={24} color="#1877F2" />
             <View style={styles.trialInfo}>
               <Text style={styles.trialTitle}>14-Day Free Trial</Text>
               <Text style={styles.trialDescription}>
@@ -123,7 +123,7 @@ const RegisterScreen: React.FC = () => {
                   onChangeText={onChange}
                   error={!!errors.username}
                   style={styles.input}
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="account" />}
                 />
               )}
@@ -146,7 +146,7 @@ const RegisterScreen: React.FC = () => {
                   style={styles.input}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="email" />}
                 />
               )}
@@ -168,7 +168,7 @@ const RegisterScreen: React.FC = () => {
                   error={!!errors.password}
                   style={styles.input}
                   secureTextEntry={!showPassword}
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="lock" />}
                   right={
                     <TextInput.Icon 
@@ -196,7 +196,7 @@ const RegisterScreen: React.FC = () => {
                   error={!!errors.confirmPassword}
                   style={styles.input}
                   secureTextEntry={!showConfirmPassword}
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="lock-check" />}
                   right={
                     <TextInput.Icon 
@@ -217,7 +217,7 @@ const RegisterScreen: React.FC = () => {
               disabled={isLoading}
             >
               <LinearGradient
-                colors={['#14B8A6', '#10B981']}
+                colors={['#1877F2', '#1877F2']}
                 style={styles.buttonGradient}
               >
                 {isLoading ? (
@@ -235,19 +235,19 @@ const RegisterScreen: React.FC = () => {
               <Text style={styles.featuresTitle}>What's included in your free trial:</Text>
               <View style={styles.featuresList}>
                 <View style={styles.featureItem}>
-                  <Icon name="check-circle" size={20} color="#10B981" />
+                  <Icon name="check-circle" size={20} color="#1877F2" />
                   <Text style={styles.featureText}>AI Financial Coach</Text>
                 </View>
                 <View style={styles.featureItem}>
-                  <Icon name="check-circle" size={20} color="#10B981" />
+                  <Icon name="check-circle" size={20} color="#1877F2" />
                   <Text style={styles.featureText}>Bank Account Integration</Text>
                 </View>
                 <View style={styles.featureItem}>
-                  <Icon name="check-circle" size={20} color="#10B981" />
+                  <Icon name="check-circle" size={20} color="#1877F2" />
                   <Text style={styles.featureText}>Smart Budget Creation</Text>
                 </View>
                 <View style={styles.featureItem}>
-                  <Icon name="check-circle" size={20} color="#10B981" />
+                  <Icon name="check-circle" size={20} color="#1877F2" />
                   <Text style={styles.featureText}>Credit Score Monitoring</Text>
                 </View>
               </View>
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
     borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
+    borderLeftColor: '#1877F2',
   },
   trialInfo: {
     marginLeft: 12,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   loginLinkText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
   },
 });
 

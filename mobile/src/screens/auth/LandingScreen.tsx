@@ -22,7 +22,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
   <View style={styles.featureCard}>
-    <Icon name={icon} size={48} color="#14B8A6" style={styles.featureIcon} />
+    <Icon name={icon} size={48} color="#1877F2" style={styles.featureIcon} />
     <Text style={styles.featureTitle}>{title}</Text>
     <Text style={styles.featureDescription}>{description}</Text>
   </View>
@@ -65,7 +65,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
       <View style={styles.featuresContainer}>
         {features.map((feature, index) => (
           <View key={index} style={styles.featureItem}>
-            <Icon name="check-circle" size={20} color="#10B981" />
+            <Icon name="check-circle" size={20} color="#1877F2" />
             <Text style={styles.featureText}>{feature}</Text>
           </View>
         ))}
@@ -77,7 +77,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         <Text style={[styles.planButtonText, popular && styles.popularPlanButtonText]}>
           Start Free Trial
         </Text>
-        <Icon name="arrow-forward" size={20} color={popular ? "#FFFFFF" : "#14B8A6"} />
+        <Icon name="arrow-forward" size={20} color={popular ? "#FFFFFF" : "#1877F2"} />
       </TouchableOpacity>
     </View>
   );
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   popularPlan: {
-    borderColor: '#10B981',
+    borderColor: '#1877F2',
     backgroundColor: '#ECFDF5',
   },
   popularBadge: {
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     top: -12,
     left: '50%',
     transform: [{ translateX: -75 }],
-    backgroundColor: '#10B981',
+    backgroundColor: '#1877F2',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
@@ -463,11 +463,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#14B8A6',
+    borderColor: '#1877F2',
   },
   popularPlanButton: {
-    backgroundColor: '#14B8A6',
-    borderColor: '#14B8A6',
+    backgroundColor: '#1877F2',
+    borderColor: '#1877F2',
   },
   planButtonText: {
     fontSize: 18,

@@ -72,11 +72,11 @@ const LoginScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
       >
         <LinearGradient
-          colors={['#0F766E', '#14B8A6']}
+          colors={['#1877F2', '#0D5DBF']}
           style={styles.header}
         >
           <View style={styles.logoContainer}>
-            <Icon name="attach-money" size={40} color="#FFFFFF" />
+            <Icon name="account-balance-wallet" size={40} color="#FFFFFF" />
           </View>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>
@@ -99,7 +99,7 @@ const LoginScreen: React.FC = () => {
                   error={!!errors.username}
                   style={styles.input}
                   autoCapitalize="none"
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="account" />}
                 />
               )}
@@ -121,7 +121,7 @@ const LoginScreen: React.FC = () => {
                   error={!!errors.password}
                   style={styles.input}
                   secureTextEntry={!showPassword}
-                  theme={{ colors: { primary: '#14B8A6' } }}
+                  theme={{ colors: { primary: '#1877F2' } }}
                   left={<TextInput.Icon icon="lock" />}
                   right={
                     <TextInput.Icon 
@@ -149,7 +149,7 @@ const LoginScreen: React.FC = () => {
               disabled={isLoading}
             >
               <LinearGradient
-                colors={['#14B8A6', '#10B981']}
+                colors={['#1877F2', '#0D5DBF']}
                 style={styles.buttonGradient}
               >
                 {isLoading ? (
@@ -174,7 +174,7 @@ const LoginScreen: React.FC = () => {
               onPress={() => navigation.navigate('Register' as never)}
             >
               <Text style={styles.registerButtonText}>Create New Account</Text>
-              <Icon name="person-add" size={20} color="#14B8A6" />
+              <Icon name="person-add" size={20} color="#1877F2" />
             </TouchableOpacity>
 
             <View style={styles.trialInfo}>
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   forgotPasswordText: {
-    color: '#14B8A6',
+    color: '#1877F2',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -308,12 +308,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#14B8A6',
+    borderColor: '#1877F2',
     backgroundColor: '#FFFFFF',
     marginBottom: 24,
   },
   registerButtonText: {
-    color: '#14B8A6',
+    color: '#1877F2',
     fontSize: 16,
     fontWeight: '600',
     marginRight: 8,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   landingLinkText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#14B8A6',
+    color: '#1877F2',
   },
 });
 
