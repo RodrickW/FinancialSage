@@ -18,20 +18,42 @@ interface SavingsGoal {
   targetAmount: number;
   currentAmount: number;
   deadline: string;
-  description: string;
+  description?: string;
+}
+
+interface DebtGoal {
+  id: number;
+  name: string;
+  originalAmount: number;
+  currentAmount: number;
+  targetDate: string;
+  interestRate?: number;
+  minimumPayment?: number;
+  color: string;
+  icon?: string;
 }
 
 const GoalsScreen: React.FC = () => {
-  const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [debtGoals, setDebtGoals] = useState<DebtGoal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchGoals = async () => {
     try {
-      const response = await apiRequest('GET', '/api/savings-goals');
-      if (response.ok) {
-        const data = await response.json();
-        setGoals(data);
+      const [savingsRes, debtRes] = await Promise.all([
+        apiRequest('GET', '/api/savings-goals'),
+        apiRequest('GET', '/api/debt-goals'),
+      ]);
+
+      if (savingsRes.ok) {
+        const data = await savingsRes.json();
+        setSavingsGoals(data);
+      }
+
+      if (debtRes.ok) {
+        const data = await debtRes.json();
+        setDebtGoals(data);
       }
     } catch (error) {
       console.error('Goals fetch error:', error);
@@ -120,9 +142,11 @@ const GoalsScreen: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1877F2" />
         }
       >
-        {goals.length > 0 ? (
+        {/* Savings Goals */}
+        {savingsGoals.length > 0 && (
           <View style={styles.section}>
-            {goals.map((goal) => {
+            <Text style={styles.sectionHeader}>💰 Savings Goals</Text>
+            {savingsGoals.map((goal) => {
               const progress = getProgressPercentage(goal.currentAmount, goal.targetAmount);
               const isComplete = progress >= 100;
 
@@ -186,12 +210,101 @@ const GoalsScreen: React.FC = () => {
               );
             })}
           </View>
-        ) : (
+        )}
+
+        {/* Debt Payoff Goals */}
+        {debtGoals.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>💳 Debt Payoff</Text>
+            {debtGoals.map((debt) => {
+              const progress = getProgressPercentage(
+                debt.originalAmount - debt.currentAmount,
+                debt.originalAmount
+              );
+              const isComplete = debt.currentAmount <= 0;
+
+              return (
+                <View key={debt.id} style={styles.goalCard}>
+                  <View style={styles.goalHeader}>
+                    <View
+                      style={[
+                        styles.goalIconContainer,
+                        { backgroundColor: debt.color === 'red' ? '#FEE2E2' : '#DBEAFE' },
+                      ]}
+                    >
+                      <Icon
+                        name="credit-card"
+                        size={24}
+                        color={debt.color === 'red' ? '#EF4444' : '#1877F2'}
+                      />
+                    </View>
+                    <View style={styles.goalHeaderText}>
+                      <Text style={styles.goalName}>{debt.name}</Text>
+                      <Text style={styles.goalDeadline}>{formatDeadline(debt.targetDate)}</Text>
+                    </View>
+                    {isComplete && (
+                      <View style={styles.completeBadge}>
+                        <Icon name="check-circle" size={24} color="#10B981" />
+                      </View>
+                    )}
+                  </View>
+
+                  {debt.interestRate && (
+                    <Text style={styles.debtDetails}>
+                      {debt.interestRate}% APR
+                      {debt.minimumPayment &&
+                        ` • Min payment: ${formatCurrency(debt.minimumPayment)}`}
+                    </Text>
+                  )}
+
+                  <View style={styles.amountRow}>
+                    <View>
+                      <Text style={styles.amountLabel}>Remaining</Text>
+                      <Text style={[styles.currentAmount, { color: '#EF4444' }]}>
+                        {formatCurrency(debt.currentAmount)}
+                      </Text>
+                    </View>
+                    <View style={styles.separator} />
+                    <View>
+                      <Text style={styles.amountLabel}>Original</Text>
+                      <Text style={styles.targetAmount}>
+                        {formatCurrency(debt.originalAmount)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.progressSection}>
+                    <View style={styles.progressLabelRow}>
+                      <Text style={styles.progressLabel}>Paid Off</Text>
+                      <Text style={styles.progressPercentage}>{Math.round(progress)}%</Text>
+                    </View>
+                    <View style={styles.progressBar}>
+                      <LinearGradient
+                        colors={isComplete ? ['#10B981', '#22C55E'] : ['#EF4444', '#F87171']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={[styles.progressFill, { width: `${progress}%` }]}
+                      />
+                    </View>
+                    <Text style={styles.remainingAmount}>
+                      {isComplete
+                        ? 'Debt paid off! 🎉'
+                        : `${formatCurrency(debt.currentAmount)} left to pay`}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Empty State */}
+        {savingsGoals.length === 0 && debtGoals.length === 0 && (
           <View style={styles.emptyState}>
             <Icon name="flag" size={64} color="#CBD5E1" />
             <Text style={styles.emptyTitle}>No Goals Yet</Text>
             <Text style={styles.emptyText}>
-              Set savings goals and track your progress toward financial milestones
+              Set savings goals and track debt payoff to reach your financial milestones
             </Text>
             <Text style={styles.emptyHint}>
               Create your first goal on the web app to get started
@@ -245,6 +358,17 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingTop: 16,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 12,
+  },
+  debtDetails: {
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 12,
   },
   goalCard: {
     backgroundColor: '#FFFFFF',
