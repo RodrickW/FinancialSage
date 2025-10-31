@@ -3,6 +3,7 @@
     "name": "Mind My Money",
     "slug": "mind-my-money",
     "version": "2.0.0",
+    "sdkVersion": "51.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
