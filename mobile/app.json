@@ -5,19 +5,34 @@
     "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#1877F2"
     },
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mindmymoney.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSExceptionDomains": {
+            "mindmymoneyapp.com": {
+              "NSExceptionAllowsInsecureHTTPLoads": false,
+              "NSIncludesSubdomains": true
+            }
+          }
+        }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,15 +40,24 @@
         "backgroundColor": "#1877F2"
       },
       "package": "com.mindmymoney.app",
+      "versionCode": 1,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ]
+      ],
+      "usesCleartextTraffic": false
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
     },
     "extra": {
       "eas": {
         "projectId": "4a34e0fe-3a75-411d-a739-5637883800b1"
       }
-    }
+    },
+    "platforms": [
+      "ios",
+      "android"
+    ]
   }
 }
