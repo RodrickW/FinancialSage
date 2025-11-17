@@ -176,6 +176,11 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
+          {/* Large Logo */}
+          <div className="flex justify-center mb-8">
+            <MoneyMindLogo className="w-32 h-32 md:w-40 md:h-40" />
+          </div>
+          
           <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium">
             ✨ Start your free 14-day trial today. No credit card required. ✨
           </Badge>
