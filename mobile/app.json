@@ -44,8 +44,7 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ],
-      "usesCleartextTraffic": false
+      ]
     },
     "web": {
       "favicon": "./assets/icon.png"
