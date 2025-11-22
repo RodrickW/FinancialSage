@@ -5,7 +5,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 
-export default function MainApp() {
+interface MainAppProps {
+  onUserAuthenticated: (userId: string) => void;
+}
+
+export default function MainApp({ onUserAuthenticated }: MainAppProps) {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -61,6 +65,60 @@ export default function MainApp() {
     );
   };
 
+  const handleMessage = (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      
+      if (data.type === 'USER_AUTHENTICATED' && data.userId) {
+        console.log('User authenticated from WebView:', data.userId);
+        onUserAuthenticated(data.userId.toString());
+      }
+    } catch (error) {
+      console.error('Error parsing WebView message:', error);
+    }
+  };
+
+  // Inject JavaScript to communicate user ID after login
+  const injectedJavaScript = `
+    (function() {
+      // Check if user is logged in and send user ID to native app
+      const checkAuthInterval = setInterval(function() {
+        try {
+          // Try to get user data from various possible locations
+          const userElement = document.querySelector('[data-user-id]');
+          if (userElement) {
+            const userId = userElement.getAttribute('data-user-id');
+            if (userId) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'USER_AUTHENTICATED',
+                userId: userId
+              }));
+              clearInterval(checkAuthInterval);
+            }
+          }
+          
+          // Check sessionStorage/localStorage as fallback
+          const storedUserId = sessionStorage.getItem('userId') || localStorage.getItem('userId');
+          if (storedUserId) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'USER_AUTHENTICATED',
+              userId: storedUserId
+            }));
+            clearInterval(checkAuthInterval);
+          }
+        } catch (e) {
+          console.log('Auth check error:', e);
+        }
+      }, 1000);
+      
+      // Stop checking after 30 seconds
+      setTimeout(function() {
+        clearInterval(checkAuthInterval);
+      }, 30000);
+    })();
+    true;
+  `;
+
   return (
     <View style={styles.container}>
       {/* Navigation Bar */}
@@ -112,6 +170,8 @@ export default function MainApp() {
         onNavigationStateChange={handleNavigationStateChange}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onError={handleError}
+        onMessage={handleMessage}
+        injectedJavaScript={injectedJavaScript}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}

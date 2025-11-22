@@ -2,26 +2,56 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, ActivityIndicator, View, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import Purchases from 'react-native-purchases';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainApp from './components/MainApp';
 import PaywallScreen from './screens/PaywallScreen';
 
-const REVENUECAT_API_KEY = 'test_zfEOxdHFsyfAwqIMxxlBFvqHMOS';
+const REVENUECAT_API_KEY = 'appl_dBnDiKzNWUJUhfCXJKbAZWnzNMm';
+const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showWebView, setShowWebView] = useState(false);
 
   useEffect(() => {
-    initializeRevenueCat();
+    initializeApp();
   }, []);
 
-  const initializeRevenueCat = async () => {
+  const initializeApp = async () => {
     try {
-      // Initialize RevenueCat SDK
+      // Initialize RevenueCat SDK first
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
       
-      // Check current subscription status
+      // Try to get stored user ID
+      const storedUserId = await AsyncStorage.getItem('userId');
+      
+      if (storedUserId) {
+        setUserId(storedUserId);
+        
+        // Identify user to RevenueCat
+        await Purchases.logIn(storedUserId);
+        console.log(`✅ Logged in to RevenueCat as user: ${storedUserId}`);
+        
+        // Check subscription status
+        await checkSubscriptionStatus();
+      } else {
+        // No user ID stored - need to show WebView to capture it
+        console.log('ℹ️ No stored user ID - showing WebView for login');
+        setShowWebView(true);
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error('App initialization error:', error);
+      setIsLoading(false);
+    }
+  };
+
+  const checkSubscriptionStatus = async () => {
+    try {
       const info = await Purchases.getCustomerInfo();
       setCustomerInfo(info);
       
@@ -30,10 +60,33 @@ export default function App() {
         typeof info.entitlements.active['premium'] !== 'undefined';
       
       setHasAccess(hasActiveSubscription);
-      setIsLoading(false);
+      
+      if (!hasActiveSubscription) {
+        // No subscription - will show paywall
+        console.log('ℹ️ No active subscription - showing paywall');
+      }
     } catch (error) {
-      console.error('RevenueCat initialization error:', error);
-      setIsLoading(false);
+      console.error('Error checking subscription status:', error);
+    }
+  };
+
+  const handleUserAuthenticated = async (authenticatedUserId: string) => {
+    try {
+      // Store user ID
+      await AsyncStorage.setItem('userId', authenticatedUserId);
+      setUserId(authenticatedUserId);
+      
+      // Identify user to RevenueCat
+      await Purchases.logIn(authenticatedUserId);
+      console.log(`✅ User ${authenticatedUserId} identified to RevenueCat`);
+      
+      // Hide WebView now that we have user ID
+      setShowWebView(false);
+      
+      // Check subscription status
+      await checkSubscriptionStatus();
+    } catch (error) {
+      console.error('Error identifying user:', error);
     }
   };
 
@@ -80,17 +133,32 @@ export default function App() {
     );
   }
 
+  // Determine which screen to show
+  const renderScreen = () => {
+    // Priority 1: Show WebView if we need to capture user ID
+    if (showWebView || (!userId && !hasAccess)) {
+      return <MainApp onUserAuthenticated={handleUserAuthenticated} />;
+    }
+    
+    // Priority 2: Show main app if user has subscription
+    if (hasAccess) {
+      return <MainApp onUserAuthenticated={handleUserAuthenticated} />;
+    }
+    
+    // Priority 3: Show paywall if user identified but no subscription
+    return (
+      <PaywallScreen
+        onPurchaseComplete={handlePurchaseComplete}
+        onRestorePurchases={handleRestorePurchases}
+        userId={userId}
+      />
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      {hasAccess ? (
-        <MainApp />
-      ) : (
-        <PaywallScreen
-          onPurchaseComplete={handlePurchaseComplete}
-          onRestorePurchases={handleRestorePurchases}
-        />
-      )}
+      {renderScreen()}
     </SafeAreaView>
   );
 }

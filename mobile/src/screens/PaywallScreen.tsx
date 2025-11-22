@@ -14,9 +14,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 interface PaywallScreenProps {
   onPurchaseComplete: () => void;
   onRestorePurchases: () => Promise<boolean>;
+  userId: string | null;
 }
 
-export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases }: PaywallScreenProps) {
+export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, userId }: PaywallScreenProps) {
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
