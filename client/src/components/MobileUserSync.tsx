@@ -1,14 +1,20 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+interface User {
+  id: number;
+  username: string;
+  email: string;
+}
+
 export default function MobileUserSync() {
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User>({
     queryKey: ['/api/users/profile'],
     retry: false,
   });
 
   useEffect(() => {
-    if (user && user.id) {
+    if (user?.id) {
       // Store user ID in sessionStorage for mobile app detection
       sessionStorage.setItem('userId', user.id.toString());
       
