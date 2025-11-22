@@ -326,7 +326,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return true;
     }
     
-    // PRIORITY 3: Active subscription statuses (legacy paid users)
+    // PRIORITY 3: Active RevenueCat (Apple IAP) subscription
+    if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
+      return true;
+    }
+    
+    // PRIORITY 4: Active subscription statuses (legacy paid users)
     if (user.subscriptionStatus === 'active' || 
         user.subscriptionStatus === 'past_due' ||
         user.subscriptionStatus === 'canceled' || // Users who had subscription (legacy access)
@@ -334,7 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return true;
     }
     
-    // PRIORITY 4: Check if user is in valid 14-day trial period (new trial system only)
+    // PRIORITY 5: Check if user is in valid 14-day trial period (new trial system only)
     if (user.hasStartedTrial && user.subscriptionStatus === 'trialing' && !isTrialExpired(user)) {
       return true;
     }
@@ -3703,6 +3708,96 @@ IMPORTANT:
     } catch (error) {
       console.error('Error calculating credit factors:', error);
       res.status(500).json({ error: 'Failed to calculate credit factors' });
+    }
+  });
+
+  // RevenueCat webhook endpoint for Apple IAP events
+  app.post('/api/webhooks/revenuecat', async (req, res) => {
+    try {
+      const event = req.body;
+      console.log('📱 RevenueCat webhook received:', event.type);
+
+      // Verify webhook authenticity (RevenueCat sends Authorization header)
+      const authHeader = req.headers.authorization;
+      const expectedToken = process.env.REVENUECAT_WEBHOOK_SECRET;
+      
+      if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+        console.warn('⚠️ Invalid RevenueCat webhook authorization');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Extract event data
+      const eventType = event.type;
+      const appUserId = event.app_user_id; // This should be our user.id
+      const productId = event.product_id;
+      const expiresDate = event.expiration_at_ms ? new Date(event.expiration_at_ms) : null;
+      const platform = event.store || 'ios'; // 'app_store' or 'play_store'
+
+      // Find user by RevenueCat user ID or email
+      let user = null;
+      try {
+        const userId = parseInt(appUserId);
+        if (!isNaN(userId)) {
+          user = await storage.getUser(userId);
+        }
+      } catch (error) {
+        console.error('Error finding user:', error);
+      }
+
+      if (!user) {
+        console.warn(`⚠️ User not found for RevenueCat ID: ${appUserId}`);
+        return res.status(200).json({ received: true });
+      }
+
+      // Handle different event types
+      switch (eventType) {
+        case 'INITIAL_PURCHASE':
+        case 'RENEWAL':
+        case 'NON_RENEWING_PURCHASE':
+          console.log(`✅ [User ${user.id}] ${eventType}: Activating subscription`);
+          await storage.updateUser(user.id, {
+            revenuecatUserId: appUserId,
+            revenuecatSubscriptionId: event.id,
+            revenuecatProductId: productId,
+            revenuecatExpiresAt: expiresDate,
+            revenuecatPlatform: platform,
+            isPremium: true,
+            subscriptionStatus: 'active'
+          });
+          break;
+
+        case 'CANCELLATION':
+          console.log(`⚠️ [User ${user.id}] Subscription cancelled - maintaining access until expiration`);
+          await storage.updateUser(user.id, {
+            revenuecatExpiresAt: expiresDate,
+            subscriptionStatus: 'canceled'
+          });
+          break;
+
+        case 'EXPIRATION':
+          console.log(`❌ [User ${user.id}] Subscription expired`);
+          await storage.updateUser(user.id, {
+            isPremium: false,
+            subscriptionStatus: 'expired',
+            revenuecatExpiresAt: null
+          });
+          break;
+
+        case 'BILLING_ISSUE':
+          console.log(`⚠️ [User ${user.id}] Billing issue detected`);
+          await storage.updateUser(user.id, {
+            subscriptionStatus: 'past_due'
+          });
+          break;
+
+        default:
+          console.log(`ℹ️ [User ${user.id}] Unhandled event type: ${eventType}`);
+      }
+
+      res.status(200).json({ received: true });
+    } catch (error) {
+      console.error('Error processing RevenueCat webhook:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
     }
   });
 

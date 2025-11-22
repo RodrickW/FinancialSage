@@ -21,6 +21,13 @@ export const users = pgTable("users", {
   trialEndsAt: timestamp("trial_ends_at"),
   hasStartedTrial: boolean("has_started_trial").default(false),
   
+  // RevenueCat (Apple IAP) fields
+  revenuecatUserId: text("revenuecat_user_id"),
+  revenuecatSubscriptionId: text("revenuecat_subscription_id"),
+  revenuecatProductId: text("revenuecat_product_id"),
+  revenuecatExpiresAt: timestamp("revenuecat_expires_at"),
+  revenuecatPlatform: text("revenuecat_platform"), // ios, android
+  
   // Onboarding tracking
   hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
   hasSeenTour: boolean("has_seen_tour").default(false),
