@@ -14,7 +14,7 @@ const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState(null);
+  const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
 

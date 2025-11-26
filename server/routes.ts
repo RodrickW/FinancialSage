@@ -320,13 +320,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to check if user has access (either premium or valid trial)
   const hasAccess = (user: User, req?: any): boolean => {
-    // If this is a mobile app request, ONLY check RevenueCat subscription
-    // This ensures compliance with App Store Guideline 3.1.1
+    // If this is a mobile app request, check RevenueCat subscription OR valid trial
+    // This ensures compliance with App Store Guideline 3.1.1 while allowing free trials
     if (req && isMobileAppRequest(req)) {
-      // Mobile users can ONLY access with active RevenueCat subscription
+      // Mobile users can access with active RevenueCat subscription
       if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
         return true;
       }
+      
+      // Mobile users can also access with valid free trial (14-day trial)
+      if (user.hasStartedTrial && user.subscriptionStatus === 'trialing' && !isTrialExpired(user)) {
+        return true;
+      }
+      
       // No other access methods allowed for mobile
       return false;
     }
@@ -2640,7 +2646,56 @@ IMPORTANT:
     res.redirect('/');
   });
 
-  // Start free trial endpoint
+  // Mobile-specific free trial activation (no Stripe required)
+  app.post("/api/activate-trial", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Skip if user already has an active subscription
+      if (user.isPremium || user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
+        return res.json({ 
+          success: false,
+          message: 'User already has an active subscription',
+          hasAccess: true
+        });
+      }
+      
+      // If user has already started a trial, don't allow another one
+      if (user.hasStartedTrial) {
+        return res.json({ 
+          success: false,
+          message: 'Trial already used',
+          hasAccess: !isTrialExpired(user) && user.subscriptionStatus === 'trialing'
+        });
+      }
+      
+      // Activate 14-day free trial
+      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
+      
+      await storage.updateUser(user.id, {
+        hasStartedTrial: true,
+        trialEndsAt,
+        subscriptionStatus: 'trialing'
+      });
+      
+      console.log(`✅ Trial activated for user ${user.id} (mobile app)`);
+      
+      return res.json({ 
+        success: true,
+        message: 'Trial activated successfully',
+        trialEndsAt,
+        hasAccess: true
+      });
+    } catch (error) {
+      console.error('Error activating trial:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to activate trial' 
+      });
+    }
+  });
+
+  // Start free trial endpoint (web - with Stripe)
   app.post("/api/start-free-trial", requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
