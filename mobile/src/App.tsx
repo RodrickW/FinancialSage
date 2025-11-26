@@ -37,8 +37,19 @@ export default function App() {
         await Purchases.logIn(storedUserId);
         console.log(`✅ Logged in to RevenueCat as user: ${storedUserId}`);
         
-        // Check subscription status
-        await checkSubscriptionStatus();
+        // Check RevenueCat subscription only (web check will happen in WebView)
+        const info = await Purchases.getCustomerInfo();
+        const hasRevenueCatAccess = typeof info.entitlements.active['premium'] !== 'undefined';
+        
+        if (hasRevenueCatAccess) {
+          // User has RevenueCat subscription - grant access immediately
+          setHasAccess(true);
+          console.log('✅ User has RevenueCat subscription');
+        } else {
+          // No RevenueCat subscription - need to check web subscription via WebView
+          console.log('ℹ️ No RevenueCat subscription - checking web subscription via WebView');
+          setShowWebView(true);
+        }
       } else {
         // No user ID stored - need to show WebView to capture it
         console.log('ℹ️ No stored user ID - showing WebView for login');
@@ -52,27 +63,29 @@ export default function App() {
     }
   };
 
-  const checkSubscriptionStatus = async () => {
+  const checkRevenueCatOnly = async () => {
     try {
       const info = await Purchases.getCustomerInfo();
       setCustomerInfo(info);
       
-      // Check if user has active entitlement
-      const hasActiveSubscription = 
+      // Check if user has active RevenueCat entitlement
+      const hasRevenueCatAccess = 
         typeof info.entitlements.active['premium'] !== 'undefined';
       
-      setHasAccess(hasActiveSubscription);
+      // NOTE: We do NOT check Stripe from native code (cookies don't work)
+      // Stripe subscription check happens in WebView and is passed via message
       
-      if (!hasActiveSubscription) {
-        // No subscription - will show paywall
-        console.log('ℹ️ No active subscription - showing paywall');
+      setHasAccess(hasRevenueCatAccess);
+      
+      if (!hasRevenueCatAccess) {
+        console.log('ℹ️ No RevenueCat subscription');
       }
     } catch (error) {
-      console.error('Error checking subscription status:', error);
+      console.error('Error checking RevenueCat:', error);
     }
   };
 
-  const handleUserAuthenticated = async (authenticatedUserId: string) => {
+  const handleUserAuthenticated = async (authenticatedUserId: string, hasWebSubscription?: boolean) => {
     try {
       // Store user ID
       await AsyncStorage.setItem('userId', authenticatedUserId);
@@ -85,15 +98,20 @@ export default function App() {
       // Hide WebView now that we have user ID
       setShowWebView(false);
       
-      // Check subscription status - this will check RevenueCat only
-      await checkSubscriptionStatus();
-      
-      // If user has no RevenueCat subscription, show message
+      // Check RevenueCat subscription
       const info = await Purchases.getCustomerInfo();
       const hasRevenueCatAccess = typeof info.entitlements.active['premium'] !== 'undefined';
       
-      if (!hasRevenueCatAccess) {
-        console.log('ℹ️ User has no mobile subscription - will show paywall');
+      // MULTIPLATFORM: Grant access if user has EITHER RevenueCat OR web subscription
+      const totalAccess = hasRevenueCatAccess || (hasWebSubscription === true);
+      setHasAccess(totalAccess);
+      
+      if (hasRevenueCatAccess) {
+        console.log('✅ User has RevenueCat subscription - granting access');
+      } else if (hasWebSubscription) {
+        console.log('✅ User has web subscription - granting mobile access');
+      } else {
+        console.log('ℹ️ User has no active subscription - will show paywall');
       }
     } catch (error) {
       console.error('Error identifying user:', error);
@@ -102,13 +120,7 @@ export default function App() {
 
   const handlePurchaseComplete = async () => {
     try {
-      const info = await Purchases.getCustomerInfo();
-      setCustomerInfo(info);
-      
-      const hasActiveSubscription = 
-        typeof info.entitlements.active['premium'] !== 'undefined';
-      
-      setHasAccess(hasActiveSubscription);
+      await checkRevenueCatOnly();
     } catch (error) {
       console.error('Error checking subscription:', error);
     }

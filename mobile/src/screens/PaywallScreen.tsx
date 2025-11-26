@@ -266,6 +266,14 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
         )}
       </TouchableOpacity>
 
+      {/* Existing Web Subscriber Info */}
+      <View style={styles.webSubscriberInfo}>
+        <Icon name="info" size={20} color="#6B7280" />
+        <Text style={styles.webSubscriberText}>
+          Already subscribed on the web? Just log in to access all features!
+        </Text>
+      </View>
+
       {/* Footer */}
       <Text style={styles.footerText}>
         Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
@@ -498,6 +506,22 @@ const styles = StyleSheet.create({
     color: '#1877F2',
     fontSize: 16,
     fontWeight: '600',
+  },
+  webSubscriberInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  webSubscriberText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 20,
   },
   footerText: {
     fontSize: 12,

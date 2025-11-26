@@ -4,6 +4,30 @@
 
 Mind My Money mobile app now uses RevenueCat for Apple In-App Purchase (IAP) compliance. This hybrid architecture combines native subscription screens with a WebView for the main app.
 
+## Multiplatform Service Model (Apple Guideline 3.1.3(b))
+
+**Mind My Money operates as a multiplatform service:**
+
+- **Web Platform:** Users subscribe via Stripe at https://www.mindmymoneyapp.com
+- **Mobile Platform:** Users subscribe via Apple In-App Purchase
+- **Cross-Platform Access:** Users with an active subscription on EITHER platform can access the mobile app
+
+This complies with Apple App Store Guideline 3.1.3(b) which allows:
+> "Apps may allow a user to access previously purchased content or content subscriptions... specifically: Apps may allow a user to access content, subscriptions, or features they have acquired elsewhere, including content, subscriptions, or features that unlock in the app after the user has used the app to send themselves a link directing them to purchase said items outside of the app, as long as those items are also available as in-app purchases."
+
+**How It Works:**
+1. ✅ Existing web subscribers can login to mobile app and access all features
+2. ✅ New mobile users can purchase via Apple IAP (14-day free trial available)
+3. ✅ Users can purchase on web, then access on mobile
+4. ✅ Users can purchase on mobile, then access on web
+5. ❌ Mobile app does NOT link to external payment pages or Stripe checkout
+
+**Backend Implementation:**
+- `hasAccess()` function checks BOTH Stripe and RevenueCat subscriptions for mobile requests
+- Web subscribers are identified by `stripeSubscriptionId`, `isPremium`, or `stripeCustomerId`
+- Mobile subscribers are identified by `revenuecatExpiresAt` or RevenueCat entitlements
+- Free trials are honored regardless of platform
+
 ## Architecture
 
 ### Before (WebView Only)

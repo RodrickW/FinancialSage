@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 
 interface MainAppProps {
-  onUserAuthenticated: (userId: string) => void;
+  onUserAuthenticated: (userId: string, hasSubscription?: boolean) => void;
 }
 
 export default function MainApp({ onUserAuthenticated }: MainAppProps) {
@@ -74,8 +74,8 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
       const data = JSON.parse(event.nativeEvent.data);
       
       if (data.type === 'USER_AUTHENTICATED' && data.userId) {
-        console.log('User authenticated from WebView:', data.userId);
-        onUserAuthenticated(data.userId.toString());
+        console.log('User authenticated from WebView:', data.userId, 'hasSubscription:', data.hasSubscription);
+        onUserAuthenticated(data.userId.toString(), data.hasSubscription);
       }
     } catch (error) {
       console.error('Error parsing WebView message:', error);
@@ -113,7 +113,7 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
       hideWebSubscriptions();
       setInterval(hideWebSubscriptions, 2000);
       
-      // Check if user is logged in and send user ID to native app
+      // Check if user is logged in and send user ID + subscription status to native app
       const checkAuthInterval = setInterval(function() {
         try {
           // Try to get user data from various possible locations
@@ -121,10 +121,38 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
           if (userElement) {
             const userId = userElement.getAttribute('data-user-id');
             if (userId) {
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'USER_AUTHENTICATED',
-                userId: userId
-              }));
+              // Call /api/mobile/access from WebView (has cookies) to check subscription
+              fetch('/api/mobile/access', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'X-Mobile-App': 'true',
+                  'X-Platform': 'ios'
+                }
+              })
+              .then(function(response) { return response.json(); })
+              .then(function(data) {
+                // Backend hasAccess() already computed this for us
+                const hasSubscription = data.hasAccess === true;
+                
+                console.log('WebView subscription check:', hasSubscription, data);
+                
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'USER_AUTHENTICATED',
+                  userId: userId,
+                  hasSubscription: hasSubscription
+                }));
+              })
+              .catch(function(error) {
+                console.log('Profile check error:', error);
+                // Send userId anyway, subscription check will happen in native
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'USER_AUTHENTICATED',
+                  userId: userId,
+                  hasSubscription: false
+                }));
+              });
+              
               clearInterval(checkAuthInterval);
             }
           }
@@ -132,10 +160,37 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
           // Check sessionStorage/localStorage as fallback
           const storedUserId = sessionStorage.getItem('userId') || localStorage.getItem('userId');
           if (storedUserId) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'USER_AUTHENTICATED',
-              userId: storedUserId
-            }));
+            // Call /api/mobile/access from WebView to check subscription
+            fetch('/api/mobile/access', {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'X-Mobile-App': 'true',
+                'X-Platform': 'ios'
+              }
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+              // Backend hasAccess() already computed this for us
+              const hasSubscription = data.hasAccess === true;
+              
+              console.log('WebView subscription check:', hasSubscription, data);
+              
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'USER_AUTHENTICATED',
+                userId: storedUserId,
+                hasSubscription: hasSubscription
+              }));
+            })
+            .catch(function(error) {
+              console.log('Profile check error:', error);
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'USER_AUTHENTICATED',
+                userId: storedUserId,
+                hasSubscription: false
+              }));
+            });
+            
             clearInterval(checkAuthInterval);
           }
         } catch (e) {

@@ -319,21 +319,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Helper function to check if user has access (either premium or valid trial)
+  // Implements Apple App Store Guideline 3.1.3(b) - Multiplatform Services
+  // Allows users who purchased on web to access mobile, while also offering Apple IAP
   const hasAccess = (user: User, req?: any): boolean => {
-    // If this is a mobile app request, check RevenueCat subscription OR valid trial
-    // This ensures compliance with App Store Guideline 3.1.1 while allowing free trials
+    // If this is a mobile app request, check MULTIPLE subscription sources
+    // This allows existing web subscribers to use mobile app (multiplatform service)
     if (req && isMobileAppRequest(req)) {
-      // Mobile users can access with active RevenueCat subscription
+      // 1. Active RevenueCat subscription (Apple IAP purchase)
       if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
         return true;
       }
       
-      // Mobile users can also access with valid free trial (14-day trial)
+      // 2. Active Stripe subscription (web purchase - multiplatform access)
+      // Only grant access to users with ACTIVE subscriptions, not lapsed/canceled
+      
+      // 2a. Premium status (explicitly marked as premium)
+      if (user.isPremium) {
+        return true;
+      }
+      
+      // 2b. Active Stripe subscription with valid status
+      if (user.stripeSubscriptionId && (
+        user.subscriptionStatus === 'active' || 
+        user.subscriptionStatus === 'trialing' ||
+        user.subscriptionStatus === 'past_due' // Grace period - still has access
+      )) {
+        return true;
+      }
+      
+      // 3. Valid free trial (14-day trial for new users)
       if (user.hasStartedTrial && user.subscriptionStatus === 'trialing' && !isTrialExpired(user)) {
         return true;
       }
       
-      // No other access methods allowed for mobile
+      // No access if none of the above conditions are met
       return false;
     }
     
@@ -891,6 +910,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User profile
   app.get('/api/users/profile', requireAuth, (req, res) => {
     res.json(req.user);
+  });
+
+  // Mobile-specific endpoint to check access (used by WebView)
+  app.get('/api/mobile/access', requireAuth, (req, res) => {
+    const user = req.user as User;
+    const hasSubscription = hasAccess(user, req);
+    
+    res.json({
+      userId: user.id,
+      hasAccess: hasSubscription,
+      isPremium: user.isPremium,
+      subscriptionStatus: user.subscriptionStatus,
+      stripeSubscriptionId: user.stripeSubscriptionId,
+      revenuecatExpiresAt: user.revenuecatExpiresAt
+    });
   });
 
   // Financial overview - requires active trial or subscription
