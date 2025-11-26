@@ -313,8 +313,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return new Date() > new Date(user.trialEndsAt);
   };
 
+  // Helper function to check if request is from mobile app
+  const isMobileAppRequest = (req: any): boolean => {
+    return req.headers['x-mobile-app'] === 'true' || req.headers['x-platform'] === 'ios';
+  };
+
   // Helper function to check if user has access (either premium or valid trial)
-  const hasAccess = (user: User): boolean => {
+  const hasAccess = (user: User, req?: any): boolean => {
+    // If this is a mobile app request, ONLY check RevenueCat subscription
+    // This ensures compliance with App Store Guideline 3.1.1
+    if (req && isMobileAppRequest(req)) {
+      // Mobile users can ONLY access with active RevenueCat subscription
+      if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
+        return true;
+      }
+      // No other access methods allowed for mobile
+      return false;
+    }
+    
+    // For web requests, check Stripe subscriptions (normal web flow)
     // PRIORITY 1: Anyone with Stripe Customer ID or Subscription ID gets FULL access (existing paid users)
     // This ensures NO trial messages for existing customers
     if (user.stripeCustomerId || user.stripeSubscriptionId) {
@@ -326,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return true;
     }
     
-    // PRIORITY 3: Active RevenueCat (Apple IAP) subscription
+    // PRIORITY 3: Active RevenueCat (Apple IAP) subscription (web users who also have mobile subscription)
     if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
       return true;
     }
@@ -428,7 +445,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const user = req.user as User;
     
-    if (!hasAccess(user)) {
+    // Pass req to hasAccess so it can check if it's a mobile request
+    if (!hasAccess(user, req)) {
+      // Special message for mobile users without Apple IAP subscription
+      if (isMobileAppRequest(req)) {
+        return res.status(403).json({ 
+          message: 'Apple subscription required',
+          code: 'APPLE_IAP_REQUIRED',
+          details: 'To use premium features in the mobile app, please subscribe via the App Store.'
+        });
+      }
+      
       // Check if trial expired
       if (isTrialExpired(user)) {
         return res.status(403).json({ 

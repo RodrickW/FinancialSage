@@ -85,8 +85,16 @@ export default function App() {
       // Hide WebView now that we have user ID
       setShowWebView(false);
       
-      // Check subscription status
+      // Check subscription status - this will check RevenueCat only
       await checkSubscriptionStatus();
+      
+      // If user has no RevenueCat subscription, show message
+      const info = await Purchases.getCustomerInfo();
+      const hasRevenueCatAccess = typeof info.entitlements.active['premium'] !== 'undefined';
+      
+      if (!hasRevenueCatAccess) {
+        console.log('ℹ️ User has no mobile subscription - will show paywall');
+      }
     } catch (error) {
       console.error('Error identifying user:', error);
     }

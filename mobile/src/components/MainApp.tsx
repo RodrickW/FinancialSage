@@ -38,9 +38,13 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
   };
 
   const handleShouldStartLoadWithRequest = (request: any) => {
-    // Handle Stripe checkout - still needed for web users
-    if (request.url.includes('checkout.stripe.com')) {
-      Linking.openURL(request.url);
+    // Block Stripe checkout in mobile app - users must use Apple IAP
+    if (request.url.includes('checkout.stripe.com') || request.url.includes('/subscribe')) {
+      Alert.alert(
+        'Subscribe via App Store',
+        'To subscribe on mobile, please use the subscription options in this app. Web subscriptions are not available in the mobile app.',
+        [{ text: 'OK' }]
+      );
       return false;
     }
 
@@ -78,9 +82,37 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
     }
   };
 
-  // Inject JavaScript to communicate user ID after login
+  // Inject JavaScript to communicate user ID and hide subscription buttons
   const injectedJavaScript = `
     (function() {
+      // Hide web subscription buttons in mobile app
+      const hideWebSubscriptions = function() {
+        try {
+          // Hide Stripe checkout buttons
+          const subscribeButtons = document.querySelectorAll('[href*="subscribe"], [data-testid*="subscribe"], button:contains("Subscribe")');
+          subscribeButtons.forEach(function(btn) {
+            if (btn) btn.style.display = 'none';
+          });
+          
+          // Add CSS to hide subscription-related elements
+          const style = document.createElement('style');
+          style.textContent = \`
+            [href*="/subscribe"],
+            [data-testid*="subscribe-button"],
+            [data-testid*="upgrade-button"] {
+              display: none !important;
+            }
+          \`;
+          document.head.appendChild(style);
+        } catch (e) {
+          console.log('Error hiding web subscriptions:', e);
+        }
+      };
+      
+      // Run on load and periodically
+      hideWebSubscriptions();
+      setInterval(hideWebSubscriptions, 2000);
+      
       // Check if user is logged in and send user ID to native app
       const checkAuthInterval = setInterval(function() {
         try {
@@ -165,7 +197,13 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
       {/* WebView */}
       <WebView
         ref={webViewRef}
-        source={{ uri: WEB_APP_URL }}
+        source={{ 
+          uri: WEB_APP_URL,
+          headers: {
+            'X-Mobile-App': 'true',
+            'X-Platform': 'ios'
+          }
+        }}
         style={styles.webview}
         onNavigationStateChange={handleNavigationStateChange}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
