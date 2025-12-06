@@ -186,7 +186,7 @@ export default function Landing() {
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-transparent leading-tight">
-            Master your money. Live with purpose.
+            We Get it. Money Stress is Real.
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
