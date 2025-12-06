@@ -41,7 +41,7 @@ export default function IncomeSpendingReport() {
     return (
       <Card className="border border-neutral-200">
         <CardContent className="p-6 text-center">
-          <p className="text-neutral-500">Connect your bank account to view income and spending analysis</p>
+          <p className="text-neutral-500">No income and spending data available yet</p>
         </CardContent>
       </Card>
     );
