@@ -126,41 +126,6 @@ export default function Goals() {
   };
   const { level, nextLevelTarget, currentLevelProgress } = calculateUserLevel(totalProgress);
   
-  // Achievement system
-  const achievements = [
-    { 
-      id: 'first_goal', 
-      name: 'Goal Setter', 
-      description: 'Created your first financial goal',
-      icon: Target,
-      unlocked: allGoals.length > 0,
-      color: 'from-blue-500 to-purple-600'
-    },
-    { 
-      id: 'progress_maker', 
-      name: 'Progress Maker', 
-      description: 'Made $100 in financial progress',
-      icon: PiggyBank,
-      unlocked: totalProgress >= 100,
-      color: 'from-green-500 to-blue-600'
-    },
-    { 
-      id: 'milestone', 
-      name: 'Milestone Master', 
-      description: 'Reached $1000 in total financial progress',
-      icon: Trophy,
-      unlocked: totalProgress >= 1000,
-      color: 'from-yellow-500 to-orange-600'
-    },
-    { 
-      id: 'champion', 
-      name: 'Financial Champion', 
-      description: 'Reached $5000 in total financial progress',
-      icon: Crown,
-      unlocked: totalProgress >= 5000,
-      color: 'from-purple-500 to-pink-600'
-    }
-  ];
   
   // Create mutation for adding savings goals
   const createGoalMutation = useMutation({
@@ -649,37 +614,6 @@ export default function Goals() {
             </div>
           </div>
 
-          {/* Achievement Badges */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <Award className="mr-2 h-6 w-6" />
-              Your Achievements
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {achievements.map((achievement, index) => (
-                <div
-                  key={achievement.id}
-                  className={`achievement-badge rounded-2xl p-4 text-white text-center transition-all duration-300 ${
-                    achievement.unlocked 
-                      ? `bg-gradient-to-br ${achievement.color} shadow-lg bounce-in` 
-                      : 'bg-gray-300 opacity-50'
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <achievement.icon className={`w-8 h-8 mx-auto mb-2 ${achievement.unlocked ? 'text-white' : 'text-gray-500'}`} />
-                  <h4 className="font-bold text-sm">{achievement.name}</h4>
-                  <p className="text-xs opacity-90 mt-1">{achievement.description}</p>
-                  {achievement.unlocked && (
-                    <div className="mt-2">
-                      <span className="bg-white/20 px-2 py-1 rounded-full text-xs font-bold">
-                        UNLOCKED!
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Year-to-Date and Monthly Savings Totals - Gamified Display */}
           {trackingData && (
