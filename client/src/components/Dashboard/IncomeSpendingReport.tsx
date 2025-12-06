@@ -36,15 +36,9 @@ export default function IncomeSpendingReport() {
     retry: false,
   });
 
-  // Only use authentic data from API - no placeholder data
+  // If no data yet, don't show anything
   if (!reportData) {
-    return (
-      <Card className="border border-neutral-200">
-        <CardContent className="p-6 text-center">
-          <p className="text-neutral-500">No income and spending data available yet</p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const netIncome = reportData.income - reportData.spending;
