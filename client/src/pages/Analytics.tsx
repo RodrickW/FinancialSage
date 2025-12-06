@@ -4,7 +4,6 @@ import BottomNavigation from '@/components/BottomNavigation';
 import SpendingTrends from '@/components/Dashboard/SpendingTrends';
 import RecentTransactions from '@/components/Dashboard/RecentTransactions';
 import IncomeSpendingReport from '@/components/Dashboard/IncomeSpendingReport';
-import BudgetProgress from '@/components/Dashboard/BudgetProgress';
 import { TransactionsSkeleton } from '@/components/LoadingStates';
 import TrialGate from '@/components/TrialGate';
 import { useQuery } from '@tanstack/react-query';
@@ -81,10 +80,6 @@ export default function Analytics() {
               )}
             </TrialGate>
           </div>
-
-          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-            <BudgetProgress />
-          </TrialGate>
         </div>
       </main>
     </div>

@@ -113,7 +113,7 @@ export default function RecentTransactions({ transactions }: RecentTransactionsP
           <DialogHeader>
             <DialogTitle>All Transactions</DialogTitle>
             <DialogDescription>
-              View and search all transactions from your connected accounts
+              View and search all your transactions
             </DialogDescription>
           </DialogHeader>
           
