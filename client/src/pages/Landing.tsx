@@ -237,7 +237,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-              We Get It. Money Stress Is Real.
+              Master Your Money. Live With Purpose.
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Here's how we help you take back control
