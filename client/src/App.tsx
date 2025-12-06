@@ -23,7 +23,7 @@ import FinancialCoach from "@/pages/Coach";
 import CoachInterview from "@/pages/CoachInterview";
 import SimpleGoals from "@/pages/SimpleGoals";
 import Goals from "@/pages/Goals";
-import Credit from "@/pages/Credit";
+import Analytics from "@/pages/Analytics";
 import Budget from "@/pages/Budget";
 import Subscribe from "@/pages/Subscribe";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
@@ -139,8 +139,8 @@ function Router() {
       <Route path="/goals">
         {(params) => <ProtectedRoute component={Goals} params={params} />}
       </Route>
-      <Route path="/credit">
-        {(params) => <ProtectedRoute component={Credit} params={params} />}
+      <Route path="/analytics">
+        {(params) => <ProtectedRoute component={Analytics} params={params} />}
       </Route>
       <Route path="/budget">
         {(params) => <ProtectedRoute component={Budget} params={params} />}

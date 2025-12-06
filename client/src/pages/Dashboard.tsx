@@ -2,22 +2,15 @@ import { useEffect, useState } from 'react';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
 import FinancialOverview from '@/components/Dashboard/FinancialOverview';
-import SpendingTrends from '@/components/Dashboard/SpendingTrends';
-import RecentTransactions from '@/components/Dashboard/RecentTransactions';
 import AIInsights from '@/components/Dashboard/AIInsights';
 import { 
-  FinancialOverviewSkeleton, 
-  TransactionsSkeleton, 
-  CreditScoreSkeleton,
-  BudgetProgressSkeleton
+  FinancialOverviewSkeleton
 } from '@/components/LoadingStates';
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
 import { TrialStatus } from '@/components/TrialStatus';
 
 
-import BudgetProgress from '@/components/Dashboard/BudgetProgress';
-import IncomeSpendingReport from '@/components/Dashboard/IncomeSpendingReport';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
@@ -68,19 +61,6 @@ export default function Dashboard() {
   const { data: financialData, isLoading: financialLoading, error: financialError } = useQuery<any>({
     queryKey: ['/api/financial-overview']
   });
-
-  // Get recent transactions (limit 5 for dashboard display)
-  const { data: recentTransactions, isLoading: transactionsLoading } = useQuery<any[]>({
-    queryKey: ['/api/transactions'],
-    select: (data) => data?.slice(0, 5) || [], // Take only first 5 transactions
-  });
-
-  // Get spending trends data for chart
-  const { data: spendingTrendsData, isLoading: spendingTrendsLoading } = useQuery({
-    queryKey: ['/api/spending-trends'],
-    retry: false,
-  });
-
 
   // Transaction refresh mutation
   const refreshTransactionsMutation = useMutation({
@@ -300,65 +280,6 @@ export default function Dashboard() {
             </TrialGate>
           </div>
           
-          {/* Income vs Spending Report */}
-          <div className="mb-6">
-            <IncomeSpendingReport />
-          </div>
-
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up">
-            {/* Left Column - Spending Breakdown */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Monthly Spending Trends */}
-              <div className="stagger-item" data-tour="spending-trends">
-                <TrialGate feature="Spending Analysis" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-                  {spendingTrendsLoading ? (
-                    <div className="bg-white rounded-xl p-6 shadow-sm">
-                      <div className="animate-pulse">
-                        <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-                        <div className="h-64 bg-gray-200 rounded mb-4"></div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="text-center">
-                              <div className="w-10 h-10 bg-gray-200 rounded-full mx-auto mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                              <div className="h-4 bg-gray-200 rounded"></div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <SpendingTrends 
-                      spendingData={(spendingTrendsData as any)?.spendingData || []}
-                      categories={(spendingTrendsData as any)?.categories || []}
-                    />
-                  )}
-                </TrialGate>
-              </div>
-              
-              {/* Recent Transactions */}
-              <div className="stagger-item" data-tour="transactions">
-                <TrialGate feature="Transaction History" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-                  {transactionsLoading ? (
-                    <TransactionsSkeleton />
-                  ) : (
-                    <RecentTransactions transactions={recentTransactions || []} />
-                  )}
-                </TrialGate>
-              </div>
-            </div>
-            
-            {/* Right Column - Accounts & Financial Info */}
-            <div className="space-y-6">
-
-            </div>
-          </div>
-          
-          {/* Budget Progress Overview */}
-          <TrialGate feature="Budget Tracking" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-            <BudgetProgress />
-          </TrialGate>
         </div>
       </main>
 
