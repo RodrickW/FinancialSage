@@ -76,7 +76,7 @@ export default function Analytics() {
               {transactionsLoading ? (
                 <TransactionsSkeleton />
               ) : (
-                <RecentTransactions transactions={recentTransactions || []} />
+                <RecentTransactions transactions={(recentTransactions || []).slice(0, 7)} />
               )}
             </TrialGate>
           </div>

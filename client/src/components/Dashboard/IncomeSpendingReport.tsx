@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, Calendar, Download, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Download, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts';
 
 interface IncomeSpendingData {
   period: 'week' | 'month';
@@ -118,109 +119,149 @@ export default function IncomeSpendingReport() {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-green-600 font-medium">Total Income</p>
-                <p className="text-2xl font-bold text-green-700">${reportData.income.toLocaleString()}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-green-600" />
-            </div>
-            <div className="flex items-center mt-2">
-              <span className="text-xs text-green-600">
-                {((reportData.income - reportData.previousIncome) / reportData.previousIncome * 100).toFixed(1)}% vs last {selectedPeriod}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-red-600 font-medium">Total Spending</p>
-                <p className="text-2xl font-bold text-red-700">${reportData.spending.toLocaleString()}</p>
-              </div>
-              <TrendingDown className="w-8 h-8 text-red-600" />
-            </div>
-            <div className="flex items-center mt-2">
-              <span className="text-xs text-red-600">
-                {((reportData.spending - reportData.previousSpending) / reportData.previousSpending * 100).toFixed(1)}% vs last {selectedPeriod}
-              </span>
-            </div>
-          </div>
-
-          <div className={`${netIncome >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} border rounded-lg p-4`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${netIncome >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>Net Income</p>
-                <p className={`text-2xl font-bold ${netIncome >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
-                  ${netIncome.toLocaleString()}
-                </p>
-              </div>
-              {netIncome >= 0 ? (
-                <TrendingUp className="w-8 h-8 text-blue-600" />
-              ) : (
-                <TrendingDown className="w-8 h-8 text-orange-600" />
-              )}
-            </div>
-            <div className="flex items-center mt-2">
-              <span className={`text-xs ${netIncome >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                {netIncomeChange.toFixed(1)}% vs last {selectedPeriod}
-              </span>
-            </div>
+        {/* Income vs Spending Comparison Chart */}
+        <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100">
+          <h4 className="font-semibold text-gray-800 mb-4">Income vs Spending Comparison</h4>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={[
+                  { 
+                    name: `Previous ${selectedPeriod === 'week' ? 'Week' : 'Month'}`, 
+                    Income: reportData.previousIncome, 
+                    Spending: reportData.previousSpending 
+                  },
+                  { 
+                    name: `This ${selectedPeriod === 'week' ? 'Week' : 'Month'}`, 
+                    Income: reportData.income, 
+                    Spending: reportData.spending 
+                  },
+                ]}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                barGap={8}
+              >
+                <defs>
+                  <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
+                    <stop offset="100%" stopColor="#059669" stopOpacity={0.8}/>
+                  </linearGradient>
+                  <linearGradient id="spendingGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
+                    <stop offset="100%" stopColor="#e11d48" stopOpacity={0.8}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: 'none', 
+                    borderRadius: '12px', 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)' 
+                  }}
+                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  iconType="circle"
+                />
+                <Bar 
+                  dataKey="Income" 
+                  fill="url(#incomeGradient)" 
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={60}
+                />
+                <Bar 
+                  dataKey="Spending" 
+                  fill="url(#spendingGradient)" 
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={60}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Spending Ratio */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Spending Ratio</span>
-            <Badge variant={spendingRatio > 80 ? 'destructive' : spendingRatio > 60 ? 'secondary' : 'default'}>
-              {spendingRatio.toFixed(1)}% of income
-            </Badge>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-4 text-white shadow-lg shadow-green-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-emerald-100 text-sm font-medium">Income</span>
+              <ArrowUpRight className="w-5 h-5 text-emerald-200" />
+            </div>
+            <p className="text-2xl font-bold">${reportData.income.toLocaleString()}</p>
+            <p className="text-xs text-emerald-200 mt-1">
+              {((reportData.income - reportData.previousIncome) / reportData.previousIncome * 100).toFixed(1)}% change
+            </p>
           </div>
-          <Progress value={spendingRatio} className="h-2" />
-          <p className="text-xs text-gray-500">
-            {spendingRatio > 80 ? 'High spending ratio - consider reducing expenses' : 
-             spendingRatio > 60 ? 'Moderate spending ratio' : 
-             'Good spending ratio - healthy savings potential'}
-          </p>
+
+          <div className="bg-gradient-to-br from-rose-500 to-red-600 rounded-2xl p-4 text-white shadow-lg shadow-rose-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-rose-100 text-sm font-medium">Spending</span>
+              <ArrowDownRight className="w-5 h-5 text-rose-200" />
+            </div>
+            <p className="text-2xl font-bold">${reportData.spending.toLocaleString()}</p>
+            <p className="text-xs text-rose-200 mt-1">
+              {((reportData.spending - reportData.previousSpending) / reportData.previousSpending * 100).toFixed(1)}% change
+            </p>
+          </div>
+
+          <div className={`${netIncome >= 0 ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200' : 'bg-gradient-to-br from-orange-500 to-amber-600 shadow-orange-200'} rounded-2xl p-4 text-white shadow-lg`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-white/80 text-sm font-medium">Net</span>
+              {netIncome >= 0 ? <TrendingUp className="w-5 h-5 text-white/60" /> : <TrendingDown className="w-5 h-5 text-white/60" />}
+            </div>
+            <p className="text-2xl font-bold">${Math.abs(netIncome).toLocaleString()}</p>
+            <p className="text-xs text-white/60 mt-1">
+              {netIncome >= 0 ? 'Saved this period' : 'Over budget'}
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-4 text-white shadow-lg shadow-violet-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-violet-100 text-sm font-medium">Savings Rate</span>
+              <DollarSign className="w-5 h-5 text-violet-200" />
+            </div>
+            <p className="text-2xl font-bold">{Math.max(0, 100 - spendingRatio).toFixed(0)}%</p>
+            <p className="text-xs text-violet-200 mt-1">
+              {spendingRatio > 80 ? 'Needs improvement' : spendingRatio > 60 ? 'Moderate' : 'Excellent'}
+            </p>
+          </div>
         </div>
 
-        {/* Category Breakdown */}
-        <div>
-          <h4 className="font-medium mb-3">Spending by Category</h4>
-          <div className="space-y-3">
-            {reportData.categories.map((category: any, index: number) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex-1">
+        {/* Category Breakdown with Visual Bars */}
+        <div className="bg-gray-50 rounded-xl p-4">
+          <h4 className="font-semibold text-gray-800 mb-4">Spending by Category</h4>
+          <div className="space-y-4">
+            {reportData.categories.slice(0, 5).map((category: any, index: number) => {
+              const colors = ['from-blue-400 to-blue-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600', 'from-amber-400 to-amber-600', 'from-teal-400 to-teal-600'];
+              return (
+                <div key={index} className="relative">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{category.name}</span>
-                    <span className="text-sm text-gray-600">${category.amount.toLocaleString()}</span>
+                    <span className="text-sm font-medium text-gray-700">{category.name}</span>
+                    <span className="text-sm font-bold text-gray-900">${category.amount.toLocaleString()}</span>
                   </div>
-                  <Progress value={category.percentage} className="h-1" />
+                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r ${colors[index % colors.length]} rounded-full transition-all duration-500`}
+                      style={{ width: `${category.percentage}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 mt-1">{category.percentage.toFixed(1)}% of spending</span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Transactions */}
-        <div>
-          <h4 className="font-medium mb-3">Recent Transactions</h4>
-          <div className="space-y-2">
-            {reportData.transactions.slice(0, 5).map((transaction: any) => (
-              <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-gray-100">
-                <div>
-                  <p className="text-sm font-medium">{transaction.description}</p>
-                  <p className="text-xs text-gray-500">{transaction.category} • {transaction.date}</p>
-                </div>
-                <span className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                  {transaction.type === 'income' ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </CardContent>
