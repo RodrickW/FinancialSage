@@ -1968,6 +1968,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to generate spending trends' });
     }
   });
+
+  // Income vs Spending Report endpoint - provides data for analytics pie chart
+  app.get('/api/reports/income-spending', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const period = (req.query.period as string) || 'month';
+      
+      // Get transactions for analysis
+      const transactions = await storage.getTransactions(user.id, 500);
+      
+      if (transactions.length === 0) {
+        return res.json({
+          period,
+          income: 0,
+          spending: 0,
+          previousIncome: 0,
+          previousSpending: 0,
+          categories: [],
+          transactions: []
+        });
+      }
+      
+      const now = new Date();
+      let currentPeriodStart: Date;
+      let previousPeriodStart: Date;
+      let previousPeriodEnd: Date;
+      
+      if (period === 'week') {
+        currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+        previousPeriodEnd = new Date(currentPeriodStart);
+        previousPeriodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+      } else {
+        // month
+        currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        previousPeriodEnd = new Date(currentPeriodStart);
+        previousPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      }
+      
+      // Calculate current period totals
+      let currentIncome = 0;
+      let currentSpending = 0;
+      let previousIncome = 0;
+      let previousSpending = 0;
+      const categoryTotals: Record<string, number> = {};
+      const recentTransactions: any[] = [];
+      
+      transactions.forEach(t => {
+        const tDate = new Date(t.date);
+        
+        // Current period
+        if (tDate >= currentPeriodStart && tDate <= now) {
+          if (t.amount > 0) {
+            currentIncome += t.amount;
+          } else {
+            currentSpending += Math.abs(t.amount);
+            const category = t.category || 'Other';
+            categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(t.amount);
+          }
+          
+          if (recentTransactions.length < 10) {
+            recentTransactions.push({
+              id: t.id,
+              description: t.merchantName || t.description || 'Transaction',
+              amount: t.amount,
+              type: t.amount > 0 ? 'income' : 'expense',
+              date: new Date(t.date).toLocaleDateString(),
+              category: t.category || 'Other'
+            });
+          }
+        }
+        
+        // Previous period
+        if (tDate >= previousPeriodStart && tDate < previousPeriodEnd) {
+          if (t.amount > 0) {
+            previousIncome += t.amount;
+          } else {
+            previousSpending += Math.abs(t.amount);
+          }
+        }
+      });
+      
+      // Build categories array with percentages
+      const totalSpending = currentSpending || 1;
+      const categories = Object.entries(categoryTotals)
+        .map(([name, amount]) => ({
+          name,
+          amount: Math.round(amount * 100) / 100,
+          percentage: Math.round((amount / totalSpending) * 100 * 10) / 10
+        }))
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 8);
+      
+      res.json({
+        period,
+        income: Math.round(currentIncome * 100) / 100,
+        spending: Math.round(currentSpending * 100) / 100,
+        previousIncome: Math.round(previousIncome * 100) / 100 || 1,
+        previousSpending: Math.round(previousSpending * 100) / 100 || 1,
+        categories,
+        transactions: recentTransactions
+      });
+      
+    } catch (error) {
+      console.error('Error generating income-spending report:', error);
+      res.status(500).json({ error: 'Failed to generate report' });
+    }
+  });
   
   // Credit score analysis and improvement recommendations
   app.get('/api/ai/credit-score-analysis', requireAccess, async (req, res) => {
