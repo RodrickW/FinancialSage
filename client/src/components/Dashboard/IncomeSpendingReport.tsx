@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp, TrendingDown, Download, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface IncomeSpendingData {
   period: 'week' | 'month';
@@ -119,77 +119,89 @@ export default function IncomeSpendingReport() {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Income vs Spending Comparison Chart */}
-        <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100">
-          <h4 className="font-semibold text-gray-800 mb-4">Income vs Spending Comparison</h4>
-          <div className="h-72">
+        {/* Spending by Category Pie Chart */}
+        <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+          <h4 className="font-semibold text-gray-800 mb-2 text-lg">Spending by Category</h4>
+          <p className="text-sm text-gray-500 mb-4">Where your money is going this {selectedPeriod}</p>
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={[
-                  { 
-                    name: `Previous ${selectedPeriod === 'week' ? 'Week' : 'Month'}`, 
-                    Income: reportData.previousIncome, 
-                    Spending: reportData.previousSpending 
-                  },
-                  { 
-                    name: `This ${selectedPeriod === 'week' ? 'Week' : 'Month'}`, 
-                    Income: reportData.income, 
-                    Spending: reportData.spending 
-                  },
-                ]}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                barGap={8}
-              >
+              <PieChart>
                 <defs>
-                  <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.8}/>
-                  </linearGradient>
-                  <linearGradient id="spendingGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#e11d48" stopOpacity={0.8}/>
-                  </linearGradient>
+                  {reportData.categories.map((_, index) => {
+                    const gradientColors = [
+                      { start: '#3b82f6', end: '#1d4ed8' },
+                      { start: '#8b5cf6', end: '#6d28d9' },
+                      { start: '#ec4899', end: '#be185d' },
+                      { start: '#f59e0b', end: '#d97706' },
+                      { start: '#10b981', end: '#047857' },
+                      { start: '#06b6d4', end: '#0891b2' },
+                      { start: '#f43f5e', end: '#e11d48' },
+                      { start: '#84cc16', end: '#65a30d' },
+                    ];
+                    const colors = gradientColors[index % gradientColors.length];
+                    return (
+                      <linearGradient key={`gradient-${index}`} id={`pieGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor={colors.start} stopOpacity={1}/>
+                        <stop offset="100%" stopColor={colors.end} stopOpacity={0.9}/>
+                      </linearGradient>
+                    );
+                  })}
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false}
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false}
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                />
+                <Pie
+                  data={reportData.categories.map((cat, index) => ({
+                    name: cat.name,
+                    value: cat.amount,
+                    percentage: cat.percentage
+                  }))}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={110}
+                  paddingAngle={3}
+                  dataKey="value"
+                  stroke="none"
+                  animationBegin={0}
+                  animationDuration={800}
+                >
+                  {reportData.categories.map((_, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={`url(#pieGradient-${index})`}
+                      style={{ filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.1))' }}
+                    />
+                  ))}
+                </Pie>
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'white', 
                     border: 'none', 
-                    borderRadius: '12px', 
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)' 
+                    borderRadius: '16px', 
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
+                    padding: '12px 16px'
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                  formatter={(value: number, name: string, props: any) => [
+                    <span className="font-bold text-gray-900">${value.toLocaleString()}</span>,
+                    <span className="text-gray-600">{name}</span>
+                  ]}
+                  labelFormatter={() => ''}
                 />
                 <Legend 
-                  wrapperStyle={{ paddingTop: '20px' }}
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
                   iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{ paddingLeft: '20px' }}
+                  formatter={(value: string, entry: any) => (
+                    <span className="text-sm text-gray-700">{value}</span>
+                  )}
                 />
-                <Bar 
-                  dataKey="Income" 
-                  fill="url(#incomeGradient)" 
-                  radius={[8, 8, 0, 0]}
-                  maxBarSize={60}
-                />
-                <Bar 
-                  dataKey="Spending" 
-                  fill="url(#spendingGradient)" 
-                  radius={[8, 8, 0, 0]}
-                  maxBarSize={60}
-                />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
+          </div>
+          <div className="mt-4 text-center">
+            <p className="text-2xl font-bold text-gray-900">${reportData.spending.toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Total Spending</p>
           </div>
         </div>
 
