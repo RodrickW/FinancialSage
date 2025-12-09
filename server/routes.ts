@@ -1969,7 +1969,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Income vs Spending Report endpoint - provides data for analytics pie chart
+  // Income vs Spending Report endpoint - provides data for analytics pie chart with AI categorization
   app.get('/api/reports/income-spending', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
@@ -2000,31 +2000,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         previousPeriodEnd = new Date(currentPeriodStart);
         previousPeriodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
       } else {
-        // month
         currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), 1);
         previousPeriodEnd = new Date(currentPeriodStart);
         previousPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       }
       
-      // Calculate current period totals
+      // Filter transactions by period
+      const currentPeriodTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate >= currentPeriodStart && tDate <= now && t.amount < 0;
+      });
+      
+      // Calculate totals
       let currentIncome = 0;
       let currentSpending = 0;
       let previousIncome = 0;
       let previousSpending = 0;
-      const categoryTotals: Record<string, number> = {};
       const recentTransactions: any[] = [];
       
       transactions.forEach(t => {
         const tDate = new Date(t.date);
         
-        // Current period
         if (tDate >= currentPeriodStart && tDate <= now) {
           if (t.amount > 0) {
             currentIncome += t.amount;
           } else {
             currentSpending += Math.abs(t.amount);
-            const category = t.category || 'Other';
-            categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(t.amount);
           }
           
           if (recentTransactions.length < 10) {
@@ -2039,7 +2040,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        // Previous period
         if (tDate >= previousPeriodStart && tDate < previousPeriodEnd) {
           if (t.amount > 0) {
             previousIncome += t.amount;
@@ -2049,16 +2049,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
-      // Build categories array with percentages
-      const totalSpending = currentSpending || 1;
-      const categories = Object.entries(categoryTotals)
-        .map(([name, amount]) => ({
-          name,
-          amount: Math.round(amount * 100) / 100,
-          percentage: Math.round((amount / totalSpending) * 100 * 10) / 10
-        }))
-        .sort((a, b) => b.amount - a.amount)
-        .slice(0, 8);
+      // Use AI to categorize spending for the pie chart
+      let categories: { name: string; amount: number; percentage: number }[] = [];
+      
+      if (currentPeriodTransactions.length > 0) {
+        try {
+          const budgetCategories = [
+            "Housing", "Utilities", "Phone/Internet", "Transportation", "Gas",
+            "Groceries", "Restaurants", "Entertainment", "Shopping", "Healthcare",
+            "Personal Care", "Subscriptions", "Insurance", "Debt Payments", "Savings",
+            "Education", "Travel", "Gifts/Donations", "Other"
+          ];
+          
+          const prompt = `
+Analyze these financial transactions and categorize them for a spending breakdown pie chart.
+
+Available categories: ${budgetCategories.join(', ')}
+
+Transactions to analyze:
+${currentPeriodTransactions.slice(0, 50).map(t => `${t.merchantName || t.description || 'Unknown'}: $${Math.abs(t.amount).toFixed(2)}`).join('\n')}
+
+Return JSON with categorized spending totals:
+{
+  "categories": [
+    {"name": "Category Name", "amount": total_amount}
+  ]
+}
+
+Rules:
+- Only include categories with actual spending
+- Use clear, readable category names from the list
+- Sum all transactions that belong to each category
+- Be intelligent about matching merchants to categories (e.g., Starbucks = Restaurants, Shell = Gas)
+`;
+
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: "You are a financial analyst. Categorize transactions intelligently for a spending pie chart. Return only valid JSON."
+              },
+              { role: "user", content: prompt }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.3
+          });
+
+          const result = JSON.parse(response.choices[0].message.content || '{"categories": []}');
+          const totalSpending = currentSpending || 1;
+          
+          categories = (result.categories || [])
+            .filter((c: any) => c.amount > 0)
+            .map((c: any) => ({
+              name: c.name,
+              amount: Math.round(c.amount * 100) / 100,
+              percentage: Math.round((c.amount / totalSpending) * 100 * 10) / 10
+            }))
+            .sort((a: any, b: any) => b.amount - a.amount)
+            .slice(0, 8);
+            
+        } catch (aiError) {
+          console.error('AI categorization failed, using raw categories:', aiError);
+          // Fallback to raw transaction categories
+          const categoryTotals: Record<string, number> = {};
+          currentPeriodTransactions.forEach(t => {
+            const category = t.category || 'Other';
+            categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(t.amount);
+          });
+          
+          const totalSpending = currentSpending || 1;
+          categories = Object.entries(categoryTotals)
+            .map(([name, amount]) => ({
+              name,
+              amount: Math.round(amount * 100) / 100,
+              percentage: Math.round((amount / totalSpending) * 100 * 10) / 10
+            }))
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 8);
+        }
+      }
       
       res.json({
         period,
