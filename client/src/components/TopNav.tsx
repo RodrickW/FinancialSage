@@ -80,10 +80,6 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
               <span className="material-icons mr-3">pie_chart</span>
               Budget
             </a>
-            <a href="/credit" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
-              <span className="material-icons mr-3">credit_score</span>
-              Credit
-            </a>
             <a href="/goals" className="flex items-center px-4 py-2 text-black hover:bg-gray-100 rounded-md">
               <span className="material-icons mr-3">savings</span>
               Goals
