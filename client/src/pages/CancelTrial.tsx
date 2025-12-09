@@ -9,6 +9,20 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2, AlertTriangle, CheckCircle, CreditCard, Smartphone, ArrowLeft } from 'lucide-react';
 
+interface SubscriptionStatus {
+  isPremium: boolean;
+  subscriptionStatus: string | null;
+  isOnFreeTrial: boolean;
+  trialDaysLeft: number;
+  trialEndsAt: string | null;
+  hasStartedTrial: boolean;
+  hasActiveSubscription: boolean;
+  subscriptionSource: 'stripe' | 'apple' | 'none';
+  hasStripeSubscription: boolean;
+  hasAppleSubscription: boolean;
+  isCancelled: boolean;
+}
+
 export default function CancelTrial() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -19,7 +33,7 @@ export default function CancelTrial() {
     queryKey: ['/api/users/profile']
   });
 
-  const { data: subscriptionStatus, isLoading: statusLoading } = useQuery({
+  const { data: subscriptionStatus, isLoading: statusLoading } = useQuery<SubscriptionStatus>({
     queryKey: ['/api/subscription/status']
   });
 
@@ -62,18 +76,10 @@ export default function CancelTrial() {
   }
 
   const isOnTrial = subscriptionStatus?.isOnFreeTrial;
-  const isPremium = user?.isPremium;
-  const hasStripeSubscription = user?.stripeSubscriptionId;
-  const hasAppleSubscription = user?.revenuecatUserId;
-  const isCancelled = subscriptionStatus?.subscriptionStatus === 'cancelled';
-
-  const getSubscriptionType = () => {
-    if (hasAppleSubscription && !hasStripeSubscription) return 'apple';
-    if (hasStripeSubscription) return 'stripe';
-    return 'none';
-  };
-
-  const subscriptionType = getSubscriptionType();
+  const hasActiveSubscription = subscriptionStatus?.hasActiveSubscription;
+  const subscriptionSource = subscriptionStatus?.subscriptionSource || 'none';
+  const isCancelled = subscriptionStatus?.isCancelled;
+  const isPaidPremium = hasActiveSubscription && !isOnTrial;
 
   return (
     <div className="min-h-screen bg-white">
@@ -97,7 +103,7 @@ export default function CancelTrial() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {isOnTrial && (
+              {isOnTrial && !isCancelled && (
                 <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-blue-600" />
@@ -111,14 +117,14 @@ export default function CancelTrial() {
                 </div>
               )}
 
-              {isPremium && !isOnTrial && (
+              {isPaidPremium && !isCancelled && (
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <div>
                       <p className="font-medium text-green-900">Premium Subscription Active</p>
                       <p className="text-sm text-green-700">
-                        {subscriptionType === 'apple' ? 'Subscribed via Apple' : 'Subscribed via Web'}
+                        {subscriptionSource === 'apple' ? 'Subscribed via Apple' : 'Subscribed via Web (Stripe)'}
                       </p>
                     </div>
                   </div>
@@ -139,7 +145,7 @@ export default function CancelTrial() {
                 </div>
               )}
 
-              {!isOnTrial && !isPremium && !isCancelled && (
+              {!hasActiveSubscription && !isCancelled && (
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-gray-500" />
@@ -156,8 +162,8 @@ export default function CancelTrial() {
           </CardContent>
         </Card>
 
-        {/* Cancel Options */}
-        {(isOnTrial || isPremium) && !isCancelled && (
+        {/* Cancel Options - show if user has active subscription and not already cancelled */}
+        {hasActiveSubscription && !isCancelled && (
           <Card className="border-red-200">
             <CardHeader>
               <CardTitle className="text-xl text-red-900 flex items-center gap-2">
@@ -166,7 +172,7 @@ export default function CancelTrial() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {subscriptionType === 'apple' ? (
+              {subscriptionSource === 'apple' ? (
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
                     <Smartphone className="w-6 h-6 text-gray-600 mt-1" />
@@ -229,7 +235,7 @@ export default function CancelTrial() {
                           className="flex-1"
                           data-testid="button-cancel-subscription"
                         >
-                          Cancel Subscription
+                          {isOnTrial ? 'Cancel Trial' : 'Cancel Subscription'}
                         </Button>
                       </div>
                     </div>

@@ -28,7 +28,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
     try {
       const user = req.user as User;
       
-      // Check if the user is on a free trial - only if they have started trial through Stripe
+      // Check if the user is on a free trial
       let isOnFreeTrial = false;
       let trialDaysLeft = 0;
       
@@ -36,12 +36,30 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         const now = new Date();
         const trialEnd = new Date(user.trialEndsAt);
         
-        if (now < trialEnd) {
+        if (now < trialEnd && user.subscriptionStatus === 'trialing') {
           isOnFreeTrial = true;
           const timeDiff = trialEnd.getTime() - now.getTime();
           trialDaysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
         }
       }
+      
+      // Determine if user has an active subscription (any type)
+      const activeStatuses = ['active', 'trialing', 'past_due'];
+      const hasActiveSubscription = 
+        user.isPremium || 
+        activeStatuses.includes(user.subscriptionStatus || '') ||
+        (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date());
+      
+      // Determine subscription source
+      let subscriptionSource: 'stripe' | 'apple' | 'none' = 'none';
+      if (user.stripeSubscriptionId) {
+        subscriptionSource = 'stripe';
+      } else if (user.revenuecatUserId) {
+        subscriptionSource = 'apple';
+      }
+      
+      // Check if subscription is cancelled but still active
+      const isCancelled = user.subscriptionStatus === 'cancelled' || user.subscriptionStatus === 'canceled';
       
       res.json({
         isPremium: user.isPremium,
@@ -49,7 +67,12 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         isOnFreeTrial,
         trialDaysLeft,
         trialEndsAt: user.trialEndsAt,
-        hasStartedTrial: user.hasStartedTrial
+        hasStartedTrial: user.hasStartedTrial,
+        hasActiveSubscription,
+        subscriptionSource,
+        hasStripeSubscription: !!user.stripeSubscriptionId,
+        hasAppleSubscription: !!user.revenuecatUserId,
+        isCancelled
       });
     } catch (error) {
       console.error('Error checking subscription status:', error);
