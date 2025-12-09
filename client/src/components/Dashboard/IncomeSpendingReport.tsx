@@ -26,6 +26,7 @@ interface IncomeSpendingData {
     date: string;
     category: string;
   }[];
+  hasAnalysis: boolean;
 }
 
 export default function IncomeSpendingReport() {
@@ -123,6 +124,26 @@ export default function IncomeSpendingReport() {
         <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <h4 className="font-semibold text-gray-800 mb-2 text-lg">Spending by Category</h4>
           <p className="text-sm text-gray-500 mb-4">Where your money is going this {selectedPeriod}</p>
+          
+          {/* Show prompt if no analysis data exists */}
+          {!reportData.hasAnalysis || reportData.categories.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Spending Analysis Yet</h3>
+              <p className="text-gray-500 mb-4 max-w-sm mx-auto">
+                Run "Analyze My Spending" on the Budget page to see your spending breakdown here.
+              </p>
+              <Button 
+                onClick={() => window.location.href = '/budget'}
+                className="bg-black text-white hover:bg-gray-800"
+              >
+                Go to Budget Page
+              </Button>
+            </div>
+          ) : (
+          <>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -203,6 +224,8 @@ export default function IncomeSpendingReport() {
             <p className="text-2xl font-bold text-gray-900">${reportData.spending.toLocaleString()}</p>
             <p className="text-sm text-gray-500">Total Spending</p>
           </div>
+          </>
+          )}
         </div>
 
         {/* Summary Stats */}

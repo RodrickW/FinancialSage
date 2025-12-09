@@ -1969,14 +1969,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Income vs Spending Report endpoint - provides data for analytics pie chart with AI categorization
+  // Income vs Spending Report endpoint - uses saved budget analysis data for pie chart
   app.get('/api/reports/income-spending', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       const period = (req.query.period as string) || 'month';
       
-      // Get transactions for analysis
+      // Get transactions and budgets
       const transactions = await storage.getTransactions(user.id, 500);
+      const budgets = await storage.getBudgets(user.id);
       
       if (transactions.length === 0) {
         return res.json({
@@ -1986,7 +1987,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           previousIncome: 0,
           previousSpending: 0,
           categories: [],
-          transactions: []
+          transactions: [],
+          hasAnalysis: false
         });
       }
       
@@ -2005,13 +2007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         previousPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       }
       
-      // Filter transactions by period
-      const currentPeriodTransactions = transactions.filter(t => {
-        const tDate = new Date(t.date);
-        return tDate >= currentPeriodStart && tDate <= now && t.amount < 0;
-      });
-      
-      // Calculate totals
+      // Calculate totals from transactions
       let currentIncome = 0;
       let currentSpending = 0;
       let previousIncome = 0;
@@ -2049,85 +2045,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
-      // Use AI to categorize spending for the pie chart
+      // Use saved budget analysis data for pie chart categories
+      // This data is saved when user clicks "Analyze My Spending" on the Budget page
       let categories: { name: string; amount: number; percentage: number }[] = [];
+      const hasAnalysis = budgets.length > 0 && budgets.some(b => b.spent > 0);
       
-      if (currentPeriodTransactions.length > 0) {
-        try {
-          const budgetCategories = [
-            "Housing", "Utilities", "Phone/Internet", "Transportation", "Gas",
-            "Groceries", "Restaurants", "Entertainment", "Shopping", "Healthcare",
-            "Personal Care", "Subscriptions", "Insurance", "Debt Payments", "Savings",
-            "Education", "Travel", "Gifts/Donations", "Other"
-          ];
-          
-          const prompt = `
-Analyze these financial transactions and categorize them for a spending breakdown pie chart.
-
-Available categories: ${budgetCategories.join(', ')}
-
-Transactions to analyze:
-${currentPeriodTransactions.slice(0, 50).map(t => `${t.merchantName || t.description || 'Unknown'}: $${Math.abs(t.amount).toFixed(2)}`).join('\n')}
-
-Return JSON with categorized spending totals:
-{
-  "categories": [
-    {"name": "Category Name", "amount": total_amount}
-  ]
-}
-
-Rules:
-- Only include categories with actual spending
-- Use clear, readable category names from the list
-- Sum all transactions that belong to each category
-- Be intelligent about matching merchants to categories (e.g., Starbucks = Restaurants, Shell = Gas)
-`;
-
-          const response = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-              {
-                role: "system",
-                content: "You are a financial analyst. Categorize transactions intelligently for a spending pie chart. Return only valid JSON."
-              },
-              { role: "user", content: prompt }
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.3
-          });
-
-          const result = JSON.parse(response.choices[0].message.content || '{"categories": []}');
-          const totalSpending = currentSpending || 1;
-          
-          categories = (result.categories || [])
-            .filter((c: any) => c.amount > 0)
-            .map((c: any) => ({
-              name: c.name,
-              amount: Math.round(c.amount * 100) / 100,
-              percentage: Math.round((c.amount / totalSpending) * 100 * 10) / 10
-            }))
-            .sort((a: any, b: any) => b.amount - a.amount)
-            .slice(0, 8);
-            
-        } catch (aiError) {
-          console.error('AI categorization failed, using raw categories:', aiError);
-          // Fallback to raw transaction categories
-          const categoryTotals: Record<string, number> = {};
-          currentPeriodTransactions.forEach(t => {
-            const category = t.category || 'Other';
-            categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(t.amount);
-          });
-          
-          const totalSpending = currentSpending || 1;
-          categories = Object.entries(categoryTotals)
-            .map(([name, amount]) => ({
-              name,
-              amount: Math.round(amount * 100) / 100,
-              percentage: Math.round((amount / totalSpending) * 100 * 10) / 10
-            }))
-            .sort((a, b) => b.amount - a.amount)
-            .slice(0, 8);
-        }
+      if (hasAnalysis) {
+        // Use the saved budget spending data from "Analyze My Spending"
+        const totalSpent = budgets.reduce((sum, b) => sum + (b.spent || 0), 0) || 1;
+        
+        // Category display name mapping
+        const categoryNames: Record<string, string> = {
+          'tithe': 'Tithe',
+          'charitable_giving': 'Charitable Giving',
+          'emergency_fund': 'Emergency Fund',
+          'retirement': 'Retirement',
+          'college_fund': 'College Fund',
+          'mortgage_rent': 'Housing',
+          'utilities': 'Utilities',
+          'phone': 'Phone',
+          'internet': 'Internet',
+          'cable': 'Subscriptions',
+          'car_payment': 'Car Payment',
+          'auto_insurance': 'Auto Insurance',
+          'gas': 'Gas',
+          'maintenance': 'Maintenance',
+          'groceries': 'Groceries',
+          'restaurants': 'Restaurants',
+          'clothing': 'Clothing',
+          'personal_care': 'Personal Care',
+          'health_fitness': 'Health & Fitness',
+          'entertainment': 'Entertainment',
+          'miscellaneous': 'Shopping',
+          'travel': 'Travel',
+          'credit_cards': 'Credit Cards',
+          'student_loans': 'Student Loans',
+          'other_debt': 'Other Debt'
+        };
+        
+        categories = budgets
+          .filter(b => b.spent > 0)
+          .map(b => ({
+            name: categoryNames[b.category] || b.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            amount: Math.round(b.spent * 100) / 100,
+            percentage: Math.round((b.spent / totalSpent) * 100 * 10) / 10
+          }))
+          .sort((a, b) => b.amount - a.amount)
+          .slice(0, 8);
       }
       
       res.json({
@@ -2137,7 +2101,8 @@ Rules:
         previousIncome: Math.round(previousIncome * 100) / 100 || 1,
         previousSpending: Math.round(previousSpending * 100) / 100 || 1,
         categories,
-        transactions: recentTransactions
+        transactions: recentTransactions,
+        hasAnalysis
       });
       
     } catch (error) {
