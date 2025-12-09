@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { User } from "@shared/schema";
 import { storage } from "./storage";
-import { createSubscriptionSession, handleStripeWebhook } from "./stripe";
+import { createSubscriptionSession, handleStripeWebhook, stripe } from "./stripe";
 import Stripe from "stripe";
 
 export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
@@ -43,10 +43,33 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         }
       }
       
+      // Check Stripe subscription status directly if user has a subscription ID
+      let stripeSubscriptionActive = false;
+      let stripeStatus: string | null = null;
+      
+      if (user.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+          stripeStatus = subscription.status;
+          stripeSubscriptionActive = ['active', 'trialing', 'past_due'].includes(subscription.status);
+          
+          // If Stripe says active but our DB says otherwise, update the DB
+          if (stripeSubscriptionActive && !user.isPremium) {
+            await storage.updateUser(user.id, {
+              isPremium: true,
+              subscriptionStatus: subscription.status
+            });
+          }
+        } catch (stripeError: any) {
+          console.error('Error checking Stripe subscription:', stripeError.message);
+        }
+      }
+      
       // Determine if user has an active subscription (any type)
       const activeStatuses = ['active', 'trialing', 'past_due'];
       const hasActiveSubscription = 
         user.isPremium || 
+        stripeSubscriptionActive ||
         activeStatuses.includes(user.subscriptionStatus || '') ||
         (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date());
       
@@ -62,8 +85,8 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
       const isCancelled = user.subscriptionStatus === 'cancelled' || user.subscriptionStatus === 'canceled';
       
       res.json({
-        isPremium: user.isPremium,
-        subscriptionStatus: user.subscriptionStatus,
+        isPremium: user.isPremium || stripeSubscriptionActive,
+        subscriptionStatus: stripeStatus || user.subscriptionStatus,
         isOnFreeTrial,
         trialDaysLeft,
         trialEndsAt: user.trialEndsAt,
