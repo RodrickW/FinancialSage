@@ -2,57 +2,52 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, AlertTriangle, CheckCircle, X, ArrowLeft } from 'lucide-react';
-// Removed mock data import - using real API data only
+import { Loader2, AlertTriangle, CheckCircle, CreditCard, Smartphone, ArrowLeft } from 'lucide-react';
 
 export default function CancelTrial() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
-  // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
     queryKey: ['/api/users/profile']
   });
 
-  // Get subscription status
   const { data: subscriptionStatus, isLoading: statusLoading } = useQuery({
     queryKey: ['/api/subscription/status']
   });
 
   const user = userData;
 
-  // Cancel trial mutation
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/cancel-trial');
+      const response = await apiRequest('POST', '/api/cancel-subscription');
       if (!response.ok) {
-        throw new Error('Failed to cancel trial');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to cancel subscription');
       }
       return response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Trial Cancelled",
+        title: "Subscription Cancelled",
         description: data.message,
         duration: 5000,
       });
-      // Refresh subscription status
       queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
-      // Redirect to dashboard after a short delay
-      setTimeout(() => setLocation('/dashboard'), 2000);
+      queryClient.invalidateQueries({ queryKey: ['/api/users/profile'] });
+      setShowCancelConfirm(false);
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to cancel trial. Please try again.",
+        description: error.message || "Failed to cancel subscription. Please try again.",
         variant: "destructive",
       });
     },
@@ -66,155 +61,233 @@ export default function CancelTrial() {
     );
   }
 
-  const handleCancel = () => {
-    cancelMutation.mutate();
+  const isOnTrial = subscriptionStatus?.isOnFreeTrial;
+  const isPremium = user?.isPremium;
+  const hasStripeSubscription = user?.stripeSubscriptionId;
+  const hasAppleSubscription = user?.revenuecatUserId;
+  const isCancelled = subscriptionStatus?.subscriptionStatus === 'cancelled';
+
+  const getSubscriptionType = () => {
+    if (hasAppleSubscription && !hasStripeSubscription) return 'apple';
+    if (hasStripeSubscription) return 'stripe';
+    return 'none';
   };
 
-  const isAlreadyCancelled = subscriptionStatus?.subscriptionStatus === 'cancelled';
+  const subscriptionType = getSubscriptionType();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
-      <div className="lg:flex">
-        <div className="hidden lg:block lg:w-64 lg:fixed lg:inset-y-0">
-          <Sidebar user={user} />
-        </div>
-        
-        <div className="lg:pl-64 flex-1">
-          <TopNav title="Cancel Trial" />
-          
-          <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Back Button */}
-            <Button 
-              variant="ghost" 
-              onClick={() => setLocation('/dashboard')}
-              className="mb-6 text-gray-600 hover:text-gray-800"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-
-            {/* Status Card */}
-            {subscriptionStatus?.isOnFreeTrial && (
-              <Card className="mb-6 border-blue-200 bg-blue-50">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-blue-900">
-                        Your trial has {subscriptionStatus.trialDaysLeft} days remaining
-                      </p>
-                      <p className="text-sm text-blue-700">
-                        You currently have access to all premium features
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Main Cancellation Card */}
-            <Card className="border-red-200">
-              <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertTriangle className="w-8 h-8 text-red-600" />
-                </div>
-                <CardTitle className="text-2xl text-red-900">
-                  {isAlreadyCancelled ? 'Trial Already Cancelled' : 'Cancel Your Free Trial'}
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                {isAlreadyCancelled ? (
-                  <div className="text-center space-y-4">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <div className="flex items-center justify-center space-x-2">
-                        <X className="w-5 h-5 text-yellow-600" />
-                        <span className="font-medium text-yellow-800">Trial Cancelled</span>
-                      </div>
-                      <p className="text-sm text-yellow-700 mt-2">
-                        Your trial has been cancelled. You can continue using the service until it expires.
-                      </p>
-                    </div>
-                    
-                    <Button 
-                      onClick={() => setLocation('/dashboard')}
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                    >
-                      Return to Dashboard
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-gray-900">Before you cancel, consider:</h3>
-                      <ul className="space-y-2">
-                        <li className="flex items-start space-x-3">
-                          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">You'll lose access to all premium features when your trial expires</span>
-                        </li>
-                        <li className="flex items-start space-x-3">
-                          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">Your financial insights and AI coaching will be limited</span>
-                        </li>
-                        <li className="flex items-start space-x-3">
-                          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">You can reactivate anytime by starting a new subscription</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-medium text-gray-900 mb-2">What happens when you cancel:</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• Your trial will end as scheduled, but you won't be charged</li>
-                        <li>• You'll continue to have access until your trial expires</li>
-                        <li>• You can re-subscribe at any time in the future</li>
-                      </ul>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setLocation('/dashboard')}
-                        className="flex-1"
-                      >
-                        Keep My Trial
-                      </Button>
-                      <Button 
-                        onClick={handleCancel}
-                        disabled={cancelMutation.isPending}
-                        variant="destructive"
-                        className="flex-1"
-                      >
-                        {cancelMutation.isPending ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Cancelling...
-                          </>
-                        ) : (
-                          'Cancel Trial'
-                        )}
-                      </Button>
-                    </div>
-
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">
-                        Need help? <a href="/feedback" className="text-blue-600 hover:underline">Contact support</a>
-                      </p>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </main>
-        </div>
-      </div>
+    <div className="min-h-screen bg-white">
+      <TopNav title="Manage Subscription" />
       
-      <div className="lg:hidden">
-        <BottomNavigation user={user} />
-      </div>
+      <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
+        <Button 
+          variant="ghost" 
+          onClick={() => setLocation('/')}
+          className="mb-6 text-gray-600 hover:text-gray-800"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
+
+        {/* Current Status */}
+        <Card className="mb-6 border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-xl text-black">Your Subscription Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {isOnTrial && (
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-blue-900">Free Trial Active</p>
+                      <p className="text-sm text-blue-700">
+                        {subscriptionStatus?.trialDaysLeft} days remaining
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isPremium && !isOnTrial && (
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div>
+                      <p className="font-medium text-green-900">Premium Subscription Active</p>
+                      <p className="text-sm text-green-700">
+                        {subscriptionType === 'apple' ? 'Subscribed via Apple' : 'Subscribed via Web'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isCancelled && (
+                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    <div>
+                      <p className="font-medium text-yellow-900">Subscription Cancelled</p>
+                      <p className="text-sm text-yellow-700">
+                        Access continues until your current period ends
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!isOnTrial && !isPremium && !isCancelled && (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="font-medium text-gray-900">No Active Subscription</p>
+                      <p className="text-sm text-gray-600">
+                        Subscribe to access premium features
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cancel Options */}
+        {(isOnTrial || isPremium) && !isCancelled && (
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardTitle className="text-xl text-red-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Cancel Subscription
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {subscriptionType === 'apple' ? (
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                    <Smartphone className="w-6 h-6 text-gray-600 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Apple Subscription</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Your subscription was purchased through the App Store. To cancel, you'll need to manage it through Apple:
+                      </p>
+                      <ol className="text-sm text-gray-600 mt-3 space-y-2 list-decimal list-inside">
+                        <li>Open the <strong>Settings</strong> app on your iPhone</li>
+                        <li>Tap your name at the top</li>
+                        <li>Tap <strong>Subscriptions</strong></li>
+                        <li>Find <strong>Mind My Money</strong> and tap it</li>
+                        <li>Tap <strong>Cancel Subscription</strong></li>
+                      </ol>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setLocation('/')}
+                    className="w-full"
+                  >
+                    Back to Dashboard
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {!showCancelConfirm ? (
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                        <CreditCard className="w-6 h-6 text-gray-600 mt-1" />
+                        <div>
+                          <p className="font-medium text-gray-900">Web Subscription</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {isOnTrial 
+                              ? "Cancel your free trial. You won't be charged when the trial ends."
+                              : "Cancel your subscription. You'll continue to have access until your current billing period ends."
+                            }
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Before you cancel:</strong> You'll lose access to AI coaching, spending analytics, budget tracking, and all premium features.
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button 
+                          variant="outline"
+                          onClick={() => setLocation('/')}
+                          className="flex-1"
+                        >
+                          Keep Subscription
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => setShowCancelConfirm(true)}
+                          className="flex-1"
+                          data-testid="button-cancel-subscription"
+                        >
+                          Cancel Subscription
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="font-medium text-red-900 mb-2">Are you sure?</p>
+                        <p className="text-sm text-red-700">
+                          {isOnTrial 
+                            ? "Your trial will be cancelled and you won't be charged."
+                            : "Your subscription will be cancelled at the end of your current billing period."
+                          }
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button 
+                          variant="outline"
+                          onClick={() => setShowCancelConfirm(false)}
+                          className="flex-1"
+                          disabled={cancelMutation.isPending}
+                        >
+                          Go Back
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => cancelMutation.mutate()}
+                          disabled={cancelMutation.isPending}
+                          className="flex-1"
+                          data-testid="button-confirm-cancel"
+                        >
+                          {cancelMutation.isPending ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Cancelling...
+                            </>
+                          ) : (
+                            'Yes, Cancel'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Help */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-500">
+            Need help? <a href="/feedback" className="text-blue-600 hover:underline">Contact support</a>
+          </p>
+        </div>
+      </main>
+      
+      <BottomNavigation user={user} />
     </div>
   );
 }

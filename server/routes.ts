@@ -2994,7 +2994,7 @@ IMPORTANT:
     }
   });
 
-  // Trial cancellation endpoint
+  // Trial cancellation endpoint (legacy - kept for backwards compatibility)
   app.post('/api/cancel-trial', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
@@ -3020,6 +3020,49 @@ IMPORTANT:
     } catch (error) {
       console.error('Error cancelling trial:', error);
       res.status(500).json({ message: 'Failed to cancel trial' });
+    }
+  });
+
+  // Subscription cancellation endpoint - handles both trials and paid subscriptions
+  app.post('/api/cancel-subscription', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Check if user has a Stripe subscription to cancel
+      if (!user.stripeSubscriptionId) {
+        // Check if they have an Apple subscription
+        if (user.revenuecatUserId) {
+          return res.status(400).json({ 
+            message: 'Your subscription was purchased through Apple. Please cancel it through your iPhone Settings > Subscriptions.',
+            type: 'apple'
+          });
+        }
+        return res.status(400).json({ message: 'No active subscription to cancel' });
+      }
+
+      // Cancel the Stripe subscription at period end
+      const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+
+      // Update user status
+      await storage.updateUser(user.id, {
+        subscriptionStatus: 'cancelled'
+      });
+
+      const isOnTrial = subscription.status === 'trialing';
+      const message = isOnTrial 
+        ? 'Your trial has been cancelled. You won\'t be charged when it ends.'
+        : 'Your subscription has been cancelled. You\'ll continue to have access until the end of your current billing period.';
+
+      res.json({ 
+        success: true,
+        message,
+        cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toLocaleDateString() : null
+      });
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      res.status(500).json({ message: 'Failed to cancel subscription. Please try again or contact support.' });
     }
   });
 
