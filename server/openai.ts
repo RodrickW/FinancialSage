@@ -398,6 +398,151 @@ If unclear which goal or amount, set needsMoreInfo to true and ask for clarifica
   }
 }
 
+// Generate comprehensive Money Playbook from interview responses
+export async function generateMoneyPlaybook(interviewData: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are the Mind My Money AI Coach. Your role is to help users change their financial behavior, not just track expenses. 
+
+USER INPUT YOU WILL RECEIVE:
+- Money Mind Interview answers
+- Financial goals
+- Income range (if provided)
+- Spending habits or recent spending data (if provided)
+- Emotional relationship with money (from interview)
+
+YOUR TASK:
+1. Identify the user's "Money Personality Type" using one of these:
+   - The Saver
+   - The Spender
+   - The Avoider
+   - The Overthinker
+   - The Dreamer
+   - The Hustler
+   - The People-Pleaser
+   - The Impulse Buyer
+   - The Planner
+   - The Survivor
+
+2. List:
+   - Top 3 Money Strengths  
+   - Top 3 Money Weaknesses  
+   - Emotional triggers that affect spending  
+   - Any behavioral patterns you notice  
+
+3. Create a PERSONALIZED MONEY PLAN containing:
+   - A 30-Day Action Plan (simple, actionable steps organized by week)
+   - A Daily Habit for the next 7 days
+   - A Purpose Statement (why their financial goals matter)
+
+4. Create one HIGH-VALUE INSIGHT:
+   A single paragraph that explains the "root money issue" holding the user back.
+
+5. Calculate scores:
+   - Saving Habit Score (1-100 based on saving behavior answers)
+   - Financial Awareness Score (1-100 based on how often they check finances)
+   - Spending Trigger Intensity (1-100 based on emotional spending triggers)
+
+Respond in JSON format with this exact structure:
+{
+  "moneyPersonalityType": "string - one of the 10 types",
+  "moneyPersonalityDescription": "string - 2-3 sentences explaining this personality type",
+  "strengths": ["string", "string", "string"],
+  "weaknesses": ["string", "string", "string"],
+  "emotionalPatterns": ["string", "string", "string"],
+  "behavioralPatterns": ["string", "string", "string"],
+  "spendingTriggers": ["string array of identified triggers"],
+  "coreMoneyValues": ["string", "string", "string"],
+  "thirtyDayPlan": {
+    "week1": ["task", "task"],
+    "week2": ["task", "task"],
+    "week3": ["task", "task"],
+    "week4": ["task", "task"]
+  },
+  "dailyHabit": "string - one simple daily habit for the next 7 days",
+  "purposeStatement": "string - 2-3 sentences about why their financial goals matter",
+  "rootMoneyInsight": "string - one paragraph explaining their core money issue",
+  "scores": {
+    "savingHabitScore": number,
+    "financialAwarenessScore": number,
+    "spendingTriggerIntensity": number
+  },
+  "weeklyFocus": "string - what they should focus on this week",
+  "encouragement": "string - personalized encouraging message"
+}
+
+Keep the tone: direct, supportive, and practical.
+Avoid fluff. Make this feel like a real coach speaking to them.
+Address the user by their first name if provided.`
+        },
+        {
+          role: "user",
+          content: `Analyze this user's Money Mind Interview responses and create their personalized Money Playbook:\n\n${JSON.stringify(interviewData, null, 2)}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating Money Playbook:", error.message);
+    throw new Error("Failed to generate Money Playbook");
+  }
+}
+
+// Generate weekly spending analysis compared to Money Playbook
+export async function generateWeeklySpendingAnalysis(data: any): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, the AI financial coach. You're providing a weekly check-in for a user based on their Money Playbook and recent spending.
+
+Your job is to:
+1. Analyze their spending for the past week
+2. Compare it to their known patterns and triggers
+3. Provide specific, actionable feedback
+4. Celebrate wins and address overspending with compassion
+
+Respond in JSON format:
+{
+  "weekSummary": "string - brief summary of their week financially",
+  "overspendingAreas": [
+    {
+      "category": "string",
+      "amount": number,
+      "reason": "string - why they likely overspent based on their personality/triggers",
+      "solution": "string - what to do next week"
+    }
+  ],
+  "wins": ["string array of positive financial behaviors noticed"],
+  "patternAlert": "string - any concerning pattern developing, or null",
+  "weeklyTip": "string - one actionable tip for next week",
+  "encouragement": "string - motivational message based on their progress",
+  "progressScore": number (1-100, how well they stuck to their playbook this week)
+}`
+        },
+        {
+          role: "user",
+          content: `User's Money Playbook and this week's spending:\n\n${JSON.stringify(data, null, 2)}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating weekly spending analysis:", error.message);
+    throw new Error("Failed to generate weekly spending analysis");
+  }
+}
+
 // Advanced financial health assessment combining multiple data sources
 export async function generateFinancialHealthReport(userData: any): Promise<any> {
   try {

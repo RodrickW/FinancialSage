@@ -37,6 +37,7 @@ interface InterviewResponse {
 }
 
 const interviewQuestions: InterviewQuestion[] = [
+  // SECTION 1: Financial Goals & Situation
   {
     id: 'financial-goals',
     type: 'multi-select',
@@ -81,23 +82,152 @@ const interviewQuestions: InterviewQuestion[] = [
     step: 500,
     required: true
   },
+  // SECTION 2: Emotional Relationship with Money
   {
-    id: 'biggest-challenge',
+    id: 'money-childhood',
     type: 'multiple-choice',
-    question: "What's your biggest financial challenge right now?",
+    question: "How was money talked about in your childhood?",
+    description: "Our early experiences shape how we handle money today.",
     options: [
-      'Not enough income',
-      'Overspending',
-      'High debt payments',
-      'No emergency fund',
-      'Don\'t know where money goes',
-      'Irregular income',
-      'Expensive lifestyle',
-      'Investment confusion',
-      'Planning for the future'
+      'Money was a source of stress and conflict',
+      'We never talked about money',
+      'Money was always tight - we had to be careful',
+      'We lived comfortably but were taught to save',
+      'Money was abundant and not a concern',
+      'I learned good money habits from my parents'
     ],
     required: true
   },
+  {
+    id: 'money-feeling',
+    type: 'multiple-choice',
+    question: "When you think about your finances, what's the first emotion that comes up?",
+    description: "Be honest - there's no wrong answer.",
+    options: [
+      'Anxiety or stress',
+      'Guilt or shame',
+      'Confusion or overwhelm',
+      'Hope but uncertainty',
+      'Neutral - I try not to think about it',
+      'Confident and in control',
+      'Motivated to do better'
+    ],
+    required: true
+  },
+  {
+    id: 'money-avoidance',
+    type: 'multiple-choice',
+    question: "How often do you avoid looking at your bank account or bills?",
+    options: [
+      'Almost always - I hate checking',
+      'Often - especially when I know it\'s bad',
+      'Sometimes - depends on my mood',
+      'Rarely - I check pretty regularly',
+      'Never - I monitor my finances closely'
+    ],
+    required: true
+  },
+  // SECTION 3: Spending Triggers & Patterns
+  {
+    id: 'spending-triggers',
+    type: 'multi-select',
+    question: "What emotions or situations trigger you to spend money?",
+    description: "Select all that apply - understanding your triggers is key to change.",
+    options: [
+      'Stress or anxiety',
+      'Boredom',
+      'Sadness or depression',
+      'Celebrating good news',
+      'Social pressure (keeping up with friends)',
+      'Sales or "good deals"',
+      'Feeling like I deserve it',
+      'Retail therapy after a bad day',
+      'FOMO (fear of missing out)',
+      'Convenience (too tired to cook/plan)',
+      'None - I rarely impulse spend'
+    ],
+    required: true
+  },
+  {
+    id: 'impulse-behavior',
+    type: 'multiple-choice',
+    question: "After an impulse purchase, how do you typically feel?",
+    options: [
+      'Immediate regret and guilt',
+      'Fine at first, then regret later',
+      'Justified - I can explain why I needed it',
+      'Happy and satisfied',
+      'I don\'t really think about it',
+      'I rarely make impulse purchases'
+    ],
+    required: true
+  },
+  {
+    id: 'spending-weakness',
+    type: 'multi-select',
+    question: "Where does your money seem to disappear?",
+    description: "Select all categories where you tend to overspend.",
+    options: [
+      'Dining out and food delivery',
+      'Online shopping',
+      'Subscriptions I forget about',
+      'Entertainment and streaming',
+      'Clothes and fashion',
+      'Technology and gadgets',
+      'Travel and experiences',
+      'Gifts for others',
+      'Self-care and beauty',
+      'Hobbies',
+      'Convenience items',
+      'I\'m not sure - it just disappears'
+    ],
+    required: true
+  },
+  // SECTION 4: Saving Habits & Money Mindset
+  {
+    id: 'saving-frequency',
+    type: 'multiple-choice',
+    question: "How consistently do you save money?",
+    options: [
+      'Never - there\'s nothing left to save',
+      'Rarely - only when I have extra',
+      'Sometimes - I try but often fail',
+      'Usually - most months I save something',
+      'Always - I save automatically before spending'
+    ],
+    required: true
+  },
+  {
+    id: 'saving-barrier',
+    type: 'multiple-choice',
+    question: "What's the biggest barrier to saving more money?",
+    options: [
+      'I genuinely don\'t have enough income',
+      'I spend too much on wants vs needs',
+      'Unexpected expenses keep coming up',
+      'I don\'t know how much I should save',
+      'I prioritize enjoying life now',
+      'Debt payments take up my money',
+      'I\'m actually saving fine - no major barriers'
+    ],
+    required: true
+  },
+  {
+    id: 'money-belief',
+    type: 'multiple-choice',
+    question: "Which statement best describes your money mindset?",
+    description: "Choose the one that feels most true for you.",
+    options: [
+      'Money is stressful and I\'ll never have enough',
+      'I\'m bad with money and always will be',
+      'Money is confusing and I don\'t understand it',
+      'I could be good with money if I tried harder',
+      'I\'m learning and getting better with money',
+      'I\'m confident in my ability to manage money'
+    ],
+    required: true
+  },
+  // SECTION 5: Financial Context
   {
     id: 'debt-situation',
     type: 'multiple-choice',
@@ -126,51 +256,36 @@ const interviewQuestions: InterviewQuestion[] = [
     ],
     required: true
   },
+  // SECTION 6: Personal Values & Motivation
   {
-    id: 'investment-experience',
-    type: 'multiple-choice',
-    question: "What's your experience with investing?",
-    options: [
-      'Complete beginner',
-      'Know the basics',
-      'Some experience',
-      'Experienced investor',
-      'Very experienced'
-    ],
+    id: 'money-why',
+    type: 'text',
+    question: "Why do you want to be better with money?",
+    description: "What would financial freedom allow you to do or feel?",
+    placeholder: "Example: I want to stop worrying about bills and be able to take my family on vacation...",
     required: true
   },
   {
-    id: 'risk-tolerance',
+    id: 'biggest-fear',
     type: 'multiple-choice',
-    question: "How do you feel about investment risk?",
-    description: "There's no wrong answer - everyone has different comfort levels.",
+    question: "What's your biggest financial fear?",
     options: [
-      'Very conservative - avoid all risk',
-      'Conservative - minimal risk',
-      'Moderate - balanced approach',
-      'Aggressive - comfortable with risk',
-      'Very aggressive - high risk for high reward'
-    ],
-    required: true
-  },
-  {
-    id: 'time-horizon',
-    type: 'multiple-choice',
-    question: "When do you need to achieve your main financial goal?",
-    options: [
-      'Within 1 year',
-      '1-3 years',
-      '3-5 years',
-      '5-10 years',
-      '10+ years'
+      'Never getting out of debt',
+      'Not being able to retire',
+      'Being a burden to my family',
+      'Losing my job and not having savings',
+      'Never being able to afford a home',
+      'Always living paycheck to paycheck',
+      'Not being able to provide for my kids',
+      'Unexpected medical expenses'
     ],
     required: true
   },
   {
     id: 'additional-info',
     type: 'text',
-    question: "Is there anything else you'd like me to know about your financial situation?",
-    description: "Share any specific concerns, questions, or goals I should know about.",
+    question: "Is there anything else you'd like me to know about your relationship with money?",
+    description: "Share any specific patterns, challenges, or goals I should know about.",
     placeholder: "Optional: Tell me more about your unique situation...",
     required: false
   }
@@ -251,10 +366,8 @@ export default function CoachInterview() {
   };
 
   const handleFinish = () => {
-    // Store flag to show personalized plan
-    localStorage.setItem('showPersonalizedPlan', 'true');
-    localStorage.setItem('interviewResponses', JSON.stringify(responses));
-    setLocation('/coach');
+    // Navigate to Money Playbook to see results
+    setLocation('/money-playbook');
   };
 
   if (userLoading) {

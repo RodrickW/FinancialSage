@@ -2252,7 +2252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Money Mind Interview endpoint - Save user responses
+  // Money Mind Interview endpoint - Save user responses and generate Money Playbook
   app.post('/api/ai/interview', requireAccess, async (req, res) => {
     try {
       const { responses, completedAt } = req.body;
@@ -2263,79 +2263,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Interview responses are required' });
       }
       
-      // Get user's financial data to create personalized plan
+      // Get user's financial data for context
       const accounts = await storage.getAccounts(user.id);
       const transactions = await storage.getTransactions(user.id);
       
-      // Generate AI-powered personalized budget plan based on interview responses
-      const { createPersonalizedBudget } = await import('./openai');
-      const personalizedPlan = await createPersonalizedBudget({
+      // Generate AI-powered Money Playbook based on interview responses
+      const { generateMoneyPlaybook } = await import('./openai');
+      const moneyPlaybook = await generateMoneyPlaybook({
+        userName: user.firstName || user.username,
         userResponses: responses,
-        accounts,
-        transactions,
-        userId: user.id,
-        userName: user.firstName || user.username
+        financialContext: {
+          accounts: accounts.map(a => ({ name: a.accountName, type: a.accountType, balance: a.balance })),
+          recentSpending: transactions.slice(0, 20).map(t => ({ 
+            name: t.description, 
+            amount: t.amount, 
+            category: t.category 
+          }))
+        }
       });
       
-      // Save interview responses and personalized plan to database
+      // Save interview responses and Money Playbook to database
       const interview = await storage.createInterview({
         userId: user.id,
         responses,
         completedAt: completedAt ? new Date(completedAt) : new Date(),
-        personalizedPlan
+        personalizedPlan: moneyPlaybook
       });
       
       // Store the interview completion as an insight
-      const interviewInsight = await storage.createInsight({
+      await storage.createInsight({
         userId: user.id,
         type: 'interview',
-        title: 'Financial Goals Interview Completed',
-        description: `Financial goals interview completed on ${new Date().toLocaleDateString()}. Your personalized financial plan has been generated and is ready to view.`,
+        title: 'Money Mind Interview Completed',
+        description: `Your Money Playbook has been created! You are "${moneyPlaybook.moneyPersonalityType}". View your personalized 30-day action plan.`,
         severity: 'info'
       });
       
       res.json({ 
         success: true, 
-        message: 'Interview responses saved successfully',
+        message: 'Money Playbook generated successfully',
         interviewId: interview.id,
-        personalizedPlan 
+        moneyPlaybook 
       });
     } catch (error) {
       console.error('Error saving interview responses:', error);
-      res.status(500).json({ message: 'Failed to save interview responses' });
+      res.status(500).json({ message: 'Failed to generate Money Playbook' });
     }
   });
 
-  // Get latest interview data and personalized plan
+  // Get latest interview data and Money Playbook
   app.get('/api/ai/interview/latest', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       
-      // Get all insights of type 'interview' for this user, ordered by creation date
-      const insights = await storage.getInsights(user.id);
-      const interviewInsights = insights.filter(insight => insight.type === 'interview');
+      // Get the latest interview with Money Playbook from database
+      const interview = await storage.getLatestInterview(user.id);
       
-      if (interviewInsights.length === 0) {
+      if (!interview) {
         return res.json({ hasInterview: false });
       }
-      
-      // Return basic interview completion info
-      const latestInterview = interviewInsights.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )[0];
       
       res.json({
         hasInterview: true,
         interview: {
-          id: latestInterview.id,
-          completedAt: latestInterview.createdAt,
-          title: latestInterview.title,
-          description: latestInterview.description
+          id: interview.id,
+          completedAt: interview.completedAt,
+          responses: interview.responses,
+          moneyPlaybook: interview.personalizedPlan
         }
       });
     } catch (error) {
       console.error('Error fetching interview data:', error);
       res.status(500).json({ message: 'Failed to fetch interview data' });
+    }
+  });
+  
+  // Generate weekly spending analysis based on Money Playbook
+  app.get('/api/ai/weekly-analysis', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Get the latest Money Playbook
+      const interview = await storage.getLatestInterview(user.id);
+      if (!interview || !interview.personalizedPlan) {
+        return res.status(400).json({ 
+          message: 'Please complete the Money Mind Interview first to get weekly analysis' 
+        });
+      }
+      
+      // Get this week's transactions
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const transactions = await storage.getTransactions(user.id);
+      const weeklyTransactions = transactions.filter(t => 
+        new Date(t.date) >= oneWeekAgo
+      );
+      
+      // Generate weekly analysis
+      const { generateWeeklySpendingAnalysis } = await import('./openai');
+      const weeklyAnalysis = await generateWeeklySpendingAnalysis({
+        userName: user.firstName || user.username,
+        moneyPlaybook: interview.personalizedPlan,
+        weeklySpending: weeklyTransactions.map(t => ({
+          name: t.description,
+          amount: t.amount,
+          category: t.category,
+          date: t.date
+        }))
+      });
+      
+      res.json(weeklyAnalysis);
+    } catch (error) {
+      console.error('Error generating weekly analysis:', error);
+      res.status(500).json({ message: 'Failed to generate weekly analysis' });
     }
   });
 

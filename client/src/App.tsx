@@ -21,6 +21,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Accounts from "@/pages/Accounts";
 import FinancialCoach from "@/pages/Coach";
 import CoachInterview from "@/pages/CoachInterview";
+import MoneyPlaybook from "@/pages/MoneyPlaybook";
 import SimpleGoals from "@/pages/SimpleGoals";
 import Goals from "@/pages/Goals";
 import Analytics from "@/pages/Analytics";
@@ -135,6 +136,9 @@ function Router() {
       </Route>
       <Route path="/coach/interview">
         {(params) => <ProtectedRoute component={CoachInterview} params={params} />}
+      </Route>
+      <Route path="/money-playbook">
+        {(params) => <ProtectedRoute component={MoneyPlaybook} params={params} />}
       </Route>
       <Route path="/goals">
         {(params) => <ProtectedRoute component={Goals} params={params} />}
