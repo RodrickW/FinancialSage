@@ -28,7 +28,7 @@ export default function FloatingCoach() {
 
   // Sample suggested questions
   const suggestedQuestions = [
-    "How can I improve my credit score?",
+    "How can I save more money each month?",
     "How much should I save for retirement?",
     "What's a good emergency fund amount?",
     "Should I pay off debt or invest?"

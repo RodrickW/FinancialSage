@@ -45,12 +45,6 @@ export default function FinancialCoach() {
     enabled: selectedTab === 'budget'
   });
 
-  // Get credit score analysis
-  const { data: creditData, isLoading: creditLoading } = useQuery({
-    queryKey: ['/api/ai/credit-score-analysis'],
-    enabled: selectedTab === 'credit'
-  });
-
   // Get comprehensive financial health report
   const { data: healthData, isLoading: healthLoading } = useQuery({
     queryKey: ['/api/ai/financial-health'],
@@ -215,119 +209,6 @@ Money Mind 💰`);
                   <p className="mt-3 text-sm text-neutral-600">{rec.reasoning}</p>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderCreditTab = () => {
-    if (creditLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary-500 mb-4" />
-          <p>Analyzing your credit score and generating improvement recommendations...</p>
-        </div>
-      );
-    }
-
-    if (!creditData) {
-      return (
-        <div className="p-6 text-center">
-          <p>No credit score data available. Please connect your accounts to import your credit score.</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardHeader className="pb-2">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-white text-lg font-bold">MM</span>
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind's Credit Analysis</CardTitle>
-                  <p className="text-sm text-neutral-600">Smart insights to boost your credit score</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center mb-2">
-                <div className="text-4xl font-bold mr-3">{(creditData as any)?.currentScore?.score || "N/A"}</div>
-                <Badge className="text-white bg-primary-500">{(creditData as any)?.currentScore?.rating || "Pending"}</Badge>
-              </div>
-              <p className="text-neutral-700">{(creditData as any)?.analysis || "Credit analysis will appear here once your credit data is loaded."}</p>
-              <div className="mt-3">
-                <div className="text-sm text-neutral-500">Target Score</div>
-                <div className="flex items-center">
-                  <span className="text-lg font-medium mr-2">{(creditData as any)?.targetScore?.score || "TBD"}</span>
-                  <span className="text-sm text-neutral-600">
-                    Estimated time: {(creditData as any)?.targetScore?.timeEstimate || "Calculating..."}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Impact Factors</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(creditData as any)?.improvementSteps?.slice(0, 3).map((step: any, i: number) => (
-                <div key={i} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{step.title}</span>
-                    <Badge
-                      className={
-                        step.impactLevel === 'high'
-                          ? 'bg-red-100 text-red-700'
-                          : step.impactLevel === 'medium'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }
-                    >
-                      {step.impactLevel} impact
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <h3 className="text-lg font-medium mt-6">Improvement Steps</h3>
-        <div className="space-y-4">
-          {(creditData as any)?.improvementSteps?.map((step: any, i: number) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3 mt-1">
-                    {i + 1}
-                  </div>
-                  <div>
-                    <div className="flex items-center mb-1">
-                      <h4 className="font-medium mr-2">{step.title}</h4>
-                      <Badge
-                        className={
-                          step.timeFrame === 'immediate'
-                            ? 'bg-green-100 text-green-700'
-                            : step.timeFrame === 'short-term'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-purple-100 text-purple-700'
-                        }
-                      >
-                        {step.timeFrame}
-                      </Badge>
-                    </div>
-                    <p className="text-neutral-600">{step.description}</p>
-                  </div>
-                </div>
-              </CardContent>
             </Card>
           ))}
         </div>
@@ -550,7 +431,7 @@ Money Mind 💰`);
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
-                "How can I improve my credit score?",
+                "How can I save more money each month?",
                 "Should I pay off debt or invest first?",
                 "How much should I save for emergencies?",
                 "How can I reduce my monthly expenses?",
@@ -583,7 +464,7 @@ Money Mind 💰`);
           <div className="mb-6">
             <h1 className="text-2xl font-bold">AI Financial Coach</h1>
             <p className="text-neutral-600">
-              Get personalized financial advice, budget recommendations, and credit improvement strategies based on your data.
+              Get personalized financial advice and budget recommendations based on your data.
             </p>
           </div>
           
@@ -635,7 +516,6 @@ Money Mind 💰`);
               >
                 <TabsList className="mb-2">
                   <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
-                  <TabsTrigger value="credit">Credit Score</TabsTrigger>
                   <TabsTrigger value="health">Financial Health</TabsTrigger>
                   <TabsTrigger value="ask">Ask Coach</TabsTrigger>
                 </TabsList>
@@ -643,10 +523,6 @@ Money Mind 💰`);
                 <div className="p-1">
                   <TabsContent value="budget" className="mt-0">
                     {renderBudgetTab()}
-                  </TabsContent>
-                  
-                  <TabsContent value="credit" className="mt-0">
-                    {renderCreditTab()}
                   </TabsContent>
                   
                   <TabsContent value="health" className="mt-0">
