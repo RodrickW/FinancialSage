@@ -131,7 +131,7 @@ const DashboardScreen: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <LinearGradient
-          colors={['#1877F2', '#0D5DBF']}
+          colors={['#059669', '#0D5DBF']}
           style={styles.loadingGradient}
         >
           <Icon name="account-balance-wallet" size={64} color="#FFFFFF" />
@@ -149,7 +149,7 @@ const DashboardScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#1877F2"
+            tintColor="#059669"
           />
         }
       >
@@ -158,7 +158,7 @@ const DashboardScreen: React.FC = () => {
         {/* Hero Balance Card */}
         {overview && (
           <LinearGradient
-            colors={['#1877F2', '#0D5DBF']}
+            colors={['#059669', '#0D5DBF']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroCard}
@@ -215,7 +215,7 @@ const DashboardScreen: React.FC = () => {
               onPress={() => navigation.navigate('Accounts' as never)}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: '#DBEAFE' }]}>
-                <Icon name="account-balance" size={28} color="#1877F2" />
+                <Icon name="account-balance" size={28} color="#059669" />
               </View>
               <Text style={styles.quickActionLabel}>Accounts</Text>
             </TouchableOpacity>
@@ -323,7 +323,7 @@ const DashboardScreen: React.FC = () => {
                 <View style={styles.accountContent}>
                   <View style={styles.accountLeft}>
                     <View style={styles.accountIconContainer}>
-                      <Icon name="account-balance" size={24} color="#1877F2" />
+                      <Icon name="account-balance" size={24} color="#059669" />
                     </View>
                     <View>
                       <Text style={styles.accountName}>{account.name}</Text>
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#1877F2',
+    shadowColor: '#059669',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   accountBalance: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1877F2',
+    color: '#059669',
   },
 });
 

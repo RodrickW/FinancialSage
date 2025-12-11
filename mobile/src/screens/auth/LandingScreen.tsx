@@ -22,7 +22,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
   <View style={styles.featureCard}>
-    <Icon name={icon} size={48} color="#1877F2" style={styles.featureIcon} />
+    <Icon name={icon} size={48} color="#059669" style={styles.featureIcon} />
     <Text style={styles.featureTitle}>{title}</Text>
     <Text style={styles.featureDescription}>{description}</Text>
   </View>
@@ -65,7 +65,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
       <View style={styles.featuresContainer}>
         {features.map((feature, index) => (
           <View key={index} style={styles.featureItem}>
-            <Icon name="check-circle" size={20} color="#1877F2" />
+            <Icon name="check-circle" size={20} color="#059669" />
             <Text style={styles.featureText}>{feature}</Text>
           </View>
         ))}
@@ -77,7 +77,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         <Text style={[styles.planButtonText, popular && styles.popularPlanButtonText]}>
           Start Free Trial
         </Text>
-        <Icon name="arrow-forward" size={20} color={popular ? "#FFFFFF" : "#1877F2"} />
+        <Icon name="arrow-forward" size={20} color={popular ? "#FFFFFF" : "#059669"} />
       </TouchableOpacity>
     </View>
   );
@@ -147,7 +147,7 @@ const LandingScreen: React.FC = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Hero Section */}
       <LinearGradient
-        colors={['#1565C0', '#1877F2']}
+        colors={['#1565C0', '#059669']}
         style={styles.heroSection}
       >
         <View style={styles.heroContent}>
@@ -163,7 +163,7 @@ const LandingScreen: React.FC = () => {
             onPress={() => navigation.navigate('Register' as never)}
           >
             <Text style={styles.ctaButtonText}>Start Your 14-Day Free Trial</Text>
-            <Icon name="arrow-forward" size={20} color="#1877F2" />
+            <Icon name="arrow-forward" size={20} color="#059669" />
           </TouchableOpacity>
           <Text style={styles.trialNote}>
             No credit card required • Cancel anytime
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   ctaButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
     marginRight: 8,
   },
   trialNote: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   popularPlan: {
-    borderColor: '#1877F2',
+    borderColor: '#059669',
     backgroundColor: '#ECFDF5',
   },
   popularBadge: {
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     top: -12,
     left: '50%',
     transform: [{ translateX: -75 }],
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
@@ -463,16 +463,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#1877F2',
+    borderColor: '#059669',
   },
   popularPlanButton: {
-    backgroundColor: '#1877F2',
-    borderColor: '#1877F2',
+    backgroundColor: '#059669',
+    borderColor: '#059669',
   },
   planButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
     marginRight: 8,
   },
   popularPlanButtonText: {
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
   },
 });
 

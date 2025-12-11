@@ -2,14 +2,14 @@
   "expo": {
     "name": "Mind My Money",
     "slug": "mind-my-money",
-    "version": "3.2.0",
+    "version": "3.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1877F2"
+      "backgroundColor": "#059669"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -32,12 +32,12 @@
           }
         }
       },
-      "buildNumber": "6"
+      "buildNumber": "7"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1877F2"
+        "backgroundColor": "#059669"
       },
       "package": "com.mindmymoney.app",
       "versionCode": 1,

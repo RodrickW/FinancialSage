@@ -148,7 +148,7 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         <StatusBar style="dark" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1877F2" />
+          <ActivityIndicator size="large" color="#059669" />
           <Text style={styles.loadingText}>Loading Mind My Money...</Text>
         </View>
       </SafeAreaView>

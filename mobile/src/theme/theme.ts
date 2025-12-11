@@ -4,8 +4,8 @@ export const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#1877F2', // Facebook blue - matches web app
-    primaryContainer: '#DBEAFE',
+    primary: '#059669', // Emerald green - matches web app
+    primaryContainer: '#ECFDF5',
     secondary: '#10B981', // Green
     secondaryContainer: '#D1FAE5',
     tertiary: '#F59E0B', // Amber

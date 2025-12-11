@@ -124,7 +124,7 @@ const AccountsScreen: React.FC = () => {
   const getAccountColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'checking':
-        return '#1877F2';
+        return '#059669';
       case 'savings':
         return '#1565C0';
       case 'credit':
@@ -139,7 +139,7 @@ const AccountsScreen: React.FC = () => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <LinearGradient colors={['#1877F2', '#0D5DBF']} style={styles.loadingGradient}>
+        <LinearGradient colors={['#059669', '#0D5DBF']} style={styles.loadingGradient}>
           <ActivityIndicator size="large" color="#FFFFFF" />
           <Text style={styles.loadingText}>Loading your accounts...</Text>
         </LinearGradient>
@@ -149,7 +149,7 @@ const AccountsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#1877F2', '#0D5DBF']} style={styles.header}>
+      <LinearGradient colors={['#059669', '#0D5DBF']} style={styles.header}>
         <Text style={styles.headerTitle}>Your Accounts</Text>
         <Text style={styles.headerSubtitle}>Manage your connected bank accounts</Text>
       </LinearGradient>
@@ -206,7 +206,7 @@ const AccountsScreen: React.FC = () => {
               </View>
 
               <View style={styles.rateLimitInfo}>
-                <Icon name="info" size={20} color="#1877F2" />
+                <Icon name="info" size={20} color="#059669" />
                 <Text style={styles.rateLimitText}>
                   Account balances refresh automatically when you log in.
                 </Text>
@@ -227,7 +227,7 @@ const AccountsScreen: React.FC = () => {
             onPress={handleConnectAccount}
             disabled={isConnecting}
           >
-            <LinearGradient colors={['#1877F2', '#0D5DBF']} style={styles.buttonGradient}>
+            <LinearGradient colors={['#059669', '#0D5DBF']} style={styles.buttonGradient}>
               <Icon name="add" size={24} color="#FFFFFF" />
               <Text style={styles.connectButtonText}>
                 {isConnecting ? 'Connecting...' : 'Connect New Account'}

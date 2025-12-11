@@ -117,7 +117,7 @@ const GoalsScreen: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <LinearGradient
-          colors={['#1877F2', '#0D5DBF']}
+          colors={['#059669', '#0D5DBF']}
           style={styles.loadingGradient}
         >
           <Icon name="flag" size={64} color="#FFFFFF" />
@@ -130,7 +130,7 @@ const GoalsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#1877F2', '#0D5DBF']}
+        colors={['#059669', '#0D5DBF']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Savings Goals</Text>
@@ -140,7 +140,7 @@ const GoalsScreen: React.FC = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1877F2" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#059669" />
         }
       >
         {/* Savings Goals */}
@@ -155,7 +155,7 @@ const GoalsScreen: React.FC = () => {
                 <View key={goal.id} style={styles.goalCard}>
                   <View style={styles.goalHeader}>
                     <View style={styles.goalIconContainer}>
-                      <Icon name={getGoalIcon(goal.name)} size={24} color="#1877F2" />
+                      <Icon name={getGoalIcon(goal.name)} size={24} color="#059669" />
                     </View>
                     <View style={styles.goalHeaderText}>
                       <Text style={styles.goalName}>{goal.name}</Text>
@@ -195,7 +195,7 @@ const GoalsScreen: React.FC = () => {
                     </View>
                     <View style={styles.progressBar}>
                       <LinearGradient
-                        colors={isComplete ? ['#10B981', '#22C55E'] : ['#1877F2', '#60A5FA']}
+                        colors={isComplete ? ['#10B981', '#22C55E'] : ['#059669', '#60A5FA']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={[styles.progressFill, { width: `${progress}%` }]}
@@ -236,7 +236,7 @@ const GoalsScreen: React.FC = () => {
                       <Icon
                         name="credit-card"
                         size={24}
-                        color={debt.color === 'red' ? '#EF4444' : '#1877F2'}
+                        color={debt.color === 'red' ? '#EF4444' : '#059669'}
                       />
                     </View>
                     <View style={styles.goalHeaderText}>
@@ -311,7 +311,7 @@ const GoalsScreen: React.FC = () => {
               style={styles.webLinkButton}
               onPress={() => Linking.openURL('https://www.mindmymoneyapp.com')}
             >
-              <Icon name="open-in-new" size={18} color="#1877F2" />
+              <Icon name="open-in-new" size={18} color="#059669" />
               <Text style={styles.webLinkText}>
                 Create goals on the web app at www.mindmymoneyapp.com
               </Text>
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   currentAmount: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1877F2',
+    color: '#059669',
     textAlign: 'center',
   },
   targetAmount: {
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   progressPercentage: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#1877F2',
+    color: '#059669',
   },
   progressBar: {
     height: 10,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   },
   webLinkText: {
     fontSize: 13,
-    color: '#1877F2',
+    color: '#059669',
     fontWeight: '500',
     flex: 1,
     textAlign: 'center',

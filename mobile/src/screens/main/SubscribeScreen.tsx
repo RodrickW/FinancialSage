@@ -179,7 +179,7 @@ const SubscribeScreen: React.FC = () => {
           >
             {plan.popular && plan.available ? (
               <LinearGradient
-                colors={['#1877F2', '#0D5DBF']}
+                colors={['#059669', '#0D5DBF']}
                 style={styles.buttonGradient}
               >
                 <Text style={styles.popularSelectButtonText}>
@@ -196,7 +196,7 @@ const SubscribeScreen: React.FC = () => {
                   {!plan.available ? 'Coming Soon' : isLoading ? 'Processing...' : 'Start Free Trial'}
                 </Text>
                 {plan.available && (
-                  <Icon name="arrow-forward" size={20} color="#1877F2" />
+                  <Icon name="arrow-forward" size={20} color="#059669" />
                 )}
               </View>
             )}
@@ -209,7 +209,7 @@ const SubscribeScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <LinearGradient
-        colors={['#1877F2', '#0D5DBF']}
+        colors={['#059669', '#0D5DBF']}
         style={styles.header}
       >
         <TouchableOpacity 
@@ -255,7 +255,7 @@ const SubscribeScreen: React.FC = () => {
           <Text style={styles.featuresSectionTitle}>What's included in your free trial:</Text>
           <View style={styles.includedFeatures}>
             <View style={styles.includedFeatureItem}>
-              <Icon name="psychology" size={24} color="#1877F2" />
+              <Icon name="psychology" size={24} color="#059669" />
               <View style={styles.includedFeatureText}>
                 <Text style={styles.includedFeatureTitle}>AI Financial Coach</Text>
                 <Text style={styles.includedFeatureDescription}>
@@ -275,7 +275,7 @@ const SubscribeScreen: React.FC = () => {
             </View>
             
             <View style={styles.includedFeatureItem}>
-              <Icon name="insights" size={24} color="#1877F2" />
+              <Icon name="insights" size={24} color="#059669" />
               <View style={styles.includedFeatureText}>
                 <Text style={styles.includedFeatureTitle}>Smart Analytics</Text>
                 <Text style={styles.includedFeatureDescription}>
@@ -497,13 +497,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#1877F2',
+    borderColor: '#059669',
     borderRadius: 12,
   },
   selectButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
     marginRight: 8,
   },
   popularSelectButtonText: {

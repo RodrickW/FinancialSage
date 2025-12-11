@@ -13,7 +13,7 @@ const CreditScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <LinearGradient
-        colors={['#1565C0', '#1877F2']}
+        colors={['#1565C0', '#059669']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Credit Health</Text>

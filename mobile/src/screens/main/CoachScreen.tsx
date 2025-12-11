@@ -101,7 +101,7 @@ const CoachScreen: React.FC = () => {
       keyboardVerticalOffset={100}
     >
       <LinearGradient
-        colors={['#1877F2', '#0D5DBF']}
+        colors={['#059669', '#0D5DBF']}
         style={styles.header}
       >
         <Icon name="psychology" size={32} color="#FFFFFF" />
@@ -125,7 +125,7 @@ const CoachScreen: React.FC = () => {
           >
             {!message.isUser && (
               <View style={styles.aiAvatar}>
-                <Icon name="psychology" size={20} color="#1877F2" />
+                <Icon name="psychology" size={20} color="#059669" />
               </View>
             )}
             <View
@@ -149,10 +149,10 @@ const CoachScreen: React.FC = () => {
         {isLoading && (
           <View style={styles.loadingWrapper}>
             <View style={styles.aiAvatar}>
-              <Icon name="psychology" size={20} color="#1877F2" />
+              <Icon name="psychology" size={20} color="#059669" />
             </View>
             <View style={styles.loadingBubble}>
-              <ActivityIndicator size="small" color="#1877F2" />
+              <ActivityIndicator size="small" color="#059669" />
             </View>
           </View>
         )}
@@ -167,7 +167,7 @@ const CoachScreen: React.FC = () => {
                 onPress={() => handleSuggestedQuestion(question)}
               >
                 <Text style={styles.suggestionText}>{question}</Text>
-                <Icon name="arrow-forward" size={16} color="#1877F2" />
+                <Icon name="arrow-forward" size={16} color="#059669" />
               </TouchableOpacity>
             ))}
           </View>
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   userMessage: {
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     borderBottomRightRadius: 4,
   },
   aiMessage: {
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -111,7 +111,7 @@ const BudgetScreen: React.FC = () => {
       'Entertainment': '#06B6D4',
       'Bills & Utilities': '#EF4444',
       'Health': '#10B981',
-      'Housing': '#1877F2',
+      'Housing': '#059669',
       'Savings': '#22C55E',
       'Income': '#14B8A6',
     };
@@ -134,7 +134,7 @@ const BudgetScreen: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <LinearGradient
-          colors={['#1877F2', '#0D5DBF']}
+          colors={['#059669', '#0D5DBF']}
           style={styles.loadingGradient}
         >
           <Icon name="pie-chart" size={64} color="#FFFFFF" />
@@ -147,7 +147,7 @@ const BudgetScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#1877F2', '#0D5DBF']}
+        colors={['#059669', '#0D5DBF']}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Budget Planner</Text>
@@ -157,7 +157,7 @@ const BudgetScreen: React.FC = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1877F2" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#059669" />
         }
       >
         {/* Overall Budget Summary */}
@@ -260,7 +260,7 @@ const BudgetScreen: React.FC = () => {
 
         {budgets.length > 0 && (
           <TouchableOpacity style={styles.aiBudgetButton} onPress={handleCreateAIBudget}>
-            <Icon name="auto-awesome" size={20} color="#1877F2" />
+            <Icon name="auto-awesome" size={20} color="#059669" />
             <Text style={styles.aiBudgetButtonText}>Recreate with AI</Text>
           </TouchableOpacity>
         )}
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   budgetAmount: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1877F2',
+    color: '#059669',
   },
   progressContainer: {
     marginBottom: 12,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   aiButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 24,
@@ -459,12 +459,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
     borderWidth: 2,
-    borderColor: '#1877F2',
+    borderColor: '#059669',
   },
   aiBudgetButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
   },
 });
 

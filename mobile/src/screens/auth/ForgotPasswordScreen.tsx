@@ -55,7 +55,7 @@ const ForgotPasswordScreen: React.FC = () => {
     return (
       <View style={styles.successContainer}>
         <LinearGradient
-          colors={['#1565C0', '#1877F2']}
+          colors={['#1565C0', '#059669']}
           style={styles.successHeader}
         >
           <View style={styles.successIconContainer}>
@@ -94,7 +94,7 @@ const ForgotPasswordScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
       >
         <LinearGradient
-          colors={['#1565C0', '#1877F2']}
+          colors={['#1565C0', '#059669']}
           style={styles.header}
         >
           <TouchableOpacity 
@@ -129,7 +129,7 @@ const ForgotPasswordScreen: React.FC = () => {
                   style={styles.input}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  theme={{ colors: { primary: '#1877F2' } }}
+                  theme={{ colors: { primary: '#059669' } }}
                   left={<TextInput.Icon icon="email" />}
                 />
               )}
@@ -144,7 +144,7 @@ const ForgotPasswordScreen: React.FC = () => {
               disabled={isLoading}
             >
               <LinearGradient
-                colors={['#1877F2', '#1877F2']}
+                colors={['#059669', '#059669']}
                 style={styles.buttonGradient}
               >
                 {isLoading ? (
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   helpLinkText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1877F2',
+    color: '#059669',
   },
   // Success screen styles
   successContainer: {
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   backButton: {
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,

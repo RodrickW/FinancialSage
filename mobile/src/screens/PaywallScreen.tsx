@@ -128,7 +128,7 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1877F2" />
+        <ActivityIndicator size="large" color="#059669" />
         <Text style={styles.loadingText}>Loading subscription options...</Text>
       </View>
     );
@@ -150,9 +150,9 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        <Icon name="account-balance-wallet" size={64} color="#1877F2" />
+        <Icon name="account-balance-wallet" size={64} color="#059669" />
         <Text style={styles.title}>Mind My Money</Text>
-        <Text style={styles.subtitle}>Master your finances with AI-powered insights</Text>
+        <Text style={styles.subtitle}>Your Financial Transformation System</Text>
       </View>
 
       {/* Features */}
@@ -209,7 +209,7 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
               
               {isSelected && (
                 <View style={styles.selectedIndicator}>
-                  <Icon name="check-circle" size={20} color="#1877F2" />
+                  <Icon name="check-circle" size={20} color="#059669" />
                 </View>
               )}
             </TouchableOpacity>
@@ -260,7 +260,7 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
         disabled={isRestoring}
       >
         {isRestoring ? (
-          <ActivityIndicator size="small" color="#1877F2" />
+          <ActivityIndicator size="small" color="#059669" />
         ) : (
           <Text style={styles.restoreButtonText}>Restore Purchases</Text>
         )}
@@ -283,12 +283,13 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
 }
 
 const features = [
-  'AI Financial Coach',
+  '30-Day Money Reset Challenge',
+  'Daily Money Check-In',
+  'AI Financial Coach (Money Mind)',
   'Bank Account Integration',
   'Smart Budget Creation',
   'Spending Analytics',
-  'Savings Goal Tracking',
-  'Credit Score Monitoring',
+  'Faith-Based Mode (Optional)',
 ];
 
 const styles = StyleSheet.create({
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: '#059669',
   },
   errorContainer: {
     flex: 1,
@@ -326,7 +327,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingVertical: 12,
     paddingHorizontal: 32,
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     borderRadius: 8,
   },
   retryButtonText: {
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1877F2',
+    color: '#059669',
   },
   subtitle: {
     marginTop: 8,
@@ -375,8 +376,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   packageCardSelected: {
-    borderColor: '#1877F2',
-    backgroundColor: '#EFF6FF',
+    borderColor: '#059669',
+    backgroundColor: '#ECFDF5',
   },
   packageCardPopular: {
     borderColor: '#10B981',
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   packageTitleSelected: {
-    color: '#1877F2',
+    color: '#059669',
   },
   packagePriceContainer: {
     flexDirection: 'row',
@@ -418,7 +419,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   packagePriceSelected: {
-    color: '#1877F2',
+    color: '#059669',
   },
   packagePeriod: {
     fontSize: 14,
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   packagePeriodSelected: {
-    color: '#1877F2',
+    color: '#059669',
   },
   savingsText: {
     marginTop: 8,
@@ -441,6 +442,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     right: 20,
+    color: '#059669',
   },
   freeTrialButton: {
     backgroundColor: '#10B981',
@@ -477,7 +479,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   purchaseButton: {
-    backgroundColor: '#1877F2',
+    backgroundColor: '#059669',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -503,7 +505,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   restoreButtonText: {
-    color: '#1877F2',
+    color: '#059669',
     fontSize: 16,
     fontWeight: '600',
   },

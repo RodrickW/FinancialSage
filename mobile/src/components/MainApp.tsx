@@ -219,7 +219,7 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
             <Icon 
               name="arrow-back" 
               size={24} 
-              color={canGoBack ? '#1877F2' : '#CBD5E1'} 
+              color={canGoBack ? '#059669' : '#CBD5E1'} 
             />
           </TouchableOpacity>
 
@@ -231,7 +231,7 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
             <Icon 
               name="arrow-forward" 
               size={24} 
-              color={canGoForward ? '#1877F2' : '#CBD5E1'} 
+              color={canGoForward ? '#059669' : '#CBD5E1'} 
             />
           </TouchableOpacity>
 
@@ -239,12 +239,12 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
             style={styles.navButton}
             onPress={handleRefresh}
           >
-            <Icon name="refresh" size={24} color="#1877F2" />
+            <Icon name="refresh" size={24} color="#059669" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.appInfo}>
-          <Icon name="account-balance-wallet" size={20} color="#1877F2" />
+          <Icon name="account-balance-wallet" size={20} color="#059669" />
           <Text style={styles.appTitle}>Mind My Money</Text>
         </View>
       </View>
@@ -279,7 +279,7 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
         startInLoadingState={true}
         renderLoading={() => (
           <View style={styles.loadingContainer}>
-            <Icon name="account-balance-wallet" size={64} color="#1877F2" />
+            <Icon name="account-balance-wallet" size={64} color="#059669" />
             <Text style={styles.loadingText}>Loading...</Text>
           </View>
         )}
