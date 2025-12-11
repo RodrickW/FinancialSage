@@ -780,15 +780,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Complete onboarding
+  // Complete onboarding (increment tour view count)
   app.post('/api/users/complete-onboarding', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+      const currentViewCount = user.tourViewCount || 0;
       await storage.updateUser(user.id, { 
-        hasSeenTour: true, 
+        tourViewCount: currentViewCount + 1,
         hasCompletedOnboarding: true 
       });
-      res.json({ message: 'Onboarding completed' });
+      res.json({ message: 'Onboarding completed', tourViewCount: currentViewCount + 1 });
     } catch (error) {
       console.error('Error completing onboarding:', error);
       res.status(500).json({ message: 'Failed to complete onboarding' });

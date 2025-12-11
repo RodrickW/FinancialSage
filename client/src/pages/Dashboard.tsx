@@ -48,11 +48,12 @@ export default function Dashboard() {
     queryKey: ['/api/users/profile']
   });
 
-  // Check if user should see onboarding tour
+  // Check if user should see onboarding tour (show for first 2 views after reset)
   useEffect(() => {
     if (userData && !userLoading) {
-      // Show tour if user hasn't seen it yet (for new users or after tour reset)
-      const shouldShowTour = !userData.hasSeenTour;
+      // Show tour if user has viewed it less than 2 times
+      const tourViews = userData.tourViewCount || 0;
+      const shouldShowTour = tourViews < 2;
       if (shouldShowTour) {
         setTimeout(() => setShowOnboarding(true), 1000);
       }

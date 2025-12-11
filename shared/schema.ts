@@ -31,6 +31,7 @@ export const users = pgTable("users", {
   // Onboarding tracking
   hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
   hasSeenTour: boolean("has_seen_tour").default(false),
+  tourViewCount: integer("tour_view_count").default(0),
   loginCount: integer("login_count").default(0),
   
   // Admin access
