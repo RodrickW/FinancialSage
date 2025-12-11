@@ -625,3 +625,297 @@ export async function generateFinancialHealthReport(userData: any): Promise<any>
     throw new Error("Failed to generate financial health report");
   }
 }
+
+// ===== 30-DAY MONEY RESET CHALLENGE AI FUNCTIONS =====
+
+// Generate a personalized daily mission for the 30-Day Money Reset
+export async function generateDailyMission(data: {
+  day: number;
+  playbook: any;
+  recentTransactions: any[];
+  previousMissions: any[];
+  streakCount: number;
+  firstName: string;
+}): Promise<{
+  missionType: string;
+  title: string;
+  description: string;
+  actionPrompt: string;
+  detoxCategory?: string;
+  detoxTarget?: number;
+  identityShift?: string;
+}> {
+  try {
+    const missionPhase = data.day <= 7 ? 'awareness' : 
+                         data.day <= 14 ? 'detox' :
+                         data.day <= 21 ? 'rewiring' : 'transformation';
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, creating a daily mission for Day ${data.day} of a 30-Day Money Reset challenge.
+
+PHASES OF THE 30-DAY RESET:
+- Days 1-7 (Awareness): Track spending, identify triggers, build awareness
+- Days 8-14 (Detox): Active spending cuts, 24-hour rules, subscription audits
+- Days 15-21 (Rewiring): Replace bad habits with good ones, build new patterns
+- Days 22-30 (Transformation): Identity shifts, celebrating new money self
+
+Current Phase: ${missionPhase.toUpperCase()}
+
+MISSION TYPES (assign based on phase and day):
+- "detox" - Challenge to avoid/reduce spending in a category (Days 8-14 focus)
+- "habit" - Build a positive money habit (Days 15-21 focus)  
+- "identity" - Shift how they see themselves with money (Days 22-30 focus)
+- "action" - Complete a specific financial task (any phase)
+- "reflection" - Deep think about money relationship (any phase)
+
+USER'S MONEY PLAYBOOK:
+- Personality Type: ${data.playbook?.moneyPersonalityType || 'unknown'}
+- Core Issue: ${data.playbook?.rootMoneyInsight || 'general money management'}
+- Top Trigger: ${data.playbook?.topThreeTriggers?.[0] || 'impulse spending'}
+
+RULES:
+1. Make it specific and achievable TODAY
+2. Connect to their personality type and triggers
+3. Use their first name (${data.firstName})
+4. Include an identity shift message that reframes who they ARE with money
+5. For detox missions, specify a category and spending target
+6. Keep titles to 5-7 words, descriptions to 2-3 sentences
+7. The action prompt should be ONE specific thing they can do
+
+Format as JSON:
+{
+  "missionType": "detox|habit|identity|action|reflection",
+  "title": "Brief mission title",
+  "description": "What this mission is about and why it matters for their transformation",
+  "actionPrompt": "The specific action to complete today",
+  "detoxCategory": "if detox mission: dining|coffee|shopping|entertainment|subscriptions|delivery",
+  "detoxTarget": number or null (max spending allowed if detox mission),
+  "identityShift": "A powerful 'I am...' statement reframing their money identity"
+}`
+        },
+        {
+          role: "user",
+          content: `Generate Day ${data.day} mission for ${data.firstName}. 
+Current streak: ${data.streakCount} days
+Recent spending: ${JSON.stringify(data.recentTransactions.slice(0, 10))}
+Previous missions completed: ${data.previousMissions.length}
+Money Playbook: ${JSON.stringify(data.playbook)}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || '{}');
+  } catch (error: any) {
+    console.error("Error generating daily mission:", error.message);
+    // Fallback mission
+    return {
+      missionType: 'reflection',
+      title: 'Money Mindfulness Moment',
+      description: 'Take 5 minutes to reflect on your spending this week. What felt good? What felt impulsive?',
+      actionPrompt: 'Write down one spending decision from this week you felt great about.',
+      identityShift: 'I am someone who thinks before I spend.'
+    };
+  }
+}
+
+// Generate weekly reflection questions and coaching
+export async function generateWeeklyReflection(data: {
+  weekNumber: number;
+  playbook: any;
+  weeklySpending: any;
+  missionsCompleted: number;
+  totalMissions: number;
+  moneySaved: number;
+  firstName: string;
+}): Promise<{
+  promptQuestions: string[];
+  weeklyStats: any;
+  identityShiftMessage: string;
+  coachingPreview: string;
+}> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, creating a Week ${data.weekNumber} reflection for the 30-Day Money Reset.
+
+WEEKLY THEMES:
+- Week 1: "The Mirror" - Seeing yourself clearly
+- Week 2: "The Detox" - Breaking free from spending chains  
+- Week 3: "The Rewire" - Building new neural pathways
+- Week 4: "The New You" - Celebrating transformation
+
+Create 3 powerful reflection questions that:
+1. Connect to this week's theme
+2. Reference their specific money personality
+3. Encourage deep self-examination
+4. Build toward identity transformation
+
+Also provide:
+- An identity shift message for the week
+- A preview of what to expect next week
+- Key stats from their week (compile from provided data)
+
+Format as JSON:
+{
+  "promptQuestions": ["Question 1", "Question 2", "Question 3"],
+  "weeklyStats": {
+    "missionsCompleted": number,
+    "completionRate": number,
+    "estimatedSavings": number,
+    "topCategory": "string - where they spent most",
+    "improvement": "string - one key improvement noted"
+  },
+  "identityShiftMessage": "A powerful transformation statement for this week",
+  "coachingPreview": "What we'll focus on in Week X+1"
+}`
+        },
+        {
+          role: "user",
+          content: `Generate Week ${data.weekNumber} reflection for ${data.firstName}.
+Missions completed: ${data.missionsCompleted}/${data.totalMissions}
+Money saved: $${data.moneySaved}
+Weekly spending: ${JSON.stringify(data.weeklySpending)}
+Money Playbook: ${JSON.stringify(data.playbook)}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || '{}');
+  } catch (error: any) {
+    console.error("Error generating weekly reflection:", error.message);
+    return {
+      promptQuestions: [
+        "What was your biggest money win this week?",
+        "When did you feel the urge to spend impulsively, and what did you do?",
+        "What surprised you about your spending patterns?"
+      ],
+      weeklyStats: {
+        missionsCompleted: data.missionsCompleted,
+        completionRate: Math.round((data.missionsCompleted / data.totalMissions) * 100),
+        estimatedSavings: data.moneySaved,
+        topCategory: 'unknown',
+        improvement: 'Still analyzing'
+      },
+      identityShiftMessage: "Every day I'm becoming more intentional with my money.",
+      coachingPreview: "Next week we'll build on your progress."
+    };
+  }
+}
+
+// Generate a shareable transformation moment
+export async function generateTransformationMoment(data: {
+  momentType: string;
+  dayNumber: number;
+  achievement: string;
+  statValue: string;
+  firstName: string;
+  playbook: any;
+}): Promise<{
+  title: string;
+  quote: string;
+  statLabel: string;
+}> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, creating a shareable "Transformation Moment" card for social media.
+
+MOMENT TYPES:
+- "milestone" - Completing days 7, 14, 21, or 30
+- "weekly_win" - A major accomplishment this week
+- "streak_achievement" - Hit a streak milestone (7, 14, 21, 30 days)
+- "completion" - Finishing the entire 30-day challenge
+
+Create content that:
+1. Is inspiring and shareable on TikTok/Instagram
+2. Feels like a genuine transformation moment
+3. Uses the user's first name
+4. Includes a powerful quote they can share
+5. Highlights their specific achievement
+
+Format as JSON:
+{
+  "title": "Brief, punchy headline (5-7 words)",
+  "quote": "An inspiring quote they can share (short, powerful, relatable)",
+  "statLabel": "Label for their stat (e.g., 'Days Strong', 'Money Saved', 'Habits Built')"
+}`
+        },
+        {
+          role: "user",
+          content: `Generate transformation moment for ${data.firstName}.
+Type: ${data.momentType}
+Day: ${data.dayNumber}
+Achievement: ${data.achievement}
+Stat: ${data.statValue}
+Money personality: ${data.playbook?.moneyPersonalityType || 'unknown'}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || '{}');
+  } catch (error: any) {
+    console.error("Error generating transformation moment:", error.message);
+    return {
+      title: `Day ${data.dayNumber} Complete!`,
+      quote: "Every day I'm becoming better with money.",
+      statLabel: "Days Strong"
+    };
+  }
+}
+
+// Generate AI coaching response for weekly reflection
+export async function generateReflectionCoaching(data: {
+  weekNumber: number;
+  userResponses: any;
+  playbook: any;
+  weeklyStats: any;
+  firstName: string;
+}): Promise<string> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, providing personalized coaching after a user completes their weekly reflection.
+
+Write a 3-4 paragraph response that:
+1. Acknowledges their specific answers and feelings
+2. Provides insight based on their money personality
+3. Celebrates their wins, no matter how small
+4. Gives one specific focus for next week
+5. Ends with an encouraging identity-affirming statement
+
+Be warm, direct, and transformational. Use their name.
+Keep it under 200 words.
+Sign off with: "— Money Mind 💚"`
+        },
+        {
+          role: "user",
+          content: `Generate coaching for ${data.firstName} after Week ${data.weekNumber} reflection.
+Their answers: ${JSON.stringify(data.userResponses)}
+Weekly stats: ${JSON.stringify(data.weeklyStats)}
+Money Playbook: ${JSON.stringify(data.playbook)}`
+        }
+      ]
+    });
+
+    return response.choices[0].message.content || "Great job completing your weekly reflection! Keep pushing forward. — Money Mind 💚";
+  } catch (error: any) {
+    console.error("Error generating reflection coaching:", error.message);
+    return "Great job completing your weekly reflection! You're making real progress. Keep going! — Money Mind 💚";
+  }
+}

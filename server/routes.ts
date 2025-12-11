@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { User } from "@shared/schema";
-import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget, generateFinancialHealthReport, parseGoalCreation, parseGoalDeletion, parseProgressUpdate } from "./openai";
+import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget, generateFinancialHealthReport, parseGoalCreation, parseGoalDeletion, parseProgressUpdate, generateDailyMission, generateWeeklyReflection, generateTransformationMoment, generateReflectionCoaching } from "./openai";
 import OpenAI from "openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { servePlaidSDK } from "./plaid-proxy";
@@ -4353,6 +4353,382 @@ IMPORTANT:
     } catch (error) {
       console.error('Error processing RevenueCat webhook:', error);
       res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
+  // ===== 30-DAY MONEY RESET CHALLENGE ROUTES =====
+
+  // Get current challenge status
+  app.get('/api/money-reset', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const enrollment = await storage.getActiveChallenge(user.id);
+      
+      if (!enrollment) {
+        return res.json({ enrolled: false, enrollment: null });
+      }
+      
+      // Get today's mission
+      const mission = await storage.getTodayMission(enrollment.id, enrollment.currentDay);
+      const streak = await storage.getChallengeStreak(enrollment.id);
+      const allMissions = await storage.getMissionsByEnrollment(enrollment.id);
+      
+      // Check if weekly reflection is due (days 7, 14, 21, 28)
+      const weekNumber = Math.ceil(enrollment.currentDay / 7);
+      const isReflectionDay = [7, 14, 21, 28].includes(enrollment.currentDay);
+      let weeklyReflection = null;
+      if (isReflectionDay) {
+        weeklyReflection = await storage.getWeeklyReflection(enrollment.id, weekNumber);
+      }
+      
+      res.json({
+        enrolled: true,
+        enrollment,
+        todayMission: mission,
+        streak,
+        completedMissions: allMissions.filter(m => m.isCompleted).length,
+        totalMissions: enrollment.currentDay,
+        isReflectionDay,
+        weeklyReflection,
+        weekNumber
+      });
+    } catch (error) {
+      console.error('Error getting challenge status:', error);
+      res.status(500).json({ message: 'Failed to get challenge status' });
+    }
+  });
+
+  // Start the 30-Day Money Reset challenge
+  app.post('/api/money-reset/enroll', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Check if already enrolled
+      const existingEnrollment = await storage.getActiveChallenge(user.id);
+      if (existingEnrollment) {
+        return res.status(400).json({ message: 'Already enrolled in a challenge' });
+      }
+      
+      // Get Money Playbook for personalization
+      const interview = await storage.getLatestInterview(user.id);
+      if (!interview || !interview.personalizedPlan) {
+        return res.status(400).json({ 
+          message: 'Complete the Money Mind Interview first to get your personalized Money Playbook' 
+        });
+      }
+      
+      // Create enrollment
+      const enrollment = await storage.createChallengeEnrollment({
+        userId: user.id,
+        status: 'active',
+        currentDay: 1,
+        startDate: new Date(),
+        playbookSnapshot: interview.personalizedPlan
+      });
+      
+      // Create streak record
+      await storage.createChallengeStreak({
+        userId: user.id,
+        enrollmentId: enrollment.id,
+        currentStreak: 0,
+        longestStreak: 0,
+        badges: []
+      });
+      
+      // Generate Day 1 mission
+      const transactions = await storage.getTransactions(user.id, 50);
+      const missionData = await generateDailyMission({
+        day: 1,
+        playbook: interview.personalizedPlan,
+        recentTransactions: transactions,
+        previousMissions: [],
+        streakCount: 0,
+        firstName: user.firstName
+      });
+      
+      const mission = await storage.createChallengeMission({
+        enrollmentId: enrollment.id,
+        userId: user.id,
+        day: 1,
+        missionType: missionData.missionType,
+        title: missionData.title,
+        description: missionData.description,
+        actionPrompt: missionData.actionPrompt,
+        detoxCategory: missionData.detoxCategory,
+        detoxTarget: missionData.detoxTarget,
+        identityShift: missionData.identityShift,
+        missionDate: new Date()
+      });
+      
+      res.json({
+        success: true,
+        enrollment,
+        todayMission: mission,
+        message: 'Welcome to the 30-Day Money Reset! Your transformation starts today.'
+      });
+    } catch (error) {
+      console.error('Error enrolling in challenge:', error);
+      res.status(500).json({ message: 'Failed to enroll in challenge' });
+    }
+  });
+
+  // Complete today's mission
+  app.post('/api/money-reset/complete-mission', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { missionId, reflection } = req.body;
+      
+      const enrollment = await storage.getActiveChallenge(user.id);
+      if (!enrollment) {
+        return res.status(400).json({ message: 'Not enrolled in a challenge' });
+      }
+      
+      // Complete the mission
+      const mission = await storage.updateChallengeMission(missionId, {
+        isCompleted: true,
+        completedAt: new Date(),
+        userReflection: reflection
+      });
+      
+      // Update streak
+      const streakRecord = await storage.getChallengeStreak(enrollment.id);
+      if (streakRecord) {
+        const newStreak = streakRecord.currentStreak + 1;
+        await storage.updateChallengeStreak(streakRecord.id, {
+          currentStreak: newStreak,
+          longestStreak: Math.max(newStreak, streakRecord.longestStreak),
+          lastCompletedAt: new Date(),
+          totalDetoxDaysCompleted: mission?.missionType === 'detox' 
+            ? (streakRecord.totalDetoxDaysCompleted || 0) + 1 
+            : streakRecord.totalDetoxDaysCompleted,
+          totalHabitDaysCompleted: mission?.missionType === 'habit'
+            ? (streakRecord.totalHabitDaysCompleted || 0) + 1
+            : streakRecord.totalHabitDaysCompleted
+        });
+        
+        // Check for badge milestones
+        const badges = (streakRecord.badges as string[]) || [];
+        if (newStreak === 7 && !badges.includes('week_one')) {
+          badges.push('week_one');
+          await storage.updateChallengeStreak(streakRecord.id, { badges });
+        }
+        if (newStreak === 14 && !badges.includes('two_weeks')) {
+          badges.push('two_weeks');
+          await storage.updateChallengeStreak(streakRecord.id, { badges });
+        }
+        if (newStreak === 21 && !badges.includes('three_weeks')) {
+          badges.push('three_weeks');
+          await storage.updateChallengeStreak(streakRecord.id, { badges });
+        }
+        if (newStreak === 30 && !badges.includes('champion')) {
+          badges.push('champion');
+          await storage.updateChallengeStreak(streakRecord.id, { badges });
+        }
+      }
+      
+      // Update enrollment progress
+      await storage.updateChallengeEnrollment(enrollment.id, {
+        totalMissionsCompleted: (enrollment.totalMissionsCompleted || 0) + 1
+      });
+      
+      // Check for transformation moment
+      let transformationMoment = null;
+      const currentDay = enrollment.currentDay;
+      if ([7, 14, 21, 30].includes(currentDay)) {
+        const interview = await storage.getLatestInterview(user.id);
+        const momentData = await generateTransformationMoment({
+          momentType: currentDay === 30 ? 'completion' : 'milestone',
+          dayNumber: currentDay,
+          achievement: `Completed ${currentDay} days of the Money Reset`,
+          statValue: `${currentDay}`,
+          firstName: user.firstName,
+          playbook: interview?.personalizedPlan
+        });
+        
+        transformationMoment = await storage.createTransformationMoment({
+          userId: user.id,
+          enrollmentId: enrollment.id,
+          momentType: currentDay === 30 ? 'completion' : 'milestone',
+          title: momentData.title,
+          quote: momentData.quote,
+          statLabel: momentData.statLabel,
+          statValue: String(currentDay),
+          dayNumber: currentDay
+        });
+      }
+      
+      res.json({
+        success: true,
+        mission,
+        transformationMoment,
+        message: 'Mission completed! Great work on your transformation.'
+      });
+    } catch (error) {
+      console.error('Error completing mission:', error);
+      res.status(500).json({ message: 'Failed to complete mission' });
+    }
+  });
+
+  // Advance to next day (generate new mission)
+  app.post('/api/money-reset/next-day', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      const enrollment = await storage.getActiveChallenge(user.id);
+      if (!enrollment) {
+        return res.status(400).json({ message: 'Not enrolled in a challenge' });
+      }
+      
+      if (enrollment.currentDay >= 30) {
+        // Challenge complete!
+        await storage.updateChallengeEnrollment(enrollment.id, {
+          status: 'completed',
+          completedAt: new Date()
+        });
+        return res.json({ 
+          success: true, 
+          completed: true,
+          message: 'Congratulations! You completed the 30-Day Money Reset!' 
+        });
+      }
+      
+      const nextDay = enrollment.currentDay + 1;
+      
+      // Update enrollment to next day
+      await storage.updateChallengeEnrollment(enrollment.id, {
+        currentDay: nextDay
+      });
+      
+      // Generate next day's mission
+      const interview = await storage.getLatestInterview(user.id);
+      const transactions = await storage.getTransactions(user.id, 50);
+      const previousMissions = await storage.getMissionsByEnrollment(enrollment.id);
+      const streak = await storage.getChallengeStreak(enrollment.id);
+      
+      const missionData = await generateDailyMission({
+        day: nextDay,
+        playbook: interview?.personalizedPlan,
+        recentTransactions: transactions,
+        previousMissions,
+        streakCount: streak?.currentStreak || 0,
+        firstName: user.firstName
+      });
+      
+      const mission = await storage.createChallengeMission({
+        enrollmentId: enrollment.id,
+        userId: user.id,
+        day: nextDay,
+        missionType: missionData.missionType,
+        title: missionData.title,
+        description: missionData.description,
+        actionPrompt: missionData.actionPrompt,
+        detoxCategory: missionData.detoxCategory,
+        detoxTarget: missionData.detoxTarget,
+        identityShift: missionData.identityShift,
+        missionDate: new Date()
+      });
+      
+      // Generate weekly reflection if it's a reflection day
+      let weeklyReflection = null;
+      if ([7, 14, 21, 28].includes(nextDay)) {
+        const weekNumber = Math.ceil(nextDay / 7);
+        const weeklySpending = transactions
+          .filter(t => t.amount < 0)
+          .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        
+        const reflectionData = await generateWeeklyReflection({
+          weekNumber,
+          playbook: interview?.personalizedPlan,
+          weeklySpending: { total: weeklySpending },
+          missionsCompleted: previousMissions.filter(m => m.isCompleted).length,
+          totalMissions: previousMissions.length,
+          moneySaved: streak?.totalSpendingSaved || 0,
+          firstName: user.firstName
+        });
+        
+        weeklyReflection = await storage.createWeeklyReflection({
+          enrollmentId: enrollment.id,
+          userId: user.id,
+          weekNumber,
+          promptQuestions: reflectionData.promptQuestions,
+          weeklyStats: reflectionData.weeklyStats,
+          identityShiftMessage: reflectionData.identityShiftMessage,
+          reflectionDate: new Date()
+        });
+      }
+      
+      res.json({
+        success: true,
+        day: nextDay,
+        mission,
+        weeklyReflection,
+        isReflectionDay: [7, 14, 21, 28].includes(nextDay)
+      });
+    } catch (error) {
+      console.error('Error advancing to next day:', error);
+      res.status(500).json({ message: 'Failed to advance to next day' });
+    }
+  });
+
+  // Submit weekly reflection answers
+  app.post('/api/money-reset/submit-reflection', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { reflectionId, responses } = req.body;
+      
+      const enrollment = await storage.getActiveChallenge(user.id);
+      if (!enrollment) {
+        return res.status(400).json({ message: 'Not enrolled in a challenge' });
+      }
+      
+      // Get the reflection and interview data
+      const interview = await storage.getLatestInterview(user.id);
+      const weekNumber = Math.ceil(enrollment.currentDay / 7);
+      const existingReflection = await storage.getWeeklyReflection(enrollment.id, weekNumber);
+      
+      // Generate AI coaching response
+      const coaching = await generateReflectionCoaching({
+        weekNumber,
+        userResponses: responses,
+        playbook: interview?.personalizedPlan,
+        weeklyStats: existingReflection?.weeklyStats,
+        firstName: user.firstName
+      });
+      
+      // Update reflection with user responses and coaching
+      const reflection = await storage.updateWeeklyReflection(reflectionId, {
+        userResponses: responses,
+        aiCoachingResponse: coaching,
+        isCompleted: true,
+        completedAt: new Date()
+      });
+      
+      // Update enrollment
+      await storage.updateChallengeEnrollment(enrollment.id, {
+        totalReflectionsCompleted: (enrollment.totalReflectionsCompleted || 0) + 1
+      });
+      
+      res.json({
+        success: true,
+        reflection,
+        coaching,
+        message: 'Reflection submitted! Here\'s your personalized coaching.'
+      });
+    } catch (error) {
+      console.error('Error submitting reflection:', error);
+      res.status(500).json({ message: 'Failed to submit reflection' });
+    }
+  });
+
+  // Get transformation moments for sharing
+  app.get('/api/money-reset/moments', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const moments = await storage.getTransformationMoments(user.id);
+      res.json({ moments });
+    } catch (error) {
+      console.error('Error getting moments:', error);
+      res.status(500).json({ message: 'Failed to get transformation moments' });
     }
   });
 

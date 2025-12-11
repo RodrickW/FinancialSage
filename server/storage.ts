@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments, interviews, dailyCheckins } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment, Interview, InsertInterview, DailyCheckin, InsertDailyCheckin } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments, interviews, dailyCheckins, challengeEnrollments, challengeMissions, weeklyReflections, challengeStreaks, transformationMoments } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment, Interview, InsertInterview, DailyCheckin, InsertDailyCheckin, ChallengeEnrollment, InsertChallengeEnrollment, ChallengeMission, InsertChallengeMission, WeeklyReflection, InsertWeeklyReflection, ChallengeStreak, InsertChallengeStreak, TransformationMoment, InsertTransformationMoment } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -80,6 +80,31 @@ export interface IStorage {
   getCheckinStreak(userId: number): Promise<number>;
   createDailyCheckin(checkin: InsertDailyCheckin): Promise<DailyCheckin>;
   updateDailyCheckin(id: number, data: Partial<InsertDailyCheckin>): Promise<DailyCheckin | undefined>;
+
+  // 30-Day Money Reset Challenge operations
+  getActiveChallenge(userId: number): Promise<ChallengeEnrollment | undefined>;
+  createChallengeEnrollment(enrollment: InsertChallengeEnrollment): Promise<ChallengeEnrollment>;
+  updateChallengeEnrollment(id: number, data: Partial<InsertChallengeEnrollment>): Promise<ChallengeEnrollment | undefined>;
+  
+  // Challenge missions
+  getTodayMission(enrollmentId: number, day: number): Promise<ChallengeMission | undefined>;
+  getMissionsByEnrollment(enrollmentId: number): Promise<ChallengeMission[]>;
+  createChallengeMission(mission: InsertChallengeMission): Promise<ChallengeMission>;
+  updateChallengeMission(id: number, data: Partial<InsertChallengeMission>): Promise<ChallengeMission | undefined>;
+  
+  // Weekly reflections
+  getWeeklyReflection(enrollmentId: number, weekNumber: number): Promise<WeeklyReflection | undefined>;
+  createWeeklyReflection(reflection: InsertWeeklyReflection): Promise<WeeklyReflection>;
+  updateWeeklyReflection(id: number, data: Partial<InsertWeeklyReflection>): Promise<WeeklyReflection | undefined>;
+  
+  // Challenge streaks
+  getChallengeStreak(enrollmentId: number): Promise<ChallengeStreak | undefined>;
+  createChallengeStreak(streak: InsertChallengeStreak): Promise<ChallengeStreak>;
+  updateChallengeStreak(id: number, data: Partial<InsertChallengeStreak>): Promise<ChallengeStreak | undefined>;
+  
+  // Transformation moments
+  getTransformationMoments(userId: number): Promise<TransformationMoment[]>;
+  createTransformationMoment(moment: InsertTransformationMoment): Promise<TransformationMoment>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -568,6 +593,119 @@ export class DatabaseStorage implements IStorage {
       .where(eq(dailyCheckins.id, id))
       .returning();
     return updated;
+  }
+
+  // 30-Day Money Reset Challenge operations
+  async getActiveChallenge(userId: number): Promise<ChallengeEnrollment | undefined> {
+    const [enrollment] = await db.select().from(challengeEnrollments)
+      .where(and(
+        eq(challengeEnrollments.userId, userId),
+        eq(challengeEnrollments.status, 'active')
+      ))
+      .orderBy(desc(challengeEnrollments.createdAt))
+      .limit(1);
+    return enrollment;
+  }
+
+  async createChallengeEnrollment(enrollment: InsertChallengeEnrollment): Promise<ChallengeEnrollment> {
+    const [created] = await db.insert(challengeEnrollments).values(enrollment).returning();
+    return created;
+  }
+
+  async updateChallengeEnrollment(id: number, data: Partial<InsertChallengeEnrollment>): Promise<ChallengeEnrollment | undefined> {
+    const [updated] = await db
+      .update(challengeEnrollments)
+      .set(data)
+      .where(eq(challengeEnrollments.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Challenge missions
+  async getTodayMission(enrollmentId: number, day: number): Promise<ChallengeMission | undefined> {
+    const [mission] = await db.select().from(challengeMissions)
+      .where(and(
+        eq(challengeMissions.enrollmentId, enrollmentId),
+        eq(challengeMissions.day, day)
+      ));
+    return mission;
+  }
+
+  async getMissionsByEnrollment(enrollmentId: number): Promise<ChallengeMission[]> {
+    return await db.select().from(challengeMissions)
+      .where(eq(challengeMissions.enrollmentId, enrollmentId))
+      .orderBy(challengeMissions.day);
+  }
+
+  async createChallengeMission(mission: InsertChallengeMission): Promise<ChallengeMission> {
+    const [created] = await db.insert(challengeMissions).values(mission).returning();
+    return created;
+  }
+
+  async updateChallengeMission(id: number, data: Partial<InsertChallengeMission>): Promise<ChallengeMission | undefined> {
+    const [updated] = await db
+      .update(challengeMissions)
+      .set(data)
+      .where(eq(challengeMissions.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Weekly reflections
+  async getWeeklyReflection(enrollmentId: number, weekNumber: number): Promise<WeeklyReflection | undefined> {
+    const [reflection] = await db.select().from(weeklyReflections)
+      .where(and(
+        eq(weeklyReflections.enrollmentId, enrollmentId),
+        eq(weeklyReflections.weekNumber, weekNumber)
+      ));
+    return reflection;
+  }
+
+  async createWeeklyReflection(reflection: InsertWeeklyReflection): Promise<WeeklyReflection> {
+    const [created] = await db.insert(weeklyReflections).values(reflection).returning();
+    return created;
+  }
+
+  async updateWeeklyReflection(id: number, data: Partial<InsertWeeklyReflection>): Promise<WeeklyReflection | undefined> {
+    const [updated] = await db
+      .update(weeklyReflections)
+      .set(data)
+      .where(eq(weeklyReflections.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Challenge streaks
+  async getChallengeStreak(enrollmentId: number): Promise<ChallengeStreak | undefined> {
+    const [streak] = await db.select().from(challengeStreaks)
+      .where(eq(challengeStreaks.enrollmentId, enrollmentId));
+    return streak;
+  }
+
+  async createChallengeStreak(streak: InsertChallengeStreak): Promise<ChallengeStreak> {
+    const [created] = await db.insert(challengeStreaks).values(streak).returning();
+    return created;
+  }
+
+  async updateChallengeStreak(id: number, data: Partial<InsertChallengeStreak>): Promise<ChallengeStreak | undefined> {
+    const [updated] = await db
+      .update(challengeStreaks)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(challengeStreaks.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Transformation moments
+  async getTransformationMoments(userId: number): Promise<TransformationMoment[]> {
+    return await db.select().from(transformationMoments)
+      .where(eq(transformationMoments.userId, userId))
+      .orderBy(desc(transformationMoments.createdAt));
+  }
+
+  async createTransformationMoment(moment: InsertTransformationMoment): Promise<TransformationMoment> {
+    const [created] = await db.insert(transformationMoments).values(moment).returning();
+    return created;
   }
 }
 
