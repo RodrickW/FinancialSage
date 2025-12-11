@@ -183,6 +183,19 @@ export const interviews = pgTable("interviews", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Daily check-ins for habit formation and engagement
+export const dailyCheckins = pgTable("daily_checkins", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: timestamp("date").notNull(), // The check-in date
+  moneyMindScore: integer("money_mind_score").notNull(), // 0-100 daily score
+  habitCompleted: boolean("habit_completed").default(false),
+  habitText: text("habit_text"), // The specific habit for this day
+  aiInsight: text("ai_insight"), // Personalized AI insight for the day
+  streak: integer("streak").default(1), // Current check-in streak
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true });
@@ -196,6 +209,7 @@ export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true
 export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCreditAssessmentSchema = createInsertSchema(creditAssessments).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertInterviewSchema = createInsertSchema(interviews).omit({ id: true, createdAt: true });
+export const insertDailyCheckinSchema = createInsertSchema(dailyCheckins).omit({ id: true, createdAt: true });
 
 // Type definitions
 export type User = typeof users.$inferSelect;
@@ -233,3 +247,6 @@ export type InsertCreditAssessment = z.infer<typeof insertCreditAssessmentSchema
 
 export type Interview = typeof interviews.$inferSelect;
 export type InsertInterview = z.infer<typeof insertInterviewSchema>;
+
+export type DailyCheckin = typeof dailyCheckins.$inferSelect;
+export type InsertDailyCheckin = z.infer<typeof insertDailyCheckinSchema>;

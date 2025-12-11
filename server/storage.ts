@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments, interviews } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment, Interview, InsertInterview } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments, interviews, dailyCheckins } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment, Interview, InsertInterview, DailyCheckin, InsertDailyCheckin } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -74,6 +74,12 @@ export interface IStorage {
   // Interview operations
   getLatestInterview(userId: number): Promise<Interview | undefined>;
   createInterview(interview: InsertInterview): Promise<Interview>;
+
+  // Daily check-in operations
+  getTodayCheckin(userId: number): Promise<DailyCheckin | undefined>;
+  getCheckinStreak(userId: number): Promise<number>;
+  createDailyCheckin(checkin: InsertDailyCheckin): Promise<DailyCheckin>;
+  updateDailyCheckin(id: number, data: Partial<InsertDailyCheckin>): Promise<DailyCheckin | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -503,6 +509,65 @@ export class DatabaseStorage implements IStorage {
   async createInterview(interview: InsertInterview): Promise<Interview> {
     const [created] = await db.insert(interviews).values(interview).returning();
     return created;
+  }
+
+  // Daily check-in operations
+  async getTodayCheckin(userId: number): Promise<DailyCheckin | undefined> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const [checkin] = await db.select().from(dailyCheckins)
+      .where(and(
+        eq(dailyCheckins.userId, userId),
+        gte(dailyCheckins.date, today),
+        lte(dailyCheckins.date, tomorrow)
+      ));
+    return checkin;
+  }
+
+  async getCheckinStreak(userId: number): Promise<number> {
+    const checkins = await db.select().from(dailyCheckins)
+      .where(eq(dailyCheckins.userId, userId))
+      .orderBy(desc(dailyCheckins.date))
+      .limit(30);
+    
+    if (checkins.length === 0) return 0;
+    
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < checkins.length; i++) {
+      const checkinDate = new Date(checkins[i].date);
+      checkinDate.setHours(0, 0, 0, 0);
+      
+      const expectedDate = new Date(today);
+      expectedDate.setDate(expectedDate.getDate() - i);
+      
+      if (checkinDate.getTime() === expectedDate.getTime()) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  async createDailyCheckin(checkin: InsertDailyCheckin): Promise<DailyCheckin> {
+    const [created] = await db.insert(dailyCheckins).values(checkin).returning();
+    return created;
+  }
+
+  async updateDailyCheckin(id: number, data: Partial<InsertDailyCheckin>): Promise<DailyCheckin | undefined> {
+    const [updated] = await db
+      .update(dailyCheckins)
+      .set(data)
+      .where(eq(dailyCheckins.id, id))
+      .returning();
+    return updated;
   }
 }
 

@@ -9,6 +9,7 @@ import {
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
 import { TrialStatus } from '@/components/TrialStatus';
+import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
 
 
 import { Button } from '@/components/ui/button';
@@ -259,6 +260,13 @@ export default function Dashboard() {
           
           {/* Trial Status Component */}
           {!isDemoMode && <TrialStatus />}
+          
+          {/* Daily Check-In Card */}
+          {!isDemoMode && user && (
+            <TrialGate feature="Daily Check-In" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
+              <DailyCheckinCard />
+            </TrialGate>
+          )}
           
           {/* Proactive AI Insights */}
           {user && (

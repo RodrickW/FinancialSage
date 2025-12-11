@@ -2379,6 +2379,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily Check-In - Get today's check-in or create a new one
+  app.get('/api/daily-checkin', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Check if there's already a check-in for today
+      let checkin = await storage.getTodayCheckin(user.id);
+      
+      if (checkin) {
+        const streak = await storage.getCheckinStreak(user.id);
+        return res.json({ 
+          checkin,
+          streak,
+          isNew: false
+        });
+      }
+      
+      // Get the user's Money Playbook for personalized content
+      const interview = await storage.getLatestInterview(user.id);
+      
+      if (!interview || !interview.personalizedPlan) {
+        return res.status(400).json({ 
+          message: 'Complete the Money Mind Interview first to access daily check-ins',
+          needsInterview: true
+        });
+      }
+      
+      const playbook = interview.personalizedPlan as any;
+      
+      // Generate today's AI insight based on their playbook
+      const { generateDailyInsight } = await import('./openai');
+      const { insight, score } = await generateDailyInsight({
+        userName: user.firstName || user.username,
+        personalityType: playbook.moneyPersonalityType,
+        dailyHabit: playbook.dailyHabit,
+        spendingTriggers: playbook.spendingTriggers,
+        behavioralPatterns: playbook.behavioralPatterns,
+        weeklyFocus: playbook.weeklyFocus,
+        dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' })
+      });
+      
+      // Create today's check-in
+      checkin = await storage.createDailyCheckin({
+        userId: user.id,
+        date: new Date(),
+        moneyMindScore: score,
+        habitCompleted: false,
+        habitText: playbook.dailyHabit,
+        aiInsight: insight,
+        streak: 1
+      });
+      
+      // Update streak
+      const streak = await storage.getCheckinStreak(user.id);
+      if (streak > 1) {
+        await storage.updateDailyCheckin(checkin.id, { streak });
+        checkin.streak = streak;
+      }
+      
+      res.json({ 
+        checkin,
+        streak,
+        isNew: true
+      });
+    } catch (error) {
+      console.error('Error with daily check-in:', error);
+      res.status(500).json({ message: 'Failed to load daily check-in' });
+    }
+  });
+
+  // Mark habit as completed for today's check-in
+  app.post('/api/daily-checkin/complete-habit', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      const checkin = await storage.getTodayCheckin(user.id);
+      
+      if (!checkin) {
+        return res.status(404).json({ message: 'No check-in found for today' });
+      }
+      
+      const updated = await storage.updateDailyCheckin(checkin.id, {
+        habitCompleted: true
+      });
+      
+      res.json({ 
+        success: true,
+        checkin: updated
+      });
+    } catch (error) {
+      console.error('Error completing habit:', error);
+      res.status(500).json({ message: 'Failed to complete habit' });
+    }
+  });
+
   // Debug endpoint to see what user data is available
   app.get('/api/debug/user-data', requireAuth, async (req, res) => {
     try {

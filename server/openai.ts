@@ -543,6 +543,50 @@ Respond in JSON format:
   }
 }
 
+// Generate daily AI insight based on user's Money Playbook
+export async function generateDailyInsight(playbookData: any): Promise<{ insight: string; score: number }> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Money Mind, providing a quick daily insight for the user based on their Money Playbook personality profile. 
+
+Your job is to give a SHORT (1 sentence max, around 15-20 words), personalized insight that:
+1. Relates to their money personality type and patterns
+2. Is encouraging and actionable
+3. Feels fresh and relevant to TODAY
+4. Connects to their specific habits or triggers
+
+Also calculate a "Money Mind Score" (0-100) that represents their alignment with good financial habits for today. Base this on:
+- Their personality type's typical challenges
+- Whether it's a high-risk spending day (weekend, payday, etc.)
+- A slight randomization to feel dynamic (±5-10 points)
+
+Be warm, direct, and motivating - like a supportive coach checking in.
+
+Format your response as JSON:
+{
+  "insight": "Your personalized 1-sentence insight here",
+  "score": 75
+}`
+        },
+        {
+          role: "user",
+          content: `Generate today's insight for this user: ${JSON.stringify(playbookData)}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || '{"insight": "Take a moment to check in with your spending today.", "score": 70}');
+  } catch (error: any) {
+    console.error("Error generating daily insight:", error.message);
+    return { insight: "Take a moment to check in with your spending today.", score: 70 };
+  }
+}
+
 // Advanced financial health assessment combining multiple data sources
 export async function generateFinancialHealthReport(userData: any): Promise<any> {
   try {
