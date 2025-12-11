@@ -6,7 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function generateProactiveInsights(userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -65,7 +65,7 @@ export async function generateFinancialInsights(userData: any): Promise<any> {
 export async function getFinancialCoaching(question: string, userData: any): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -100,7 +100,7 @@ You provide personalized, actionable financial advice based on the user's specif
 export async function generateBudgetRecommendations(spendingData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -126,7 +126,7 @@ export async function generateBudgetRecommendations(spendingData: any): Promise<
 export async function createPersonalizedBudget(userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -178,7 +178,7 @@ Return a JSON response with this structure:
 export async function analyzeCreditScore(creditData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -210,7 +210,7 @@ export async function parseGoalDeletion(message: string, goalData: { savingsGoal
     ];
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -260,7 +260,7 @@ Respond with JSON in this format:
 export async function parseGoalCreation(message: string, userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -358,7 +358,7 @@ Response: {shouldCreateGoal: true, goalType: "debt", goalDetails: {name: "Studen
 export async function parseProgressUpdate(message: string, userGoals: any[], userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
@@ -547,7 +547,7 @@ Respond in JSON format:
 export async function generateFinancialHealthReport(userData: any): Promise<any> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",

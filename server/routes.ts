@@ -4,11 +4,9 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertUserSchema, insertAccountSchema, insertTransactionSchema } from "@shared/schema";
 import { User } from "@shared/schema";
-import { generateFinancialInsights, getFinancialCoaching, generateBudgetRecommendations, analyzeCreditScore, createPersonalizedBudget, generateFinancialHealthReport, parseGoalCreation, parseGoalDeletion, parseProgressUpdate } from "./openai";
 import OpenAI from "openai";
 import { createLinkToken, exchangePublicToken, getAccounts, getTransactions, formatPlaidAccountData, formatPlaidTransactionData } from "./plaid";
 import { servePlaidSDK } from "./plaid-proxy";
-import { fetchCreditScore, fetchCreditHistory, storeCreditScore, generateMockCreditScore, generateMockCreditHistory } from "./credit";
 import { registerSubscriptionRoutes } from "./routes-subscription";
 import { pool } from "./db";
 import { generatePasswordResetToken, verifyResetToken, resetPassword, sendUsernameReminder } from "./passwordReset";
@@ -37,7 +35,6 @@ const mockFinancialData = {
   previousMonthBalance: 23963.98,
   monthlySpending: 3261.50,
   previousMonthSpending: 3018.92,
-  creditScore: 752,
   savingsProgress: {
     current: 5420,
     target: 10000,
@@ -657,7 +654,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firstName: result.data.firstName,
         lastName: result.data.lastName,
         email: result.data.email,
-        // Set 14-day trial - full access without credit card required
         isPremium: false, // Will become true only after payment
         premiumTier: null,
         stripeCustomerId: null,
@@ -991,9 +987,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
       
-      // Get credit score
-      const creditScoreData = await storage.getCreditScore(user.id);
-      const creditScore = creditScoreData?.score || 0; // Show 0 for new users
       
       // Get savings goal
       const savingsGoals = await storage.getSavingsGoals(user.id);
@@ -1010,7 +1003,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         previousMonthSpending: Math.round(previousMonthSpending * 100) / 100,
         weeklySpending: Math.round(weeklySpending * 100) / 100,
         dailySpending: Math.round(dailySpending * 100) / 100,
-        creditScore,
         savingsProgress: {
           current: Math.round(mainSavingsGoal.currentAmount * 100) / 100,
           target: Math.round(mainSavingsGoal.targetAmount * 100) / 100,
@@ -1045,7 +1037,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         previousMonthSpending: 0,
         weeklySpending: 0,
         dailySpending: 0,
-        creditScore: 0,
         savingsProgress: {
           current: 0,
           target: 0,
@@ -1682,7 +1673,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         income: 5000,
         savings: 5420,
         savingsGoal: 10000,
-        creditScore: 752
       };
       
       const insights = await generateFinancialInsights(userData);
@@ -1704,7 +1694,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactions = await storage.getTransactions(user.id, 100); // Last 100 transactions
       const budgets = await storage.getBudgets(user.id);
       const savingsGoals = await storage.getSavingsGoals(user.id);
-      const creditScore = await storage.getCreditScore(user.id);
       
       // Calculate financial metrics
       const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
@@ -1767,7 +1756,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           current: g.currentAmount,
           progress: g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0
         })),
-        creditScore: creditScore ? creditScore.score : null,
         hasAccounts: accounts.length > 0,
         hasTransactions: transactions.length > 0,
         // Add context for better insights
@@ -2078,7 +2066,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'entertainment': 'Entertainment',
           'miscellaneous': 'Shopping',
           'travel': 'Travel',
-          'credit_cards': 'Credit Cards',
           'student_loans': 'Student Loans',
           'other_debt': 'Other Debt'
         };
@@ -2111,75 +2098,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Credit score analysis and improvement recommendations
-  app.get('/api/ai/credit-score-analysis', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       
-      // Fetch fresh credit score data from Experian
-      const { fetchCreditScore } = await import('./credit');
-      const experianData = await fetchCreditScore(user.id);
       
       if (!experianData) {
-        return res.status(404).json({ message: 'Credit score data not found' });
       }
       
-      // Store the credit score data for future reference
       try {
-        await storage.createCreditScore({
           userId: user.id,
           score: experianData.score,
           rating: experianData.rating,
           factors: experianData.factors
         });
       } catch (error) {
-        console.log('Could not store credit score, continuing with analysis');
       }
       
-      const creditScoreData = experianData;
       
       // Prepare data for the AI
-      const creditData = {
-        score: creditScoreData.score,
         factors: [
           { 
             name: 'Payment History', 
             impact: 'High',
-            status: creditScoreData.score > 700 ? 'Good' : 'Needs Improvement' 
           },
           { 
-            name: 'Credit Utilization', 
             impact: 'High',
-            status: creditScoreData.score > 680 ? 'Good' : 'Needs Improvement' 
           },
           { 
-            name: 'Credit Age', 
             impact: 'Medium',
-            status: creditScoreData.score > 650 ? 'Average' : 'Short History' 
           },
           { 
             name: 'Account Mix', 
             impact: 'Low',
-            status: creditScoreData.score > 720 ? 'Diverse' : 'Limited' 
           },
           { 
             name: 'Recent Inquiries', 
             impact: 'Low',
-            status: creditScoreData.score > 690 ? 'Few' : 'Several Recent' 
           }
         ],
         user: {
-          hasLatePaments: creditScoreData.score < 650,
-          highUtilization: creditScoreData.score < 680,
-          shortHistory: creditScoreData.score < 650
         }
       };
       
-      const analysis = await analyzeCreditScore(creditData);
       res.json(analysis);
     } catch (error) {
-      console.error('Error analyzing credit score:', error);
-      res.status(500).json({ message: 'Failed to analyze credit score' });
     }
   });
   
@@ -2193,7 +2155,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactions = await storage.getTransactions(user.id, 100); // Last 100 transactions
       const budgets = await storage.getBudgets(user.id);
       const savingsGoals = await storage.getSavingsGoals(user.id);
-      const creditScore = await storage.getCreditScore(user.id);
       
       // Prepare comprehensive user data
       const userData = {
@@ -2241,7 +2202,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           progress: (g.currentAmount / g.targetAmount) * 100
         })),
         
-        creditScore: creditScore ? creditScore.score : null
       };
       
       const healthReport = await generateFinancialHealthReport(userData);
@@ -2515,7 +2475,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactions = await storage.getTransactions(user.id, 50); // Last 50 transactions
       const budgets = await storage.getBudgets(user.id);
       const savingsGoals = await storage.getSavingsGoals(user.id);
-      const creditScore = await storage.getCreditScore(user.id);
       
       // Calculate financial stats
       const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
@@ -2554,7 +2513,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           current: g.currentAmount
         })),
         spendingByCategory: categorySpending,
-        creditScore: creditScore ? creditScore.score : null,
         hasAccounts: accounts.length > 0,
         hasTransactions: transactions.length > 0
       };
@@ -2726,7 +2684,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "entertainment": ["movie", "theater", "concert", "entertainment", "games"],
         "miscellaneous": ["amazon", "online", "purchase", "shopping"],
         "travel": ["hotel", "flight", "vacation", "travel", "airbnb"],
-        "credit_cards": ["credit card", "visa", "mastercard", "amex"],
         "student_loans": ["student loan", "education loan", "navient"],
         "other_debt": ["loan", "debt", "payment", "finance"]
       };
@@ -3851,7 +3808,6 @@ IMPORTANT:
             // Navy Federal specific recommendations
             if (account.institutionName?.toLowerCase().includes('navy federal')) {
               diagnostics.recommendations.push(
-                'Navy Federal Credit Union has known delays in transaction posting (24-48 hours is normal).',
                 'Navy Federal processes most updates in the evening - try syncing after 6 PM EST.',
                 'If no updates for 2+ days, your Navy Federal login credentials may need refreshing.',
                 'Consider disconnecting and reconnecting your Navy Federal account if issues persist.'
@@ -3927,28 +3883,18 @@ IMPORTANT:
     }
   });
 
-  // Credit Assessment API Routes
-  app.get('/api/credit/assessment', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
-      const assessment = await storage.getCreditAssessment(user.id);
       res.json(assessment);
     } catch (error) {
-      console.error('Error fetching credit assessment:', error);
-      res.status(500).json({ error: 'Failed to fetch credit assessment' });
     }
   });
 
-  app.post('/api/credit/assessment', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
-      const { generateCreditImprovementPlan } = await import('./creditAssessment');
       
       // Validate required fields
       const requiredFields = [
-        'currentScore', 'goalScore', 'paymentHistory', 'creditUtilization',
-        'creditHistoryLength', 'creditMix', 'newCreditInquiries',
-        'totalCreditLimit', 'totalCreditBalance', 'monthlyIncome'
       ];
       
       for (const field of requiredFields) {
@@ -3968,12 +3914,6 @@ IMPORTANT:
         currentScore: parseInt(req.body.currentScore),
         goalScore: parseInt(req.body.goalScore),
         paymentHistory: req.body.paymentHistory,
-        creditUtilization: parseFloat(req.body.creditUtilization),
-        creditHistoryLength: parseInt(req.body.creditHistoryLength),
-        creditMix: req.body.creditMix,
-        newCreditInquiries: parseInt(req.body.newCreditInquiries),
-        totalCreditLimit: parseFloat(req.body.totalCreditLimit),
-        totalCreditBalance: parseFloat(req.body.totalCreditBalance),
         monthlyIncome: parseFloat(req.body.monthlyIncome),
         hasCollections: req.body.hasCollections || false,
         hasBankruptcy: req.body.hasBankruptcy || false,
@@ -3981,10 +3921,8 @@ IMPORTANT:
       };
       
       // Create the assessment
-      const assessment = await storage.createCreditAssessment(assessmentData);
       
       // Generate AI improvement plan
-      const improvementPlan = await generateCreditImprovementPlan(
         assessment,
         accounts,
         budgets,
@@ -3992,7 +3930,6 @@ IMPORTANT:
       );
       
       // Update assessment with the improvement plan
-      const updatedAssessment = await storage.updateCreditAssessment(assessment.id, {
         improvementPlan
       });
       
@@ -4002,53 +3939,39 @@ IMPORTANT:
       });
       
     } catch (error) {
-      console.error('Error creating credit assessment:', error);
       res.status(500).json({ 
-        error: 'Failed to create credit assessment',
         message: error.message 
       });
     }
   });
 
-  app.put('/api/credit/assessment/:id', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       const assessmentId = parseInt(req.params.id);
       
       // Check if assessment belongs to user
-      const existing = await storage.getCreditAssessment(user.id);
       if (!existing || existing.id !== assessmentId) {
         return res.status(404).json({ error: 'Assessment not found' });
       }
       
-      const updatedAssessment = await storage.updateCreditAssessment(assessmentId, req.body);
       res.json(updatedAssessment);
       
     } catch (error) {
-      console.error('Error updating credit assessment:', error);
-      res.status(500).json({ error: 'Failed to update credit assessment' });
     }
   });
 
-  // Credit score factors and analysis
-  app.get('/api/credit/factors/:assessmentId', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       const assessmentId = parseInt(req.params.assessmentId);
-      const { calculateCreditScoreFactors } = await import('./creditAssessment');
       
       // Check if assessment belongs to user
-      const assessment = await storage.getCreditAssessment(user.id);
       if (!assessment || assessment.id !== assessmentId) {
         return res.status(404).json({ error: 'Assessment not found' });
       }
       
-      const factors = calculateCreditScoreFactors(assessment);
       res.json(factors);
       
     } catch (error) {
-      console.error('Error calculating credit factors:', error);
-      res.status(500).json({ error: 'Failed to calculate credit factors' });
     }
   });
 

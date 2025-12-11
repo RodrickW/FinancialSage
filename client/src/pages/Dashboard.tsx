@@ -161,7 +161,7 @@ export default function Dashboard() {
     previousMonthSpending: 0,
     weeklySpending: 0,
     dailySpending: 0,
-    creditScore: 0,
+    ,
     savingsProgress: {
       current: 0,
       target: 0,
