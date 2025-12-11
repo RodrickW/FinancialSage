@@ -53,8 +53,8 @@ export default function Landing() {
     },
     {
       icon: BarChart3,
-      title: "Want to build credit?",
-      description: "Unlock tools to boost your score over time."
+      title: "Ready for a fresh start?",
+      description: "Join the 30-Day Money Reset and transform your habits."
     }
   ];
 
@@ -72,7 +72,7 @@ export default function Landing() {
         "Smart Budget Creation",
         "Spending Analytics",
         "Savings Goal Tracking",
-        "Credit Score Monitoring"
+        "30-Day Money Reset Challenge"
       ],
       cta: "Start Free Trial",
       popular: false
@@ -186,7 +186,7 @@ export default function Landing() {
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-400 bg-clip-text text-transparent leading-tight">
-            We Get it. Money Stress is Real.
+            Your Financial Transformation System
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
