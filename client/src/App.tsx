@@ -36,6 +36,7 @@ import InstallApp from "@/pages/InstallApp";
 import Admin from "@/pages/Admin";
 import MoneyReset from "@/pages/MoneyReset";
 import TransformationMoments from "@/pages/TransformationMoments";
+import ReflectionJournal from "@/pages/ReflectionJournal";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -151,6 +152,9 @@ function Router() {
       </Route>
       <Route path="/money-reset/moments">
         {(params) => <ProtectedRoute component={TransformationMoments} params={params} />}
+      </Route>
+      <Route path="/money-reset/journal">
+        {(params) => <ProtectedRoute component={ReflectionJournal} params={params} />}
       </Route>
       <Route path="/goals">
         {(params) => <ProtectedRoute component={Goals} params={params} />}

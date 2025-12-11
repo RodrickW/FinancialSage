@@ -4720,6 +4720,51 @@ IMPORTANT:
     }
   });
 
+  // Get all user reflections (mission reflections + weekly reflections)
+  app.get('/api/money-reset/reflections', requireAccess, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const enrollment = await storage.getActiveChallenge(user.id);
+      
+      if (!enrollment) {
+        return res.json({ missionReflections: [], weeklyReflections: [] });
+      }
+      
+      // Get all completed missions with reflections
+      const allMissions = await storage.getMissionsByEnrollment(enrollment.id);
+      const missionReflections = allMissions
+        .filter(m => m.isCompleted && m.userReflection)
+        .map(m => ({
+          id: m.id,
+          day: m.day,
+          title: m.title,
+          missionType: m.missionType,
+          reflection: m.userReflection,
+          completedAt: m.completedAt,
+          missionDate: m.missionDate
+        }))
+        .sort((a, b) => b.day - a.day);
+      
+      // Get all weekly reflections
+      const weeklyReflections = await storage.getAllWeeklyReflections(enrollment.id);
+      
+      res.json({
+        missionReflections,
+        weeklyReflections: weeklyReflections.filter(r => r.isCompleted).map(r => ({
+          id: r.id,
+          weekNumber: r.weekNumber,
+          userResponses: r.userResponses,
+          aiCoachingResponse: r.aiCoachingResponse,
+          weeklyStats: r.weeklyStats,
+          completedAt: r.completedAt
+        }))
+      });
+    } catch (error) {
+      console.error('Error getting reflections:', error);
+      res.status(500).json({ message: 'Failed to get reflections' });
+    }
+  });
+
   // Get transformation moments for sharing
   app.get('/api/money-reset/moments', requireAccess, async (req, res) => {
     try {

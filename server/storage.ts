@@ -94,6 +94,7 @@ export interface IStorage {
   
   // Weekly reflections
   getWeeklyReflection(enrollmentId: number, weekNumber: number): Promise<WeeklyReflection | undefined>;
+  getAllWeeklyReflections(enrollmentId: number): Promise<WeeklyReflection[]>;
   createWeeklyReflection(reflection: InsertWeeklyReflection): Promise<WeeklyReflection>;
   updateWeeklyReflection(id: number, data: Partial<InsertWeeklyReflection>): Promise<WeeklyReflection | undefined>;
   
@@ -659,6 +660,12 @@ export class DatabaseStorage implements IStorage {
         eq(weeklyReflections.weekNumber, weekNumber)
       ));
     return reflection;
+  }
+
+  async getAllWeeklyReflections(enrollmentId: number): Promise<WeeklyReflection[]> {
+    return await db.select().from(weeklyReflections)
+      .where(eq(weeklyReflections.enrollmentId, enrollmentId))
+      .orderBy(desc(weeklyReflections.weekNumber));
   }
 
   async createWeeklyReflection(reflection: InsertWeeklyReflection): Promise<WeeklyReflection> {
