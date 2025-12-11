@@ -15,71 +15,63 @@ interface TourStep {
 const tourSteps: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Welcome to Mind My Money! 🎉',
-    description: 'Let\'s take a quick tour of your financial dashboard. This demo shows how the app works with sample data.',
+    title: 'Welcome to Your Financial Transformation! 🚀',
+    description: 'Mind My Money isn\'t just another budgeting app. It\'s a complete system designed to transform your relationship with money. Let me show you how it works.',
     target: '',
     position: 'top'
   },
   {
-    id: 'financial-overview',
-    title: 'Your Financial Dashboard',
-    description: 'These cards show your spending patterns - daily, weekly, monthly, and total balance. This is demo data showing what your dashboard will look like.',
-    target: '[data-tour="financial-overview"]',
+    id: 'money-mind-interview',
+    title: 'Step 1: Discover Your Money Personality 🧠',
+    description: 'Start with the Money Mind Interview to uncover your unique money personality, emotional triggers, and hidden patterns. This creates your personalized Money Playbook.',
+    target: '[data-tour="money-mind-interview"]',
     position: 'bottom',
     spotlight: true
   },
   {
-    id: 'spending-trends',
-    title: 'Smart Spending Analysis',
-    description: 'Track spending by category with interactive charts. See where your money goes and identify trends to make better decisions.',
-    target: '[data-tour="spending-trends"]',
-    position: 'top',
-    spotlight: true
-  },
-  {
-    id: 'transactions',
-    title: 'Transaction History',
-    description: 'View and categorize your transactions automatically. All data syncs in real-time from your connected accounts.',
-    target: '[data-tour="transactions"]',
-    position: 'top',
-    spotlight: true
-  },
-  {
-    id: 'ai-coach',
-    title: 'Money Mind AI Coach',
-    description: 'Your personal AI financial advisor! Ask questions about budgeting, saving strategies, or get personalized recommendations.',
-    target: '[data-tour="ai-coach"]',
-    position: 'top',
-    spotlight: true
-  },
-  {
-    id: 'goals',
-    title: 'Goal Tracking',
-    description: 'Set and track financial goals with progress visualization. The AI helps you stay motivated and on track.',
-    target: '[data-tour="goals"]',
-    position: 'top',
-    spotlight: true
-  },
-  {
-    id: 'budgets',
-    title: 'Smart Budgeting',
-    description: 'AI-generated budgets that adapt to your spending patterns. Get alerts and recommendations to stay on track.',
-    target: '[data-tour="budgets"]',
-    position: 'top',
-    spotlight: true
-  },
-  {
     id: 'connect-account',
-    title: 'Ready to Get Started?',
-    description: 'Connect your bank account to see your real data instead of this demo. Your financial information is encrypted and secure.',
+    title: 'Step 2: Connect Your Accounts 🏦',
+    description: 'Securely link your bank accounts to get real-time insights. We use bank-level encryption through Plaid to keep your data safe.',
     target: '[data-tour="connect-account"]',
     position: 'bottom',
     spotlight: true
   },
   {
+    id: 'daily-checkin',
+    title: 'Step 3: Build Daily Money Habits ✅',
+    description: 'The Daily Check-In takes just 60 seconds but builds powerful money awareness habits. Track your streak and watch your relationship with money transform.',
+    target: '[data-tour="daily-checkin"]',
+    position: 'bottom',
+    spotlight: true
+  },
+  {
+    id: 'money-reset',
+    title: 'Step 4: The 30-Day Money Reset 💪',
+    description: 'Our signature challenge! 30 days of AI-powered missions designed to rewire your money habits. Daily challenges, weekly reflections, and real transformation.',
+    target: '[data-tour="money-reset"]',
+    position: 'bottom',
+    spotlight: true
+  },
+  {
+    id: 'ai-coach',
+    title: 'Your Personal AI Coach 💬',
+    description: 'Money Mind is your 24/7 financial coach. Ask any question about budgeting, saving, debt - get personalized advice based on YOUR financial data.',
+    target: '[data-tour="ai-coach"]',
+    position: 'top',
+    spotlight: true
+  },
+  {
+    id: 'faith-mode',
+    title: 'Faith-Based Mode ✝️',
+    description: 'Optional: Toggle on Faith Mode for biblical stewardship guidance. Get scripture-based insights and frame your finances through the lens of faithful stewardship.',
+    target: '[data-tour="faith-mode"]',
+    position: 'bottom',
+    spotlight: true
+  },
+  {
     id: 'complete',
-    title: 'Start Your Financial Journey! ✨',
-    description: 'You\'ve seen the demo - now connect your accounts to get personalized insights and AI coaching for your money.',
+    title: 'Ready to Transform Your Finances? ✨',
+    description: 'Start with the Money Mind Interview to get your personalized plan. Your financial transformation journey begins now!',
     target: '',
     position: 'top'
   }

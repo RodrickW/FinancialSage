@@ -226,7 +226,7 @@ export default function Dashboard() {
 
                 {/* Money Mind Interview Button */}
                 <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-                  <Link href="/coach?onboarding=true">
+                  <Link href="/coach?onboarding=true" data-tour="money-mind-interview">
                     <Button variant="outline" className="flex items-center border-green-300 text-green-600 hover:bg-green-50 shadow-md btn-animate card-hover">
                       <span className="material-icons text-sm mr-1">psychology</span>
                       Money Mind Interview
@@ -264,28 +264,32 @@ export default function Dashboard() {
           
           {/* Faith Mode Toggle */}
           {!isDemoMode && user && (
-            <div className="mb-6">
+            <div className="mb-6" data-tour="faith-mode">
               <FaithModeToggle />
             </div>
           )}
           
           {/* Daily Check-In Card */}
           {!isDemoMode && user && (
-            <TrialGate feature="Daily Check-In" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
-              <DailyCheckinCard />
-            </TrialGate>
+            <div data-tour="daily-checkin">
+              <TrialGate feature="Daily Check-In" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
+                <DailyCheckinCard />
+              </TrialGate>
+            </div>
           )}
           
           {/* 30-Day Money Reset Banner */}
           {!isDemoMode && user && (
-            <TrialGate feature="30-Day Money Reset" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
-              <MoneyResetBanner />
-            </TrialGate>
+            <div data-tour="money-reset">
+              <TrialGate feature="30-Day Money Reset" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
+                <MoneyResetBanner />
+              </TrialGate>
+            </div>
           )}
           
           {/* Proactive AI Insights */}
           {user && (
-            <div className="mb-6">
+            <div className="mb-6" data-tour="ai-coach">
               <TrialGate feature="AI Financial Insights" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
                 <AIInsights user={user} />
               </TrialGate>
