@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { UserProfile } from '@/types';
-import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap } from 'lucide-react';
+import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap, BookOpen } from 'lucide-react';
 
 
 export default function FinancialCoach() {
@@ -378,10 +378,16 @@ Money Mind 💰`);
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
                 <span className="text-white text-lg font-bold">MM</span>
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-indigo-600 bg-clip-text text-transparent">Ask Money Mind</h3>
                 <p className="text-sm text-neutral-600">Get instant answers to your financial questions</p>
               </div>
+              {(user as any)?.faithModeEnabled && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full">
+                  <BookOpen className="w-4 h-4 text-amber-600" />
+                  <span className="text-sm font-medium text-amber-700">Faith Mode</span>
+                </div>
+              )}
             </div>
             <p className="text-neutral-600 mb-4">
               Have a specific financial question? I'm here to help with personalized advice based on your unique situation.
