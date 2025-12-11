@@ -10,6 +10,7 @@ export interface UserProfile {
   hasStartedTrial: boolean;
   trialEndsAt?: string;
   subscriptionStatus: string;
+  faithModeEnabled?: boolean;
 }
 
 export interface FinancialOverviewData {

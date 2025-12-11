@@ -794,6 +794,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to complete onboarding' });
     }
   });
+
+  // Toggle Faith Mode
+  app.post('/api/users/toggle-faith-mode', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { enabled } = req.body;
+      
+      await storage.updateUser(user.id, { 
+        faithModeEnabled: enabled === true
+      });
+      
+      res.json({ 
+        success: true,
+        faithModeEnabled: enabled === true,
+        message: enabled ? 'Faith Mode enabled - embracing biblical stewardship' : 'Faith Mode disabled'
+      });
+    } catch (error) {
+      console.error('Error toggling faith mode:', error);
+      res.status(500).json({ message: 'Failed to toggle faith mode' });
+    }
+  });
   
   // Password reset routes
   app.post('/api/auth/forgot-password', async (req, res) => {
@@ -4443,7 +4464,8 @@ IMPORTANT:
         recentTransactions: transactions,
         previousMissions: [],
         streakCount: 0,
-        firstName: user.firstName
+        firstName: user.firstName,
+        faithModeEnabled: user.faithModeEnabled || false
       });
       
       const mission = await storage.createChallengeMission({
@@ -4611,7 +4633,8 @@ IMPORTANT:
         recentTransactions: transactions,
         previousMissions,
         streakCount: streak?.currentStreak || 0,
-        firstName: user.firstName
+        firstName: user.firstName,
+        faithModeEnabled: user.faithModeEnabled || false
       });
       
       const mission = await storage.createChallengeMission({

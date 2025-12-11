@@ -636,6 +636,7 @@ export async function generateDailyMission(data: {
   previousMissions: any[];
   streakCount: number;
   firstName: string;
+  faithModeEnabled?: boolean;
 }): Promise<{
   missionType: string;
   title: string;
@@ -650,12 +651,24 @@ export async function generateDailyMission(data: {
                          data.day <= 14 ? 'detox' :
                          data.day <= 21 ? 'rewiring' : 'transformation';
     
+    const faithModeContext = data.faithModeEnabled ? `
+
+FAITH MODE ENABLED - Use Biblical Stewardship Language:
+- Frame money as a stewardship responsibility, not ownership
+- Include relevant scripture references when appropriate (e.g., Proverbs, Matthew, Luke)
+- Use language like "steward," "provision," "generous heart," "faithful with little"
+- Connect financial discipline to spiritual growth
+- Emphasize tithing, generosity, and contentment
+- Identity shifts should reflect biblical principles (e.g., "I am a faithful steward of God's resources")
+- Reference principles like the Parable of Talents, storing treasures in heaven, being debt-free
+` : '';
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: `You are Money Mind, creating a daily mission for Day ${data.day} of a 30-Day Money Reset challenge.
+          content: `You are Money Mind, creating a daily mission for Day ${data.day} of a 30-Day Money Reset challenge.${faithModeContext}
 
 PHASES OF THE 30-DAY RESET:
 - Days 1-7 (Awareness): Track spending, identify triggers, build awareness
@@ -732,6 +745,7 @@ export async function generateWeeklyReflection(data: {
   totalMissions: number;
   moneySaved: number;
   firstName: string;
+  faithModeEnabled?: boolean;
 }): Promise<{
   promptQuestions: string[];
   weeklyStats: any;
@@ -744,7 +758,14 @@ export async function generateWeeklyReflection(data: {
       messages: [
         {
           role: "system",
-          content: `You are Money Mind, creating a Week ${data.weekNumber} reflection for the 30-Day Money Reset.
+          content: `You are Money Mind, creating a Week ${data.weekNumber} reflection for the 30-Day Money Reset.${data.faithModeEnabled ? `
+
+FAITH MODE ENABLED - Use Biblical Stewardship Language:
+- Frame reflections around spiritual stewardship
+- Include scripture references where appropriate
+- Use terms like "provision," "faithful steward," "generous heart"
+- Connect financial discipline to spiritual growth
+- Include gratitude and contentment themes` : ''}
 
 WEEKLY THEMES:
 - Week 1: "The Mirror" - Seeing yourself clearly

@@ -11,6 +11,7 @@ import TrialGate from '@/components/TrialGate';
 import { TrialStatus } from '@/components/TrialStatus';
 import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
 import MoneyResetBanner from '@/components/Dashboard/MoneyResetBanner';
+import FaithModeToggle from '@/components/FaithModeToggle';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -260,6 +261,13 @@ export default function Dashboard() {
           
           {/* Trial Status Component */}
           {!isDemoMode && <TrialStatus />}
+          
+          {/* Faith Mode Toggle */}
+          {!isDemoMode && user && (
+            <div className="mb-6">
+              <FaithModeToggle />
+            </div>
+          )}
           
           {/* Daily Check-In Card */}
           {!isDemoMode && user && (

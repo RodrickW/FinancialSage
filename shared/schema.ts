@@ -35,6 +35,9 @@ export const users = pgTable("users", {
   
   // Admin access
   isAdmin: boolean("is_admin").default(false),
+  
+  // Faith Mode - Biblical money mindset
+  faithModeEnabled: boolean("faith_mode_enabled").default(false),
 });
 
 // Connected account schema (bank accounts via Plaid)
