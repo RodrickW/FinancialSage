@@ -737,6 +737,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return next(err);
         }
         
+        // Extend session if "Keep me signed in" is checked (30 days instead of 1 week)
+        if (req.body.rememberMe && req.session.cookie) {
+          req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+        }
+        
         // Increment login count
         try {
           await storage.updateUser(user.id, { 

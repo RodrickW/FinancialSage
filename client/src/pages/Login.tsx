@@ -60,7 +60,8 @@ export default function Login() {
         },
         body: JSON.stringify({
           username: data.username,
-          password: data.password
+          password: data.password,
+          rememberMe: data.rememberMe
         }),
         credentials: 'include'
       });
@@ -185,7 +186,7 @@ export default function Login() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-sm font-normal">
-                        Remember my username
+                        Keep me signed in
                       </FormLabel>
                     </div>
                   </FormItem>
