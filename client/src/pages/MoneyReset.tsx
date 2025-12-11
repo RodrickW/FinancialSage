@@ -84,7 +84,10 @@ export default function MoneyReset() {
   });
 
   const enrollMutation = useMutation({
-    mutationFn: () => apiRequest('/api/money-reset/enroll', { method: 'POST' }),
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/money-reset/enroll');
+      return res.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/money-reset'] });
       toast({ title: 'Welcome to the 30-Day Money Reset!', description: 'Your transformation journey begins today.' });
@@ -104,8 +107,10 @@ export default function MoneyReset() {
   });
 
   const completeMissionMutation = useMutation({
-    mutationFn: (data: { missionId: number; reflection: string }) => 
-      apiRequest('/api/money-reset/complete-mission', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: async (data: { missionId: number; reflection: string }) => {
+      const res = await apiRequest('POST', '/api/money-reset/complete-mission', data);
+      return res.json();
+    },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/money-reset'] });
       setMissionReflection('');
@@ -117,7 +122,10 @@ export default function MoneyReset() {
   });
 
   const nextDayMutation = useMutation({
-    mutationFn: () => apiRequest('/api/money-reset/next-day', { method: 'POST' }),
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/money-reset/next-day');
+      return res.json();
+    },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/money-reset'] });
       if (data.completed) {
@@ -129,8 +137,10 @@ export default function MoneyReset() {
   });
 
   const submitReflectionMutation = useMutation({
-    mutationFn: (data: { reflectionId: number; responses: Record<number, string> }) =>
-      apiRequest('/api/money-reset/submit-reflection', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: async (data: { reflectionId: number; responses: Record<number, string> }) => {
+      const res = await apiRequest('POST', '/api/money-reset/submit-reflection', data);
+      return res.json();
+    },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/money-reset'] });
       setReflectionAnswers({});
