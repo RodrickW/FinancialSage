@@ -19,7 +19,7 @@ export interface FinancialOverviewData {
   previousMonthSpending?: number;
   weeklySpending?: number;
   dailySpending?: number;
-  
+  creditScore: number;
   savingsProgress: {
     current: number;
     target: number;
