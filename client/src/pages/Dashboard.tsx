@@ -48,13 +48,20 @@ export default function Dashboard() {
     queryKey: ['/api/users/profile']
   });
 
-  // Check if user should see onboarding tour (show for first 2 views after reset)
+  // Check if user should see onboarding tour (show once per session for first 2 logins)
   useEffect(() => {
     if (userData && !userLoading) {
+      // Check if tour was already shown this session
+      const tourShownThisSession = sessionStorage.getItem('tourShownThisSession');
+      if (tourShownThisSession) {
+        return; // Already shown this session, don't show again
+      }
+      
       // Show tour if user has viewed it less than 2 times
       const tourViews = userData.tourViewCount || 0;
       const shouldShowTour = tourViews < 2;
       if (shouldShowTour) {
+        sessionStorage.setItem('tourShownThisSession', 'true');
         setTimeout(() => setShowOnboarding(true), 1000);
       }
     }
