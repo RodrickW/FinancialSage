@@ -1698,15 +1698,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // New proactive AI insights endpoint using real user data
+  // New proactive AI insights endpoint using real user data with behavioral analytics
   app.get('/api/ai/proactive-insights', requireAccess, async (req, res) => {
     try {
       const user = req.user as User;
       const { generateProactiveInsights } = await import('./openai');
       
-      // Get comprehensive user financial data
+      // Get comprehensive user financial data (more transactions for pattern analysis)
       const accounts = await storage.getAccounts(user.id);
-      const transactions = await storage.getTransactions(user.id, 100); // Last 100 transactions
+      const transactions = await storage.getTransactions(user.id, 200); // More for pattern detection
       const budgets = await storage.getBudgets(user.id);
       const savingsGoals = await storage.getSavingsGoals(user.id);
       const creditScore = await storage.getCreditScore(user.id);
@@ -1729,6 +1729,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
           categorySpending[category] += Math.abs(t.amount);
         });
 
+      // ========== BEHAVIORAL ANALYTICS ==========
+      const now = new Date();
+      
+      // 1. SPENDING PACE ANALYSIS - Current week vs average weekly spending
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      const currentWeekSpending = transactions
+        .filter(t => t.amount < 0 && new Date(t.date) >= startOfWeek)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      // Days elapsed this week (Sunday=1, Monday=2, etc.) for accurate projection
+      const daysElapsed = now.getDay() === 0 ? 1 : now.getDay() + 1;
+      const projectedWeeklySpending = daysElapsed > 0 ? (currentWeekSpending / daysElapsed) * 7 : currentWeekSpending;
+      
+      // Calculate average weekly spending from past 4 weeks
+      const fourWeeksAgo = new Date(now);
+      fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+      const pastMonthSpending = transactions
+        .filter(t => t.amount < 0 && new Date(t.date) >= fourWeeksAgo && new Date(t.date) < startOfWeek)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      const avgWeeklySpending = pastMonthSpending / 4;
+      
+      const spendingPaceAlert = avgWeeklySpending > 0 ? {
+        currentWeekSpending: Math.round(currentWeekSpending * 100) / 100,
+        projectedWeeklySpending: Math.round(projectedWeeklySpending * 100) / 100,
+        avgWeeklySpending: Math.round(avgWeeklySpending * 100) / 100,
+        pacePercentage: Math.round((projectedWeeklySpending / avgWeeklySpending) * 100),
+        isOverPace: projectedWeeklySpending > avgWeeklySpending * 1.2, // 20% over average
+        projectedOverspend: Math.round((projectedWeeklySpending - avgWeeklySpending) * 100) / 100
+      } : null;
+      
+      // 2. LATE-NIGHT SPENDING PATTERN (after 8 PM)
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const lateNightTransactions = transactions.filter(t => {
+        if (t.amount >= 0) return false;
+        const txDate = new Date(t.date);
+        if (txDate < sevenDaysAgo) return false;
+        const hours = txDate.getHours();
+        return hours >= 20 || hours < 5; // 8 PM to 5 AM
+      });
+      
+      // Group by date to count consecutive nights
+      const lateNightDates = new Set<string>();
+      lateNightTransactions.forEach(t => {
+        const d = new Date(t.date);
+        lateNightDates.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+      });
+      
+      const lateNightTotal = lateNightTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      const lateNightPattern = lateNightTransactions.length > 0 ? {
+        transactionCount: lateNightTransactions.length,
+        totalSpent: Math.round(lateNightTotal * 100) / 100,
+        nightsWithSpending: lateNightDates.size,
+        isPattern: lateNightDates.size >= 3, // 3+ nights in a week is a pattern
+        topMerchants: [...new Set(lateNightTransactions.map(t => t.merchantName))].slice(0, 3)
+      } : null;
+      
+      // 3. SUBSCRIPTION PRICE CHANGES - Find recurring merchants with different amounts
+      const merchantTransactions: Record<string, { amounts: number[], dates: Date[] }> = {};
+      transactions
+        .filter(t => t.amount < 0)
+        .forEach(t => {
+          const merchant = t.merchantName.toLowerCase().trim();
+          if (!merchantTransactions[merchant]) {
+            merchantTransactions[merchant] = { amounts: [], dates: [] };
+          }
+          merchantTransactions[merchant].amounts.push(Math.abs(t.amount));
+          merchantTransactions[merchant].dates.push(new Date(t.date));
+        });
+      
+      const subscriptionChanges: Array<{
+        merchant: string;
+        oldAmount: number;
+        newAmount: number;
+        increase: number;
+        yearlyImpact: number;
+      }> = [];
+      
+      Object.entries(merchantTransactions).forEach(([merchant, data]) => {
+        // Look for recurring charges (2+ transactions) with price changes
+        if (data.amounts.length >= 2) {
+          const uniqueAmounts = [...new Set(data.amounts.map(a => Math.round(a * 100)))];
+          if (uniqueAmounts.length >= 2) {
+            // Sort by date to find old vs new amount
+            const sortedAmounts = data.amounts
+              .map((amt, i) => ({ amount: amt, date: data.dates[i] }))
+              .sort((a, b) => a.date.getTime() - b.date.getTime());
+            
+            const oldAmount = sortedAmounts[0].amount;
+            const newAmount = sortedAmounts[sortedAmounts.length - 1].amount;
+            
+            if (newAmount > oldAmount && (newAmount - oldAmount) >= 1) { // At least $1 increase
+              subscriptionChanges.push({
+                merchant: merchant.charAt(0).toUpperCase() + merchant.slice(1),
+                oldAmount: Math.round(oldAmount * 100) / 100,
+                newAmount: Math.round(newAmount * 100) / 100,
+                increase: Math.round((newAmount - oldAmount) * 100) / 100,
+                yearlyImpact: Math.round((newAmount - oldAmount) * 12 * 100) / 100
+              });
+            }
+          }
+        }
+      });
+
       // Calculate recent spending trends (last 30 days vs previous 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -1743,7 +1852,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => t.amount < 0 && new Date(t.date) >= sixtyDaysAgo && new Date(t.date) < thirtyDaysAgo)
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-      // Prepare comprehensive data for AI analysis
+      // Prepare comprehensive data for AI analysis with behavioral analytics
       const userData = {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -1775,10 +1884,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         creditScore: creditScore ? creditScore.score : null,
         hasAccounts: accounts.length > 0,
         hasTransactions: transactions.length > 0,
-        // Add context for better insights
         accountCount: accounts.length,
         budgetCount: budgets.length,
-        goalsCount: savingsGoals.length
+        goalsCount: savingsGoals.length,
+        // NEW: Behavioral analytics for predictive alerts
+        behavioralAlerts: {
+          spendingPace: spendingPaceAlert,
+          lateNightPattern: lateNightPattern,
+          subscriptionChanges: subscriptionChanges.slice(0, 3) // Top 3 changes
+        }
       };
       
       const insights = await generateProactiveInsights(userData);
