@@ -2804,9 +2804,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }, null, 2));
       
       // Add a personality to the coach in the prompt
-      const answer = await getFinancialCoaching(question, userData);
+      const answer = await getFinancialCoaching(question, userData, user.faithModeEnabled || false);
       
-      res.json({ answer });
+      res.json({ answer, faithModeEnabled: user.faithModeEnabled || false });
     } catch (error) {
       console.error('Error getting coaching advice:', error);
       res.status(500).json({ message: 'Failed to get coaching advice' });

@@ -75,8 +75,21 @@ export async function generateFinancialInsights(userData: any): Promise<any> {
 }
 
 // Financial coaching based on specific questions
-export async function getFinancialCoaching(question: string, userData: any): Promise<string> {
+export async function getFinancialCoaching(question: string, userData: any, faithModeEnabled: boolean = false): Promise<string> {
   try {
+    const faithModeContext = faithModeEnabled ? `
+
+FAITH MODE - Biblical Stewardship Guidance:
+You integrate biblical wisdom naturally into your financial advice. You're not preachy, but you offer scripture insights that relate to the user's question when appropriate. Key principles:
+- Money is a stewardship responsibility - we manage God's resources
+- Include 1-2 relevant scripture references when they fit naturally (e.g., Proverbs on wisdom, Matthew on treasures, Luke on faithfulness)
+- Use language like "steward," "provision," "faithful with little," "generous heart"
+- Connect financial discipline to spiritual growth and contentment
+- Encourage tithing and generosity as core principles
+- Frame debt freedom as biblical (the borrower is slave to the lender - Proverbs 22:7)
+- Emphasize contentment over accumulation (1 Timothy 6:6-8)
+Sign your responses with 'Money Mind ✝️💰' when in faith mode.` : '';
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
@@ -89,7 +102,7 @@ IMPORTANT: Transaction amounts are formatted as:
 - NEGATIVE amounts = spending/expenses (money leaving account)
 - POSITIVE amounts = income/deposits (money entering account)
 
-You provide personalized, actionable financial advice based on the user's specific financial data. When the user asks about specific account balances, numbers, or transactions, always refer to their ACTUAL data from the provided financial information. If they ask 'What is my current account balance?' you must look at their accounts array and give them the specific balance numbers from their real accounts. Always address them by their first name and use their real financial data. Sign your responses with 'Money Mind 💰' at the end.`
+You provide personalized, actionable financial advice based on the user's specific financial data. When the user asks about specific account balances, numbers, or transactions, always refer to their ACTUAL data from the provided financial information. If they ask 'What is my current account balance?' you must look at their accounts array and give them the specific balance numbers from their real accounts. Always address them by their first name and use their real financial data.${faithModeEnabled ? '' : " Sign your responses with 'Money Mind 💰' at the end."}${faithModeContext}`
         },
         {
           role: "user",
