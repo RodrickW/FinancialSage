@@ -196,6 +196,91 @@ export const dailyCheckins = pgTable("daily_checkins", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// 30-Day Money Reset Challenge Enrollment
+export const challengeEnrollments = pgTable("challenge_enrollments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("active"), // active, completed, paused, abandoned
+  currentDay: integer("current_day").notNull().default(1), // 1-30
+  startDate: timestamp("start_date").notNull(),
+  completedAt: timestamp("completed_at"),
+  playbookSnapshot: jsonb("playbook_snapshot"), // Money Playbook profile at enrollment
+  totalMissionsCompleted: integer("total_missions_completed").default(0),
+  totalReflectionsCompleted: integer("total_reflections_completed").default(0),
+  graceDaysUsed: integer("grace_days_used").default(0), // Max 3 grace days allowed
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Daily Missions for the 30-Day Challenge
+export const challengeMissions = pgTable("challenge_missions", {
+  id: serial("id").primaryKey(),
+  enrollmentId: integer("enrollment_id").notNull().references(() => challengeEnrollments.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  day: integer("day").notNull(), // 1-30
+  missionType: text("mission_type").notNull(), // detox, habit, identity, reflection, action
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  actionPrompt: text("action_prompt").notNull(), // What user needs to do
+  detoxCategory: text("detox_category"), // If detox mission: dining, shopping, subscriptions, etc.
+  detoxTarget: doublePrecision("detox_target"), // Target spending limit for detox
+  identityShift: text("identity_shift"), // Identity reframe message
+  aiContextSnapshot: jsonb("ai_context_snapshot"), // Behavioral data used to generate
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  userReflection: text("user_reflection"), // Optional user notes on completion
+  missionDate: timestamp("mission_date").notNull(), // The date this mission is for
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Weekly Reflections (Days 7, 14, 21, 28)
+export const weeklyReflections = pgTable("weekly_reflections", {
+  id: serial("id").primaryKey(),
+  enrollmentId: integer("enrollment_id").notNull().references(() => challengeEnrollments.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  weekNumber: integer("week_number").notNull(), // 1-4
+  promptQuestions: jsonb("prompt_questions").notNull(), // AI-generated reflection questions
+  userResponses: jsonb("user_responses"), // User's answers
+  aiCoachingResponse: text("ai_coaching_response"), // AI feedback on their progress
+  weeklyStats: jsonb("weekly_stats"), // Spending delta, detox success rate, etc.
+  identityShiftMessage: text("identity_shift_message"), // Week's identity transformation message
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  reflectionDate: timestamp("reflection_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Challenge Streaks and Badges
+export const challengeStreaks = pgTable("challenge_streaks", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  enrollmentId: integer("enrollment_id").notNull().references(() => challengeEnrollments.id, { onDelete: "cascade" }),
+  currentStreak: integer("current_streak").default(0),
+  longestStreak: integer("longest_streak").default(0),
+  lastCompletedAt: timestamp("last_completed_at"),
+  badges: jsonb("badges").default([]), // Array of earned badges
+  totalDetoxDaysCompleted: integer("total_detox_days_completed").default(0),
+  totalHabitDaysCompleted: integer("total_habit_days_completed").default(0),
+  totalSpendingSaved: doublePrecision("total_spending_saved").default(0), // Money saved via detox
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Shareable Transformation Moments
+export const transformationMoments = pgTable("transformation_moments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  enrollmentId: integer("enrollment_id").notNull().references(() => challengeEnrollments.id, { onDelete: "cascade" }),
+  momentType: text("moment_type").notNull(), // milestone, weekly_win, streak_achievement, completion
+  title: text("title").notNull(),
+  quote: text("quote").notNull(), // Inspirational quote or user statement
+  statLabel: text("stat_label"), // e.g., "Money Saved"
+  statValue: text("stat_value"), // e.g., "$247"
+  dayNumber: integer("day_number").notNull(),
+  cardImageData: text("card_image_data"), // Base64 or URL for shareable card
+  isShared: boolean("is_shared").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true });
@@ -210,6 +295,13 @@ export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omi
 export const insertCreditAssessmentSchema = createInsertSchema(creditAssessments).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertInterviewSchema = createInsertSchema(interviews).omit({ id: true, createdAt: true });
 export const insertDailyCheckinSchema = createInsertSchema(dailyCheckins).omit({ id: true, createdAt: true });
+
+// 30-Day Money Reset Challenge schemas
+export const insertChallengeEnrollmentSchema = createInsertSchema(challengeEnrollments).omit({ id: true, createdAt: true });
+export const insertChallengeMissionSchema = createInsertSchema(challengeMissions).omit({ id: true, createdAt: true });
+export const insertWeeklyReflectionSchema = createInsertSchema(weeklyReflections).omit({ id: true, createdAt: true });
+export const insertChallengeStreakSchema = createInsertSchema(challengeStreaks).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertTransformationMomentSchema = createInsertSchema(transformationMoments).omit({ id: true, createdAt: true });
 
 // Type definitions
 export type User = typeof users.$inferSelect;
@@ -250,3 +342,19 @@ export type InsertInterview = z.infer<typeof insertInterviewSchema>;
 
 export type DailyCheckin = typeof dailyCheckins.$inferSelect;
 export type InsertDailyCheckin = z.infer<typeof insertDailyCheckinSchema>;
+
+// 30-Day Money Reset Challenge types
+export type ChallengeEnrollment = typeof challengeEnrollments.$inferSelect;
+export type InsertChallengeEnrollment = z.infer<typeof insertChallengeEnrollmentSchema>;
+
+export type ChallengeMission = typeof challengeMissions.$inferSelect;
+export type InsertChallengeMission = z.infer<typeof insertChallengeMissionSchema>;
+
+export type WeeklyReflection = typeof weeklyReflections.$inferSelect;
+export type InsertWeeklyReflection = z.infer<typeof insertWeeklyReflectionSchema>;
+
+export type ChallengeStreak = typeof challengeStreaks.$inferSelect;
+export type InsertChallengeStreak = z.infer<typeof insertChallengeStreakSchema>;
+
+export type TransformationMoment = typeof transformationMoments.$inferSelect;
+export type InsertTransformationMoment = z.infer<typeof insertTransformationMomentSchema>;
