@@ -119,10 +119,10 @@ export function TrialStatus() {
   // Active trial
   if (user.hasStartedTrial && user.trialEndsAt) {
     const isLowTime = timeRemaining.days <= 2;
-    const borderColor = isLowTime ? 'border-orange-200' : 'border-blue-200';
-    const bgColor = isLowTime ? 'bg-orange-50' : 'bg-blue-50';
-    const textColor = isLowTime ? 'text-orange-700' : 'text-blue-700';
-    const progressColor = isLowTime ? 'bg-orange-500' : 'bg-blue-500';
+    const borderColor = isLowTime ? 'border-orange-200' : 'border-emerald-200';
+    const bgColor = isLowTime ? 'bg-orange-50' : 'bg-emerald-50';
+    const textColor = isLowTime ? 'text-orange-700' : 'text-emerald-800';
+    const progressColor = isLowTime ? 'bg-orange-500' : 'bg-emerald-500';
 
     return (
       <Card className={`${borderColor} ${bgColor} mb-6`}>

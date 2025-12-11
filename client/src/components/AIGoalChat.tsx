@@ -220,13 +220,13 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm p-6">
+    <Card className="bg-gradient-to-r from-emerald-50 to-indigo-50 rounded-lg shadow-sm p-6">
       <div className="flex items-center mb-4">
         <div className="mr-4">
           <MoneyMindLogo className="w-12 h-12 rounded-full" />
         </div>
         <div>
-          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-indigo-600 bg-clip-text text-transparent">
             Money Mind Goal Assistant
           </h3>
           <p className="text-sm text-neutral-600">Create goals and track progress with AI</p>
@@ -234,7 +234,7 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
       </div>
       
       {/* Chat Messages */}
-      <div className="bg-white rounded-lg border border-blue-100 mb-4 max-h-64 overflow-y-auto">
+      <div className="bg-white rounded-lg border border-emerald-100 mb-4 max-h-64 overflow-y-auto">
         <div className="p-4 space-y-3">
           {messages.map((message) => (
             <div
@@ -259,7 +259,7 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
                   className={`inline-block p-3 rounded-lg max-w-xs ${
                     message.type === 'user'
                       ? 'bg-gray-500 text-white'
-                      : 'bg-blue-100 text-gray-800'
+                      : 'bg-emerald-100 text-gray-800'
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
@@ -277,7 +277,7 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
                 <MoneyMindLogo className="w-8 h-8 rounded-full" />
               </div>
               <div className="flex-1">
-                <div className="inline-block p-3 rounded-lg bg-blue-100 text-gray-800">
+                <div className="inline-block p-3 rounded-lg bg-emerald-100 text-gray-800">
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-4 h-4 animate-spin" />
                     <p className="text-sm">Thinking...</p>
@@ -302,7 +302,7 @@ export default function AIGoalChat({ user }: AIGoalChatProps) {
         <Button
           onClick={handleSendMessage}
           disabled={!inputMessage.trim() || isProcessing}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+          className="bg-gradient-to-r from-emerald-700 to-indigo-600 hover:from-emerald-800 hover:to-indigo-700 text-white"
         >
           <Send className="w-4 h-4" />
         </Button>

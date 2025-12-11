@@ -83,8 +83,8 @@ export default function Register() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <span className="material-icons text-blue-500 text-3xl mr-2">account_balance</span>
-            <h1 className="text-2xl font-bold text-blue-700">Mind My Money</h1>
+            <span className="material-icons text-emerald-500 text-3xl mr-2">account_balance</span>
+            <h1 className="text-2xl font-bold text-emerald-800">Mind My Money</h1>
           </div>
           <CardTitle className="text-xl text-center">Create an account</CardTitle>
           <CardDescription className="text-center">
@@ -177,7 +177,7 @@ export default function Register() {
               />
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white mt-6" 
+                className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white mt-6" 
                 disabled={isLoading}
               >
                 {isLoading ? 'Creating account...' : 'Create Account'}
@@ -188,7 +188,7 @@ export default function Register() {
         <CardFooter className="flex flex-col space-y-2">
           <div className="text-sm text-center text-neutral-500">
             Already have an account?{' '}
-            <Link href="/login" className="text-blue-500 hover:underline">
+            <Link href="/login" className="text-emerald-500 hover:underline">
               Log in
             </Link>
           </div>

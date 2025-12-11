@@ -115,7 +115,7 @@ export default function BudgetProgress() {
             <div className="text-sm text-gray-500">Total Spent</div>
           </div>
           <div className="text-center">
-            <div className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+            <div className={`text-2xl font-bold ${totalRemaining >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
               {formatCurrency(Math.abs(totalRemaining))}
             </div>
             <div className="text-sm text-gray-500">
@@ -150,7 +150,7 @@ export default function BudgetProgress() {
                     <span className={`text-sm font-medium ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
                       {percentage}%
                     </span>
-                    <div className={`text-sm ${category.remaining >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                    <div className={`text-sm ${category.remaining >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
                       {category.remaining >= 0 ? 'Left: ' : 'Over: '}
                       ${Math.abs(category.remaining).toFixed(2)}
                     </div>

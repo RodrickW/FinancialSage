@@ -23,10 +23,10 @@ export default function SavingsGoalCard({ goals = [] }: SavingsGoalCardProps) {
 
   const getProgressColorClass = (color: string) => {
     switch (color) {
-      case 'blue': return 'bg-blue-500';
+      case 'blue': return 'bg-emerald-500';
       case 'green': return 'bg-green-500';
       case 'purple': return 'bg-purple-500';
-      default: return 'bg-blue-500';
+      default: return 'bg-emerald-500';
     }
   };
 
@@ -69,7 +69,7 @@ export default function SavingsGoalCard({ goals = [] }: SavingsGoalCardProps) {
       <CardFooter className="border-t pt-4">
         <div className="w-full">
           <Link href="/goals">
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
+            <Button className="w-full bg-gradient-to-r from-emerald-700 to-indigo-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                 <path d="M12.5 8.8c6.7-3.1 10.5 2.4 7.7 7.3-1.7 3-5 4.3-7.7 3m0-10.3c-6.7-3.1-10.5 2.4-7.7 7.3 1.7 3 5 4.3 7.7 3"/>
                 <path d="M12.5 2v20"/>

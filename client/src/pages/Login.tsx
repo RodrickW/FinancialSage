@@ -117,14 +117,14 @@ export default function Login() {
           <CardDescription className="text-center">
             Log in to access Money Mind, your AI financial coach
           </CardDescription>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mt-4">
             <div className="flex items-center mb-2">
-              <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mr-2">
+              <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center mr-2">
                 <span className="text-white text-xs font-bold">?</span>
               </div>
               <p className="text-sm text-blue-800 font-semibold">Try the Demo</p>
             </div>
-            <p className="text-xs text-blue-700 mb-2">
+            <p className="text-xs text-emerald-800 mb-2">
               Experience all features with our demo account:
             </p>
             <div className="bg-white/60 rounded px-3 py-2 text-xs text-blue-800 font-mono">
@@ -157,10 +157,10 @@ export default function Login() {
                     <div className="flex items-center justify-between">
                       <FormLabel>Password</FormLabel>
                       <div className="flex flex-col items-end text-xs space-y-1">
-                        <Link href="/forgot-password" className="text-blue-600 hover:underline">
+                        <Link href="/forgot-password" className="text-emerald-700 hover:underline">
                           Forgot password?
                         </Link>
-                        <Link href="/forgot-username" className="text-blue-600 hover:underline">
+                        <Link href="/forgot-username" className="text-emerald-700 hover:underline">
                           Forgot username?
                         </Link>
                       </div>
@@ -191,7 +191,7 @@ export default function Login() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <span className="material-icons animate-spin mr-2">refresh</span>
@@ -210,7 +210,7 @@ export default function Login() {
         <CardFooter className="flex flex-col space-y-2">
           <div className="text-sm text-neutral-500 text-center">
             Don't have an account?{' '}
-            <Link href="/register" className="text-blue-600 hover:underline">
+            <Link href="/register" className="text-emerald-700 hover:underline">
               Register here
             </Link>
           </div>

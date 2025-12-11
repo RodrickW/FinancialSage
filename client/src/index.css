@@ -13,27 +13,27 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    /* Primary colors - Facebook blue */
-    --primary: 221 89% 52%; /* Facebook blue #1877F2 */
+    /* Primary colors - Emerald green */
+    --primary: 160 84% 39%; /* Emerald #059669 */
     --primary-foreground: 210 40% 98%;
  
-    /* Secondary colors - lighter Facebook blue */
-    --secondary: 221 70% 65%;
+    /* Secondary colors - lighter emerald */
+    --secondary: 160 60% 50%;
     --secondary-foreground: 210 40% 98%;
  
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
  
-    /* Accent colors - very light Facebook blue */
-    --accent: 221 40% 92%;
-    --accent-foreground: 221 89% 45%;
+    /* Accent colors - very light emerald */
+    --accent: 160 40% 92%;
+    --accent-foreground: 160 84% 35%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
  
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221 89% 52%;
+    --ring: 160 84% 39%;
  
     --radius: 0.5rem;
   }
@@ -49,17 +49,17 @@
     --popover-foreground: 210 40% 98%;
  
     /* Dark mode primary colors */
-    --primary: 221 80% 60%;
+    --primary: 160 70% 50%;
     --primary-foreground: 210 40% 98%;
  
     /* Dark mode secondary colors */
-    --secondary: 221 60% 70%;
+    --secondary: 160 50% 60%;
     --secondary-foreground: 222.2 47.4% 11.2%;
  
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
  
-    --accent: 221 40% 25%;
+    --accent: 160 40% 25%;
     --accent-foreground: 210 40% 98%;
  
     --destructive: 0 62.8% 30.6%;
@@ -67,7 +67,7 @@
  
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 221 80% 60%;
+    --ring: 160 70% 50%;
   }
 }
  
@@ -385,25 +385,25 @@ html {
   }
 }
 
-/* Color utility classes for the Facebook blue scheme */
+/* Color utility classes for the Emerald green scheme */
 .bg-primary-gradient {
-  @apply bg-gradient-to-r from-blue-600 to-blue-500;
+  @apply bg-gradient-to-r from-emerald-700 to-emerald-600;
 }
 
 .bg-app-gradient {
-  @apply bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400;
+  @apply bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500;
 }
 
 .text-primary-gradient {
-  @apply bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent;
 }
 
 .border-primary-gradient {
-  @apply border-blue-500;
+  @apply border-emerald-600;
 }
 
 .hover-primary-gradient:hover {
-  @apply bg-gradient-to-r from-blue-700 to-blue-600;
+  @apply bg-gradient-to-r from-emerald-800 to-emerald-700;
 }
 
 /* Custom styles for Money Mind app */

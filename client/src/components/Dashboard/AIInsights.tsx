@@ -53,7 +53,7 @@ export default function AIInsights({ user }: AIInsightsProps) {
       case 'warning':
         return priority === 'high' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-orange-50 border-orange-200 text-orange-800';
       case 'opportunity':
-        return 'bg-blue-50 border-blue-200 text-blue-800';
+        return 'bg-emerald-50 border-emerald-200 text-blue-800';
       case 'achievement':
         return 'bg-green-50 border-green-200 text-green-800';
       case 'alert':

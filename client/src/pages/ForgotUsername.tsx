@@ -90,12 +90,12 @@ export default function ForgotUsername() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
               <div className="flex items-center mb-2">
-                <Mail className="w-5 h-5 text-blue-600 mr-2" />
+                <Mail className="w-5 h-5 text-emerald-700 mr-2" />
                 <p className="text-sm text-blue-800 font-semibold">What to do next:</p>
               </div>
-              <p className="text-xs text-blue-700">
+              <p className="text-xs text-emerald-800">
                 Check your email inbox for your username(s). Use any of them to log in to your account.
               </p>
             </div>

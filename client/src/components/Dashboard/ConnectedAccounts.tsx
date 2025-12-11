@@ -47,7 +47,7 @@ export default function ConnectedAccounts({ accounts }: ConnectedAccountsProps) 
                 {formatCurrency(account.balance)}
               </p>
               <button 
-                className="text-xs text-blue-600 hover:text-blue-800 border border-blue-200 px-2 py-1 rounded"
+                className="text-xs text-emerald-700 hover:text-blue-800 border border-emerald-200 px-2 py-1 rounded"
                 onClick={async () => {
                   try {
                     const response = await fetch(`/api/plaid/sync-transactions`, {

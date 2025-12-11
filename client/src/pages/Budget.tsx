@@ -384,7 +384,7 @@ export default function Budget() {
                       ${totalRemaining.toLocaleString()}
                     </p>
                   </div>
-                  <PiggyBank className="w-8 h-8 text-blue-600" />
+                  <PiggyBank className="w-8 h-8 text-emerald-700" />
                 </div>
               </CardContent>
             </Card>
@@ -400,7 +400,7 @@ export default function Budget() {
                   analyzeMutation.mutate();
                 }}
                 disabled={isAnalyzing || transactions.length === 0}
-                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                className="bg-emerald-700 text-white hover:bg-emerald-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 size="lg"
               >
                 {isAnalyzing ? (
@@ -502,13 +502,13 @@ export default function Budget() {
           </div>
 
           {/* Information Card */}
-          <Card className="mt-8 bg-blue-50 border-blue-200">
+          <Card className="mt-8 bg-emerald-50 border-emerald-200">
             <CardContent className="p-6">
               <div className="flex items-start space-x-3">
-                <Target className="w-6 h-6 text-blue-600 mt-1" />
+                <Target className="w-6 h-6 text-emerald-700 mt-1" />
                 <div>
                   <h3 className="font-semibold text-blue-800 mb-2">How This Works</h3>
-                  <ul className="space-y-1 text-sm text-blue-700">
+                  <ul className="space-y-1 text-sm text-emerald-800">
                     <li>• Set your planned amounts for each category</li>
                     <li>• Click "Analyze My Spending" to automatically populate actual spending</li>
                     <li>• AI categorizes your real transactions into budget categories</li>

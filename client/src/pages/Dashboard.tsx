@@ -239,14 +239,14 @@ export default function Dashboard() {
           
           {/* Demo Mode Banner */}
           {isDemoMode && (
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg mb-6 shadow-lg">
+            <div className="bg-gradient-to-r from-emerald-500 to-purple-600 text-white p-4 rounded-lg mb-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-lg">👋 You're viewing a demo</h3>
                   <p className="text-sm opacity-90">This shows sample data. Sign up to connect your real accounts.</p>
                 </div>
                 <Link href="/register">
-                  <Button variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+                  <Button variant="secondary" className="bg-white text-emerald-700 hover:bg-gray-100">
                     Sign Up Now
                   </Button>
                 </Link>

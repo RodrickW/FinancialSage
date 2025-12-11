@@ -608,7 +608,7 @@ export default function CoachInterview() {
             </div>
 
             {/* Helpful Tips */}
-            <Card className="mt-6 bg-blue-50 border-blue-200">
+            <Card className="mt-6 bg-emerald-50 border-emerald-200">
               <CardContent className="p-4">
                 <div className="flex items-start">
                   <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">

@@ -252,7 +252,7 @@ export default function IncomeSpendingReport() {
             </p>
           </div>
 
-          <div className={`${netIncome >= 0 ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200' : 'bg-gradient-to-br from-orange-500 to-amber-600 shadow-orange-200'} rounded-2xl p-4 text-white shadow-lg`}>
+          <div className={`${netIncome >= 0 ? 'bg-gradient-to-br from-emerald-500 to-indigo-600 shadow-emerald-200' : 'bg-gradient-to-br from-orange-500 to-amber-600 shadow-orange-200'} rounded-2xl p-4 text-white shadow-lg`}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/80 text-sm font-medium">Net</span>
               {netIncome >= 0 ? <TrendingUp className="w-5 h-5 text-white/60" /> : <TrendingDown className="w-5 h-5 text-white/60" />}
@@ -280,7 +280,7 @@ export default function IncomeSpendingReport() {
           <h4 className="font-semibold text-gray-800 mb-4">Spending by Category</h4>
           <div className="space-y-4">
             {reportData.categories.slice(0, 5).map((category: any, index: number) => {
-              const colors = ['from-blue-400 to-blue-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600', 'from-amber-400 to-amber-600', 'from-teal-400 to-teal-600'];
+              const colors = ['from-emerald-400 to-emerald-700', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600', 'from-amber-400 to-amber-600', 'from-teal-400 to-teal-600'];
               return (
                 <div key={index} className="relative">
                   <div className="flex items-center justify-between mb-1">

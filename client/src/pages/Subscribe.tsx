@@ -226,7 +226,7 @@ export default function Subscribe() {
                 <br />
                 Monthly: $9.99/month • Annual: $95.99/year (Save $23.89)
                 <br />
-                <a href="/cancel-trial" className="text-blue-600 hover:underline text-sm">
+                <a href="/cancel-trial" className="text-emerald-700 hover:underline text-sm">
                   Need to cancel? Click here
                 </a>
               </p>

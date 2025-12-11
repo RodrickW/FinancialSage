@@ -140,31 +140,31 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <ChessCrownLogo className="w-8 h-8" color="text-blue-600" />
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+              <ChessCrownLogo className="w-8 h-8" color="text-emerald-700" />
+              <span className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
                 Mind My Money
               </span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 transition-colors">How It Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-blue-600 transition-colors">Pricing</a>
+              <a href="#features" className="text-gray-600 hover:text-emerald-700 transition-colors">Features</a>
+              <a href="#how-it-works" className="text-gray-600 hover:text-emerald-700 transition-colors">How It Works</a>
+              <a href="#pricing" className="text-gray-600 hover:text-emerald-700 transition-colors">Pricing</a>
               <Button 
                 variant="outline" 
                 onClick={() => setLocation('/login')}
-                className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
               >
                 Sign In
               </Button>
               <Button 
                 onClick={handleNavigateToRegister}
-                className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white"
+                className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white"
               >
                 Get Started
               </Button>
@@ -181,11 +181,11 @@ export default function Landing() {
             <MoneyMindLogo className="w-32 h-32 md:w-40 md:h-40" />
           </div>
           
-          <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium">
+          <Badge className="mb-6 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-medium">
             ✨ Start your free 14-day trial today. No credit card required. ✨
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-transparent leading-tight">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-400 bg-clip-text text-transparent leading-tight">
             We Get it. Money Stress is Real.
           </h1>
           
@@ -197,7 +197,7 @@ export default function Landing() {
             <Button 
               size="lg" 
               onClick={handleNavigateToRegister}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white text-lg px-8 py-4 shadow-lg"
+              className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -206,7 +206,7 @@ export default function Landing() {
               size="lg" 
               variant="outline"
               onClick={() => setLocation('/login')}
-              className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 text-lg px-8 py-4"
+              className="w-full border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-lg px-8 py-4"
             >
               Login/See Demo
             </Button>
@@ -236,7 +236,7 @@ export default function Landing() {
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
               Master Your Money. Live With Purpose.
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -246,10 +246,10 @@ export default function Landing() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {painPointFeatures.map((feature, index) => (
-              <Card key={index} className="border-blue-100 hover:border-blue-200 transition-colors group hover:shadow-lg">
+              <Card key={index} className="border-emerald-100 hover:border-emerald-200 transition-colors group hover:shadow-lg">
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-200 group-hover:to-blue-200 transition-colors">
-                    <feature.icon className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-100 rounded-lg flex items-center justify-center mb-4 group-hover:from-emerald-200 group-hover:to-emerald-200 transition-colors">
+                    <feature.icon className="w-6 h-6 text-emerald-700" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3 text-gray-900">{feature.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{feature.description}</p>
@@ -261,10 +261,10 @@ export default function Landing() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-blue-100">
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 to-emerald-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
               How It Works
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -295,11 +295,11 @@ export default function Landing() {
             ].map((step, index) => (
               <div key={index} className="text-center">
                 <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <step.icon className="w-8 h-8 text-white" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-blue-200">
-                    <span className="text-sm font-bold text-blue-600">{step.step}</span>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-emerald-200">
+                    <span className="text-sm font-bold text-emerald-700">{step.step}</span>
                   </div>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
@@ -316,14 +316,14 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
               User Reviews
             </h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-blue-100 hover:shadow-lg transition-shadow">
+              <Card key={index} className="border-emerald-100 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
@@ -343,10 +343,10 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section - Dual Cards */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-blue-100">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 to-emerald-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
               Simple Pricing
             </h2>
             <p className="text-xl text-gray-600">Try free for 14 days, then choose monthly or annual</p>
@@ -356,12 +356,12 @@ export default function Landing() {
             {plans.map((plan, index) => (
               <Card key={index} className={`relative border-2 transition-all duration-300 hover:shadow-xl ${
                 plan.popular 
-                  ? 'border-blue-300 shadow-xl scale-105' 
-                  : 'border-blue-200 hover:border-blue-300'
+                  ? 'border-emerald-300 shadow-xl scale-105' 
+                  : 'border-emerald-200 hover:border-emerald-300'
               }`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-1">
+                    <Badge className="bg-gradient-to-r from-emerald-700 to-emerald-500 text-white px-4 py-1">
                       🏆 Most Popular
                     </Badge>
                   </div>
@@ -404,8 +404,8 @@ export default function Landing() {
                   <Button 
                     className={`w-full text-lg py-4 ${
                       plan.popular
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white'
-                        : 'border-2 border-blue-500 text-blue-600 hover:bg-blue-50'
+                        ? 'bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white'
+                        : 'border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50'
                     }`}
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={handleNavigateToRegister}
@@ -434,7 +434,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <ChessCrownLogo className="w-8 h-8" color="text-blue-400" />
+                <ChessCrownLogo className="w-8 h-8" color="text-emerald-400" />
                 <span className="text-xl font-bold text-white">Mind My Money</span>
               </div>
               <p className="text-gray-400">
@@ -445,27 +445,27 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2">
-                <li><a href="#features" className="hover:text-blue-400 transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-blue-400 transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Security</a></li>
+                <li><a href="#features" className="hover:text-emerald-400 transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-emerald-400 transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors">Security</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold text-white mb-4">Company</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors">Careers</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold text-white mb-4">Support</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Contact</a></li>
-                <li><a href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors">Contact</a></li>
+                <li><a href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
               </ul>
             </div>
           </div>

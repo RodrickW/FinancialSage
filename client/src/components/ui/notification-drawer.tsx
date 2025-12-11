@@ -132,7 +132,7 @@ function NotificationList({ notifications, markAsRead }: NotificationListProps) 
     switch (type) {
       case 'alert': return <span className="material-icons text-red-500">warning</span>;
       case 'success': return <span className="material-icons text-primary">check_circle</span>;
-      default: return <span className="material-icons text-blue-500">info</span>;
+      default: return <span className="material-icons text-emerald-500">info</span>;
     }
   };
 

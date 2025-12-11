@@ -64,11 +64,11 @@ const personalityColors: Record<string, string> = {
   'The Spender': 'from-pink-500 to-rose-600',
   'The Avoider': 'from-gray-500 to-slate-600',
   'The Overthinker': 'from-purple-500 to-violet-600',
-  'The Dreamer': 'from-sky-500 to-blue-600',
+  'The Dreamer': 'from-sky-500 to-emerald-700',
   'The Hustler': 'from-orange-500 to-amber-600',
   'The People-Pleaser': 'from-teal-500 to-cyan-600',
   'The Impulse Buyer': 'from-red-500 to-rose-600',
-  'The Planner': 'from-indigo-500 to-blue-600',
+  'The Planner': 'from-indigo-500 to-emerald-700',
   'The Survivor': 'from-yellow-500 to-amber-600'
 };
 
@@ -187,7 +187,7 @@ export default function MoneyPlaybook() {
             <ScoreBar 
               label="Financial Awareness" 
               score={playbook.scores?.financialAwarenessScore || 50} 
-              color="bg-gradient-to-r from-blue-400 to-indigo-500"
+              color="bg-gradient-to-r from-emerald-400 to-indigo-500"
             />
             <ScoreBar 
               label="Spending Trigger Intensity" 
@@ -294,7 +294,7 @@ export default function MoneyPlaybook() {
         </Card>
 
         {/* Purpose Statement */}
-        <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-0">
+        <Card className="bg-gradient-to-br from-emerald-500 to-indigo-600 text-white border-0">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2 text-white">
               <Target className="w-5 h-5" />

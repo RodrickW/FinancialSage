@@ -158,7 +158,7 @@ export default function GoalBuilder() {
     switch (category) {
       case 'emergency':
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-700">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
           </svg>
         );
@@ -191,7 +191,7 @@ export default function GoalBuilder() {
 
   const getColorClass = (color: string) => {
     switch (color) {
-      case 'blue': return 'bg-blue-50 border-blue-200';
+      case 'blue': return 'bg-emerald-50 border-emerald-200';
       case 'green': return 'bg-green-50 border-green-200';
       case 'purple': return 'bg-purple-50 border-purple-200';
       default: return 'bg-gray-50 border-gray-200';
@@ -215,11 +215,11 @@ export default function GoalBuilder() {
             {activeStep === 1 && (
               <div className="bg-white rounded-lg shadow p-4 md:p-6">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-indigo-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                     <span className="text-white text-lg font-bold">MM</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind</h3>
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-indigo-600 bg-clip-text text-transparent">Money Mind</h3>
                     <p className="text-sm text-neutral-600">Your personal financial advisor</p>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export default function GoalBuilder() {
                       <div 
                         className={`inline-block rounded-lg p-3 max-w-[80%] ${
                           message.role === 'user' 
-                            ? 'bg-blue-500 text-white' 
+                            ? 'bg-emerald-500 text-white' 
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
@@ -316,7 +316,7 @@ export default function GoalBuilder() {
                           <div className="w-full bg-gray-200 rounded-full h-2.5">
                             <div 
                               className={`h-2.5 rounded-full ${
-                                goal.color === 'blue' ? 'bg-blue-600' : 
+                                goal.color === 'blue' ? 'bg-emerald-700' : 
                                 goal.color === 'green' ? 'bg-green-600' : 
                                 'bg-purple-600'
                               }`}
@@ -389,9 +389,9 @@ export default function GoalBuilder() {
                 <Input type="date" defaultValue={selectedGoal.targetDate} />
               </div>
               
-              <div className="rounded-lg border p-4 bg-blue-50">
+              <div className="rounded-lg border p-4 bg-emerald-50">
                 <h4 className="font-medium mb-2 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-emerald-700">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 16v-4" />
                     <path d="M12 8h.01" />
@@ -441,7 +441,7 @@ export default function GoalBuilder() {
               Money Mind will track your progress and provide personalized suggestions to help you reach your goal on time.
             </p>
             
-            <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100 w-full">
+            <div className="mt-4 bg-gradient-to-r from-emerald-50 to-indigo-50 p-4 rounded-lg border border-emerald-100 w-full">
               <p className="text-sm italic">
                 "Setting clear financial goals is the first step toward financial freedom. I'll be here to help you every step of the way!"
               </p>

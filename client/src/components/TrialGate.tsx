@@ -30,7 +30,7 @@ export default function TrialGate({ feature, children, hasStartedTrial }: TrialG
         <p className="text-gray-600 mt-2">
           Unlock all premium features with our 14-day free trial
         </p>
-        <Badge className="mx-auto mt-2 bg-gradient-to-r from-green-500 to-blue-600 text-white">
+        <Badge className="mx-auto mt-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white">
           No Credit Card Required
         </Badge>
       </CardHeader>
@@ -42,21 +42,21 @@ export default function TrialGate({ feature, children, hasStartedTrial }: TrialG
             <span>AI Financial Coach</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
-            <TrendingUp className="w-4 h-4 text-blue-600" />
+            <TrendingUp className="w-4 h-4 text-emerald-700" />
             <span>Smart Analytics</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
-            <Star className="w-4 h-4 text-blue-600" />
+            <Star className="w-4 h-4 text-emerald-700" />
             <span>Goal Tracking</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
-            <Shield className="w-4 h-4 text-blue-600" />
+            <Shield className="w-4 h-4 text-emerald-700" />
             <span>Bank Integration</span>
           </div>
         </div>
 
         <Button 
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-3"
+          className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white font-medium py-3"
           onClick={() => setLocation('/subscribe')}
         >
           Start Free Trial

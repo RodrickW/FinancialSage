@@ -92,16 +92,16 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
       </Card>
       
       {/* Weekly Spending Card */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100 hover:shadow-xl transform transition-all duration-300 hover:-translate-y-2 hover:scale-105">
+      <Card className="bg-gradient-to-br from-emerald-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-emerald-100 hover:shadow-xl transform transition-all duration-300 hover:-translate-y-2 hover:scale-105">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-sm text-blue-700 font-semibold flex items-center">
+            <p className="text-sm text-emerald-800 font-semibold flex items-center">
               <span className="text-lg mr-2">📅</span>
               Weekly Spending
             </p>
             <h3 className="text-3xl font-bold text-blue-900 tabular-nums mt-1">{formatCurrency(data.weeklySpending || data.monthlySpending * 0.25)}</h3>
           </div>
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-2xl">📅</span>
           </div>
         </div>
@@ -109,19 +109,19 @@ export default function FinancialOverview({ data }: FinancialOverviewProps) {
         <div className="mb-3 flex justify-center">
           <div className="relative w-16 h-16">
             <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-              <path className="text-blue-200" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              <path className="text-blue-500" strokeWidth="3" strokeDasharray={`${Math.min(((data.weeklySpending || data.monthlySpending * 0.25) / (data.monthlySpending || 1000)) * 100, 100)}, 100`} strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path className="text-emerald-200" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path className="text-emerald-500" strokeWidth="3" strokeDasharray={`${Math.min(((data.weeklySpending || data.monthlySpending * 0.25) / (data.monthlySpending || 1000)) * 100, 100)}, 100`} strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-bold text-blue-700">{Math.round(((data.weeklySpending || data.monthlySpending * 0.25) / (data.monthlySpending || 1000)) * 100)}%</span>
+              <span className="text-xs font-bold text-emerald-800">{Math.round(((data.weeklySpending || data.monthlySpending * 0.25) / (data.monthlySpending || 1000)) * 100)}%</span>
             </div>
           </div>
         </div>
         <div className="flex items-center text-sm">
-          <span className="inline-block bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+          <span className="inline-block bg-gradient-to-r from-emerald-500 to-indigo-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm">
             {weekRange}
           </span>
-          <span className="text-blue-700 ml-2 font-medium">current week</span>
+          <span className="text-emerald-800 ml-2 font-medium">current week</span>
         </div>
       </Card>
       

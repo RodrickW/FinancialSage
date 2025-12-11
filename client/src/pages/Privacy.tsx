@@ -158,7 +158,7 @@ export default function Privacy() {
           <Card className="border-primary/20">
             <CardContent className="p-8">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-emerald-100 rounded-lg flex items-center justify-center mr-4">
                   <Lock className="w-6 h-6 text-cyan-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">Data Security & Protection</h2>

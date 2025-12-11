@@ -155,13 +155,13 @@ Money Mind 💰`);
 
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg">
+        <div className="bg-gradient-to-r from-emerald-50 to-indigo-50 p-6 rounded-lg">
           <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
               <span className="text-white text-lg font-bold">MM</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Money Mind's Budget Analysis</h3>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-indigo-600 bg-clip-text text-transparent">Money Mind's Budget Analysis</h3>
               <p className="text-sm text-neutral-600">Personalized budget recommendations</p>
             </div>
           </div>
@@ -236,7 +236,7 @@ Money Mind 💰`);
 
     return (
       <div className="space-y-6">
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
+        <Card className="bg-gradient-to-r from-emerald-50 to-indigo-50">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
               <div>
@@ -300,7 +300,7 @@ Money Mind 💰`);
                         ? 'bg-red-100 text-red-700' 
                         : rec.priority === 'medium'
                         ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-blue-100 text-blue-700'
+                        : 'bg-emerald-100 text-emerald-800'
                     }`}
                   >
                     {rec.priority === 'high' ? '!' : rec.priority === 'medium' ? '>' : 'i'}
@@ -314,7 +314,7 @@ Money Mind 💰`);
                             ? 'bg-red-100 text-red-700'
                             : rec.priority === 'medium'
                             ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-blue-100 text-blue-700'
+                            : 'bg-emerald-100 text-emerald-800'
                         }
                       >
                         {rec.priority} priority
@@ -335,14 +335,14 @@ Money Mind 💰`);
     return (
       <div className="space-y-6">
         {/* Interview Starter Card */}
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-50 border-blue-200">
+        <Card className="bg-gradient-to-r from-emerald-50 to-emerald-50 border-emerald-200">
           <CardContent className="p-6">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-500 rounded-full flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-full flex items-center justify-center mr-4">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">Get Your Personalized Financial Plan</h3>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">Get Your Personalized Financial Plan</h3>
                 <p className="text-sm text-gray-600">Let Money Mind understand your unique goals</p>
               </div>
             </div>
@@ -351,35 +351,35 @@ Money Mind 💰`);
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="flex items-center text-sm text-gray-600">
-                <Target className="w-4 h-4 mr-2 text-blue-500" />
+                <Target className="w-4 h-4 mr-2 text-emerald-500" />
                 Personalized goal setting
               </div>
               <div className="flex items-center text-sm text-gray-600">
-                <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
+                <TrendingUp className="w-4 h-4 mr-2 text-emerald-500" />
                 Custom budget recommendations
               </div>
               <div className="flex items-center text-sm text-gray-600">
-                <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
+                <MessageCircle className="w-4 h-4 mr-2 text-emerald-500" />
                 AI-powered insights
               </div>
             </div>
             <Button 
               onClick={() => setLocation('/coach/interview')}
-              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white"
+              className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white"
             >
               Start Financial Interview
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
+        <Card className="bg-gradient-to-r from-emerald-50 to-indigo-50">
           <CardContent className="p-6">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
                 <span className="text-white text-lg font-bold">MM</span>
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Ask Money Mind</h3>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-indigo-600 bg-clip-text text-transparent">Ask Money Mind</h3>
                 <p className="text-sm text-neutral-600">Get instant answers to your financial questions</p>
               </div>
             </div>
@@ -473,7 +473,7 @@ Money Mind 💰`);
               <Card className="p-6">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
                       <MessageCircle className="w-4 h-4 text-white" />
                     </div>
                     <span>Welcome to Your AI Financial Coach!</span>
@@ -485,9 +485,9 @@ Money Mind 💰`);
                     I'll ask you a few quick questions to understand your goals and provide better recommendations.
                   </p>
                   
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-50 p-4 rounded-lg border border-blue-100">
+                  <div className="bg-gradient-to-r from-emerald-50 to-emerald-50 p-4 rounded-lg border border-emerald-100">
                     <h3 className="font-semibold text-blue-800 mb-2">What I'll help you with:</h3>
-                    <ul className="text-sm text-blue-700 space-y-1">
+                    <ul className="text-sm text-emerald-800 space-y-1">
                       <li>• Create a personalized budget based on your spending patterns</li>
                       <li>• Set up savings goals that match your lifestyle</li>
                       <li>• Identify areas where you can optimize your spending</li>
@@ -501,7 +501,7 @@ Money Mind 💰`);
                       window.history.replaceState({}, '', '/coach');
                       setSelectedTab('ask');
                     }}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    className="w-full bg-emerald-500 hover:bg-emerald-700 text-white"
                   >
                     Start Financial Interview
                   </Button>

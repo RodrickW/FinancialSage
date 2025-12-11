@@ -70,13 +70,13 @@ export default function TrialNotificationBanner() {
     if (days <= 1) return 'bg-red-50 border-red-200';
     if (days <= 3) return 'bg-orange-50 border-orange-200';
     if (days <= 7) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-blue-50 border-blue-200';
+    return 'bg-emerald-50 border-emerald-200';
   };
 
   const getIcon = (days: number) => {
     if (days <= 1) return <AlertTriangle className="w-5 h-5 text-red-600" />;
     if (days <= 3) return <Clock className="w-5 h-5 text-orange-600" />;
-    return <Bell className="w-5 h-5 text-blue-600" />;
+    return <Bell className="w-5 h-5 text-emerald-700" />;
   };
 
   const getUrgencyText = (days: number) => {

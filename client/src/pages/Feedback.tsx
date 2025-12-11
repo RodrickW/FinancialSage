@@ -161,7 +161,7 @@ export default function Feedback() {
                           </SelectItem>
                           <SelectItem value="general">
                             <div className="flex items-center gap-2">
-                              <MessageSquare className="w-4 h-4 text-blue-500" />
+                              <MessageSquare className="w-4 h-4 text-emerald-500" />
                               General Feedback
                             </div>
                           </SelectItem>

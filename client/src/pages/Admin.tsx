@@ -39,7 +39,7 @@ export default function Admin() {
             <p className="text-gray-600 mb-4">
               You don't have permission to access the admin panel. Only administrators can view user feedback.
             </p>
-            <a href="/dashboard" className="text-blue-600 hover:underline">
+            <a href="/dashboard" className="text-emerald-700 hover:underline">
               Return to Dashboard
             </a>
           </CardContent>
@@ -68,7 +68,7 @@ export default function Admin() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'bug': return 'bg-red-100 text-red-800';
-      case 'feature': return 'bg-blue-100 text-blue-800';
+      case 'feature': return 'bg-emerald-100 text-blue-800';
       case 'general': return 'bg-gray-100 text-gray-800';
       case 'complaint': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -162,7 +162,7 @@ export default function Admin() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <MessageSquare className="h-8 w-8 text-blue-600" />
+                <MessageSquare className="h-8 w-8 text-emerald-700" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Feedback</p>
                   <p className="text-2xl font-bold text-gray-900">{feedback?.length || 0}</p>

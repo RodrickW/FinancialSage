@@ -2,7 +2,7 @@
 
 ## Design Approach: Mobile-First Financial System
 
-**Foundation**: Adapting established web identity (#1877F2 primary) to mobile while drawing inspiration from modern fintech leaders (Revolut's card interactions, Robinhood's data visualization, Cash App's simplicity).
+**Foundation**: Using emerald green (#059669) as the primary color to convey trust, growth, and money, while drawing inspiration from modern fintech leaders (Revolut's card interactions, Robinhood's data visualization, Cash App's simplicity).
 
 **Philosophy**: Trust through clarity, control through intuitive interactions, engagement through subtle motion.
 
@@ -42,7 +42,7 @@
 **Bottom Tab Bar**:
 - Height: 80px (including safe area)
 - Icons: 24px with 4px text labels below
-- Active state: #1877F2 fill with subtle scale (1.05x)
+- Active state: #059669 (emerald) fill with subtle scale (1.05x)
 - Inactive: Gray with 60% opacity
 - Tabs: Dashboard, Transactions, Budget, Analytics, Profile
 
@@ -55,7 +55,7 @@
 ### Cards & Containers
 
 **Account Balance Card** (Hero):
-- Gradient: #1877F2 to #0D5DBF (diagonal 45deg)
+- Gradient: #059669 to #047857 (emerald diagonal 45deg)
 - Height: 200px
 - Corner radius: 20px
 - White text with 40% opacity subtitle
@@ -81,14 +81,14 @@
 **Budget Progress Cards**:
 - Horizontal progress bars with rounded ends (8px height)
 - Category name + spent/limit ratio
-- Progress fill: #1877F2, background: #F0F0F0
+- Progress fill: #059669 (emerald), background: #F0F0F0
 - Percentage indicator on right
 
 ### Forms & Inputs
 
 **Text Fields**:
 - Height: 56px
-- Border: 1px solid #E5E5E5, focus: 2px #1877F2
+- Border: 1px solid #E5E5E5, focus: 2px #059669 (emerald)
 - Corner radius: 12px
 - Padding: 16px horizontal
 - Label: 12px above field (floating label pattern)
@@ -105,24 +105,24 @@
 **Category Selector**:
 - Horizontal scrollable chips
 - 40px height, 12px corner radius
-- Selected: #1877F2 background, white text
+- Selected: #059669 (emerald) background, white text
 - Unselected: Light gray background
 
 ### Buttons
 
 **Primary**:
 - Height: 56px
-- Background: #1877F2
+- Background: #059669 (emerald)
 - Corner radius: 28px (pill shape)
 - Text: 16px, Semibold, White
 - Full width with 16px side margins
-- Shadow: 0 4px 12px rgba(24, 119, 242, 0.3)
+- Shadow: 0 4px 12px rgba(5, 150, 105, 0.3)
 
 **Secondary**:
 - Height: 48px
-- Border: 2px solid #1877F2
+- Border: 2px solid #059669
 - Background: White
-- Text: #1877F2
+- Text: #059669 (emerald)
 - Corner radius: 24px
 
 **Icon Buttons**:

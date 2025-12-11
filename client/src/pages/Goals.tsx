@@ -565,7 +565,7 @@ export default function Goals() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-indigo-100">
       <TopNav title="Mind My Money" />
       
       <main className="flex-1 overflow-x-hidden pb-16">
@@ -645,12 +645,12 @@ export default function Goals() {
               </Card>
 
               {/* Year-to-Date Total */}
-              <Card className="gamified-card bg-blue-100 border-2 border-blue-300 shadow-2xl rounded-3xl overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 rounded-full -mr-16 -mt-16" />
+              <Card className="gamified-card bg-emerald-100 border-2 border-emerald-300 shadow-2xl rounded-3xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full -mr-16 -mt-16" />
                 <CardHeader className="pb-3 relative">
                   <CardTitle className="text-xl flex items-center text-blue-800">
-                    <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center mr-3">
-                      <Trophy className="h-6 w-6 text-blue-700" />
+                    <div className="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center mr-3">
+                      <Trophy className="h-6 w-6 text-emerald-800" />
                     </div>
                     {trackingData.yearlyStats?.year} Champion
                   </CardTitle>
@@ -683,17 +683,17 @@ export default function Goals() {
                 <p className="text-gray-600 mb-4">
                   You've made great progress on your savings journey!
                 </p>
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg mb-4">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg mb-4">
                   <p className="text-sm text-gray-700">
                     Monthly savings: <span className="font-bold text-green-600">${(trackingData.monthlyStats?.current || 0).toFixed(2)}</span>
                   </p>
                   <p className="text-sm text-gray-700">
-                    Yearly savings: <span className="font-bold text-blue-600">${(trackingData.yearlyStats?.current || 0).toFixed(2)}</span>
+                    Yearly savings: <span className="font-bold text-emerald-700">${(trackingData.yearlyStats?.current || 0).toFixed(2)}</span>
                   </p>
                 </div>
                 <Button 
                   onClick={() => setShowCelebration(false)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                  className="bg-gradient-to-r from-emerald-700 to-purple-600 text-white"
                 >
                   Keep Going! 💪
                 </Button>
@@ -746,12 +746,12 @@ export default function Goals() {
                     <div className="h-2 w-full bg-gray-200 rounded-full">
                       <div
                         className={`h-2 rounded-full ${
-                          goal.color === 'blue' ? 'bg-blue-500' :
+                          goal.color === 'blue' ? 'bg-emerald-500' :
                           goal.color === 'green' ? 'bg-green-500' :
                           goal.color === 'purple' ? 'bg-purple-500' :
                           goal.color === 'red' ? 'bg-red-500' :
                           goal.color === 'orange' ? 'bg-orange-500' :
-                          'bg-blue-500'
+                          'bg-emerald-500'
                         }`}
                         style={{ width: `${goal.progress}%` }}
                       />
@@ -909,7 +909,7 @@ export default function Goals() {
             // Empty state when no goals exist
             <div className="mb-6">
               <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-indigo-600 flex items-center justify-center">
                   <span className="text-white text-3xl">🎯</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No Savings Goals Yet</h3>
@@ -937,7 +937,7 @@ export default function Goals() {
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <span className="material-icons mr-2 text-blue-500">add</span>
+              <span className="material-icons mr-2 text-emerald-500">add</span>
               {goalType === 'debt' ? 'Add New Debt Payoff Goal' : 'Add New Savings Goal'}
             </DialogTitle>
             <DialogDescription>
@@ -957,7 +957,7 @@ export default function Goals() {
                   type="button"
                   variant={goalType === 'savings' ? 'default' : 'outline'}
                   onClick={() => setGoalType('savings')}
-                  className={goalType === 'savings' ? 'bg-blue-600' : ''}
+                  className={goalType === 'savings' ? 'bg-emerald-700' : ''}
                   data-testid="button-goal-type-savings"
                 >
                   <PiggyBank className="mr-2 h-4 w-4" />
@@ -1086,12 +1086,12 @@ export default function Goals() {
                     key={color}
                     type="button"
                     className={`w-8 h-8 rounded-full ${
-                      color === 'blue' ? 'bg-blue-500' :
+                      color === 'blue' ? 'bg-emerald-500' :
                       color === 'green' ? 'bg-green-500' :
                       color === 'purple' ? 'bg-purple-500' :
                       color === 'red' ? 'bg-red-500' :
                       'bg-orange-500'
-                    } ${selectedColor === color ? 'ring-2 ring-offset-2 ring-blue-600' : ''}`}
+                    } ${selectedColor === color ? 'ring-2 ring-offset-2 ring-emerald-700' : ''}`}
                     onClick={() => setSelectedColor(color)}
                     data-testid={`button-color-${color}`}
                   />
@@ -1106,7 +1106,7 @@ export default function Goals() {
             </Button>
             <Button 
               onClick={addNewGoal} 
-              className={goalType === 'debt' ? 'bg-gradient-to-r from-red-600 to-rose-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}
+              className={goalType === 'debt' ? 'bg-gradient-to-r from-red-600 to-rose-600' : 'bg-gradient-to-r from-emerald-700 to-indigo-600'}
               data-testid="button-submit-goal"
             >
               Create Goal
@@ -1120,7 +1120,7 @@ export default function Goals() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <span className="material-icons mr-2 text-blue-500">edit</span>
+              <span className="material-icons mr-2 text-emerald-500">edit</span>
               Edit Savings Goal
             </DialogTitle>
             <DialogDescription>
@@ -1192,12 +1192,12 @@ export default function Goals() {
                     key={color}
                     type="button"
                     className={`w-8 h-8 rounded-full ${
-                      color === 'blue' ? 'bg-blue-500' :
+                      color === 'blue' ? 'bg-emerald-500' :
                       color === 'green' ? 'bg-green-500' :
                       color === 'purple' ? 'bg-purple-500' :
                       color === 'red' ? 'bg-red-500' :
                       'bg-orange-500'
-                    } ${selectedColor === color ? 'ring-2 ring-offset-2 ring-blue-600' : ''}`}
+                    } ${selectedColor === color ? 'ring-2 ring-offset-2 ring-emerald-700' : ''}`}
                     onClick={() => setSelectedColor(color)}
                   />
                 ))}
@@ -1209,7 +1209,7 @@ export default function Goals() {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={updateGoal} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+            <Button onClick={updateGoal} className="bg-gradient-to-r from-emerald-700 to-indigo-600">
               Save Changes
             </Button>
           </DialogFooter>
