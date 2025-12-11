@@ -12,8 +12,25 @@ export default function FloatingCoach() {
   const [conversation, setConversation] = useState<{role: 'user' | 'assistant'; content: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showIntroMessage, setShowIntroMessage] = useState(true);
+  const [isTourActive, setIsTourActive] = useState(false);
   const [location] = useLocation();
   const { toast } = useToast();
+
+  // Check if tour is active and hide coach during tour
+  useEffect(() => {
+    const checkTourActive = () => {
+      setIsTourActive(document.body.classList.contains('tour-active'));
+    };
+    
+    // Check initially
+    checkTourActive();
+    
+    // Watch for class changes on body
+    const observer = new MutationObserver(checkTourActive);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
   
   // Hide intro message after 8 seconds
   useEffect(() => {
@@ -83,7 +100,8 @@ export default function FloatingCoach() {
   };
 
   // Hide the floating coach on interview page to prevent button conflicts
-  if (location === '/coach/interview') {
+  // Also hide during onboarding tour to prevent overlap with tour buttons
+  if (location === '/coach/interview' || isTourActive) {
     return null;
   }
 
