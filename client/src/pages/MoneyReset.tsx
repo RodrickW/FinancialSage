@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Flame, Target, Trophy, Sparkles, CheckCircle2, Lock, 
-  ArrowRight, Share2, Calendar, Zap, Brain, Heart, 
+  ArrowRight, ArrowLeft, Share2, Calendar, Zap, Brain, Heart, 
   Coffee, ShoppingBag, Utensils, Play, RefreshCw,
   ChevronRight, Star, Award, Crown
 } from 'lucide-react';
@@ -303,6 +303,17 @@ export default function MoneyReset() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pb-24">
       <div className="container mx-auto px-4 py-6 max-w-2xl">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard')}
+          className="mb-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          data-testid="button-back-dashboard"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
+
         {/* Header with Progress Ring */}
         <div className="text-center mb-6">
           <div className="relative w-32 h-32 mx-auto mb-4">
