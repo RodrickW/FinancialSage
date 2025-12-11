@@ -10,7 +10,7 @@ import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
 import { TrialStatus } from '@/components/TrialStatus';
 import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
-
+import MoneyResetBanner from '@/components/Dashboard/MoneyResetBanner';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -265,6 +265,13 @@ export default function Dashboard() {
           {!isDemoMode && user && (
             <TrialGate feature="Daily Check-In" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
               <DailyCheckinCard />
+            </TrialGate>
+          )}
+          
+          {/* 30-Day Money Reset Banner */}
+          {!isDemoMode && user && (
+            <TrialGate feature="30-Day Money Reset" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
+              <MoneyResetBanner />
             </TrialGate>
           )}
           
