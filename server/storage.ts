@@ -1,5 +1,5 @@
-import { users, accounts, transactions, budgets, insights, creditScores, savingsGoals, debtGoals, feedback, savingsTracker, creditAssessments, interviews, dailyCheckins, challengeEnrollments, challengeMissions, weeklyReflections, challengeStreaks, transformationMoments } from "@shared/schema";
-import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, CreditScore, InsertCreditScore, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, CreditAssessment, InsertCreditAssessment, Interview, InsertInterview, DailyCheckin, InsertDailyCheckin, ChallengeEnrollment, InsertChallengeEnrollment, ChallengeMission, InsertChallengeMission, WeeklyReflection, InsertWeeklyReflection, ChallengeStreak, InsertChallengeStreak, TransformationMoment, InsertTransformationMoment } from "@shared/schema";
+import { users, accounts, transactions, budgets, insights, savingsGoals, debtGoals, feedback, savingsTracker, interviews, dailyCheckins, challengeEnrollments, challengeMissions, weeklyReflections, challengeStreaks, transformationMoments } from "@shared/schema";
+import type { User, InsertUser, Account, InsertAccount, Transaction, InsertTransaction, Budget, InsertBudget, Insight, InsertInsight, SavingsGoal, InsertSavingsGoal, DebtGoal, InsertDebtGoal, Feedback, InsertFeedback, SavingsTracker, InsertSavingsTracker, Interview, InsertInterview, DailyCheckin, InsertDailyCheckin, ChallengeEnrollment, InsertChallengeEnrollment, ChallengeMission, InsertChallengeMission, WeeklyReflection, InsertWeeklyReflection, ChallengeStreak, InsertChallengeStreak, TransformationMoment, InsertTransformationMoment } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -37,12 +37,6 @@ export interface IStorage {
   createInsight(insight: InsertInsight): Promise<Insight>;
   markInsightAsRead(id: number): Promise<boolean>;
   
-  // Credit score operations
-  getCreditScore(userId: number): Promise<CreditScore | undefined>;
-  createCreditScore(creditScore: InsertCreditScore): Promise<CreditScore>;
-  updateCreditScore(id: number, data: Partial<InsertCreditScore>): Promise<CreditScore>;
-  getCreditHistory(userId: number): Promise<any[]>;
-  
   // Savings goal operations
   getSavingsGoals(userId: number): Promise<SavingsGoal[]>;
   createSavingsGoal(savingsGoal: InsertSavingsGoal): Promise<SavingsGoal>;
@@ -65,11 +59,6 @@ export interface IStorage {
   getCurrentMonthSavings(userId: number): Promise<SavingsTracker | undefined>;
   getCurrentYearSavings(userId: number): Promise<number>;
   updateMonthlySavings(userId: number, month: number, year: number, amount: number): Promise<SavingsTracker>;
-
-  // Credit assessment operations
-  getCreditAssessment(userId: number): Promise<CreditAssessment | undefined>;
-  createCreditAssessment(assessment: InsertCreditAssessment): Promise<CreditAssessment>;
-  updateCreditAssessment(id: number, data: Partial<InsertCreditAssessment>): Promise<CreditAssessment | undefined>;
 
   // Interview operations
   getLatestInterview(userId: number): Promise<Interview | undefined>;
@@ -292,55 +281,6 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
   
-  // Credit score operations
-  async getCreditScore(userId: number): Promise<CreditScore | undefined> {
-    const [creditScore] = await db
-      .select()
-      .from(creditScores)
-      .where(eq(creditScores.userId, userId))
-      .orderBy(creditScores.reportDate)
-      .limit(1);
-    return creditScore;
-  }
-  
-  async createCreditScore(creditScore: InsertCreditScore): Promise<CreditScore> {
-    const [newCreditScore] = await db
-      .insert(creditScores)
-      .values(creditScore)
-      .returning();
-    return newCreditScore;
-  }
-  
-  async updateCreditScore(id: number, data: Partial<InsertCreditScore>): Promise<CreditScore> {
-    const [updatedCreditScore] = await db
-      .update(creditScores)
-      .set({
-        ...data,
-        reportDate: new Date() // Always update report date when updating score
-      })
-      .where(eq(creditScores.id, id))
-      .returning();
-    
-    if (!updatedCreditScore) {
-      throw new Error(`Credit score with id ${id} not found`);
-    }
-    
-    return updatedCreditScore;
-  }
-  
-  async getCreditHistory(userId: number): Promise<any[]> {
-    // Query credit score history for the user
-    // For now we'll get the most recent entries and sort by date
-    const history = await db
-      .select()
-      .from(creditScores)
-      .where(eq(creditScores.userId, userId))
-      .orderBy(desc(creditScores.reportDate))
-      .limit(12); // Last 12 reports
-      
-    return history;
-  }
-  
   // Savings goal operations
   async getSavingsGoals(userId: number): Promise<SavingsGoal[]> {
     return await db.select().from(savingsGoals).where(eq(savingsGoals.userId, userId));
@@ -500,28 +440,6 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
-  }
-
-  // Credit assessment operations
-  async getCreditAssessment(userId: number): Promise<CreditAssessment | undefined> {
-    const [assessment] = await db.select().from(creditAssessments)
-      .where(eq(creditAssessments.userId, userId))
-      .orderBy(desc(creditAssessments.createdAt));
-    return assessment;
-  }
-
-  async createCreditAssessment(assessment: InsertCreditAssessment): Promise<CreditAssessment> {
-    const [created] = await db.insert(creditAssessments).values(assessment).returning();
-    return created;
-  }
-
-  async updateCreditAssessment(id: number, data: Partial<InsertCreditAssessment>): Promise<CreditAssessment | undefined> {
-    const [updated] = await db
-      .update(creditAssessments)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(creditAssessments.id, id))
-      .returning();
-    return updated;
   }
 
   // Interview operations

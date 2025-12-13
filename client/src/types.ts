@@ -20,7 +20,6 @@ export interface FinancialOverviewData {
   previousMonthSpending?: number;
   weeklySpending?: number;
   dailySpending?: number;
-  creditScore: number;
   savingsProgress: {
     current: number;
     target: number;
@@ -75,17 +74,6 @@ export interface ConnectedAccount {
   balance: number;
   institutionName: string;
   institutionLogo?: string;
-}
-
-export interface CreditScoreData {
-  score: number;
-  rating: string;
-  factors: {
-    name: string;
-    rating: string;
-    percentage: number;
-  }[];
-  lastUpdated: string;
 }
 
 export interface BudgetItem {

@@ -95,16 +95,6 @@ export const insights = pgTable("insights", {
   isRead: boolean("is_read").notNull().default(false),
 });
 
-// Credit score schema
-export const creditScores = pgTable("credit_scores", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(),
-  rating: text("rating").notNull(), // poor, fair, good, excellent
-  reportDate: timestamp("report_date").defaultNow().notNull(),
-  factors: jsonb("factors"), // Payment history, utilization, etc.
-});
-
 // Savings goal schema
 export const savingsGoals = pgTable("savings_goals", {
   id: serial("id").primaryKey(),
@@ -141,28 +131,6 @@ export const feedback = pgTable("feedback", {
   status: text("status").notNull().default("open"), // 'open', 'reviewed', 'implemented'
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Credit assessment schema for credit score simulation and improvement
-export const creditAssessments = pgTable("credit_assessments", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  currentScore: integer("current_score").notNull(),
-  goalScore: integer("goal_score").notNull(),
-  paymentHistory: text("payment_history").notNull(), // excellent, good, fair, poor
-  creditUtilization: doublePrecision("credit_utilization").notNull(), // percentage
-  creditHistoryLength: integer("credit_history_length").notNull(), // months
-  creditMix: text("credit_mix").notNull(), // excellent, good, limited, poor
-  newCreditInquiries: integer("new_credit_inquiries").notNull(), // in last 12 months
-  totalCreditLimit: doublePrecision("total_credit_limit").notNull(),
-  totalCreditBalance: doublePrecision("total_credit_balance").notNull(),
-  monthlyIncome: doublePrecision("monthly_income").notNull(),
-  hasCollections: boolean("has_collections").default(false),
-  hasBankruptcy: boolean("has_bankruptcy").default(false),
-  hasForeclosure: boolean("has_foreclosure").default(false),
-  improvementPlan: jsonb("improvement_plan"), // AI-generated plan
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Savings tracker schema for monthly and yearly progress
@@ -291,12 +259,10 @@ export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true });
 export const insertBudgetSchema = createInsertSchema(budgets).omit({ id: true });
 export const insertInsightSchema = createInsertSchema(insights).omit({ id: true, createdAt: true, isRead: true });
-export const insertCreditScoreSchema = createInsertSchema(creditScores).omit({ id: true, reportDate: true });
 export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({ id: true, currentAmount: true });
 export const insertDebtGoalSchema = createInsertSchema(debtGoals).omit({ id: true });
 export const insertFeedbackSchema = createInsertSchema(feedback).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 export const insertSavingsTrackerSchema = createInsertSchema(savingsTracker).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertCreditAssessmentSchema = createInsertSchema(creditAssessments).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertInterviewSchema = createInsertSchema(interviews).omit({ id: true, createdAt: true });
 export const insertDailyCheckinSchema = createInsertSchema(dailyCheckins).omit({ id: true, createdAt: true });
 
@@ -323,9 +289,6 @@ export type InsertBudget = z.infer<typeof insertBudgetSchema>;
 export type Insight = typeof insights.$inferSelect;
 export type InsertInsight = z.infer<typeof insertInsightSchema>;
 
-export type CreditScore = typeof creditScores.$inferSelect;
-export type InsertCreditScore = z.infer<typeof insertCreditScoreSchema>;
-
 export type SavingsGoal = typeof savingsGoals.$inferSelect;
 export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
 
@@ -337,9 +300,6 @@ export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 
 export type SavingsTracker = typeof savingsTracker.$inferSelect;
 export type InsertSavingsTracker = z.infer<typeof insertSavingsTrackerSchema>;
-
-export type CreditAssessment = typeof creditAssessments.$inferSelect;
-export type InsertCreditAssessment = z.infer<typeof insertCreditAssessmentSchema>;
 
 export type Interview = typeof interviews.$inferSelect;
 export type InsertInterview = z.infer<typeof insertInterviewSchema>;
