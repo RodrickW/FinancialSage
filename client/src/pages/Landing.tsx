@@ -99,6 +99,12 @@ export default function Landing() {
 
   const testimonials = [
     {
+      name: "Jacqueline Evans",
+      role: "Salesforce Implementation Specialist",
+      content: "The AI components, goals and gamification feature to celebrate the achievements of goals, interview to determine their financial personality to customize their 30-day ACTION plan is top tier!!! This app WILL change lives!!!",
+      rating: 5
+    },
+    {
       name: "Sarah Johnson",
       role: "Marketing Manager",
       content: "Mind My Money helped me save $3,000 in just 6 months! The AI coaching is incredibly insightful.",
