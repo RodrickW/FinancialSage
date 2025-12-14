@@ -36,6 +36,8 @@ Preferred communication style: Simple, everyday language.
 - **Chase Bank Integration**: Removed outdated Chase bank connection disclaimers from web and mobile apps. Chase banks now connect normally through Plaid without restrictions (Aug 21, 2025).
 - **Enhanced Transaction Sync**: Integrated automatic transaction syncing with balance refreshes. Every 12-hour balance update now includes 7-day transaction sync with proper duplicate prevention using Plaid transaction IDs, ensuring users always see current financial data (Aug 21, 2025).
 - **Interview Data Persistence**: Created interviews table in database to permanently store user onboarding responses and AI-generated personalized plans. Fixed frontend mutation to properly parse JSON responses. Added database index for performance optimization on user queries (Oct 21, 2025).
+- **Dashboard Spending Fix (Dec 14, 2025)**: Fixed financial overview spending calculations. Bank transactions from Plaid use negative amounts for debits (spending), so changed filters from `amount > 0` to `amount < 0` to properly calculate daily, weekly, and monthly spending totals.
+- **Credit Features Removed (Dec 14, 2025)**: Removed credit score and credit assessment features. Dropped `credit_scores` and `credit_assessments` tables. App now focuses on budgeting, spending tracking, and AI coaching without credit monitoring.
 
 ### Feature Specifications
 - **Dashboard**: Overview of accounts, recent transactions, spending trends, and savings goals summary.

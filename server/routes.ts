@@ -972,13 +972,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const now = new Date();
       
       // Calculate monthly spending (current month) with improved precision
+      // Note: Spending transactions have NEGATIVE amounts (debits), so we filter for amount < 0
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       const monthlySpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
           const amount = parseFloat(t.amount.toString());
-          return amount > 0 && 
+          return amount < 0 && 
                  transactionDate.getMonth() === currentMonth &&
                  transactionDate.getFullYear() === currentYear;
         })
@@ -990,7 +991,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => {
           const transactionDate = new Date(t.date);
           const amount = parseFloat(t.amount.toString());
-          return amount > 0 && transactionDate >= weekAgo;
+          return amount < 0 && transactionDate >= weekAgo;
         })
         .reduce((sum, t) => sum + Math.abs(parseFloat(t.amount.toString())), 0);
       
@@ -1001,7 +1002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => {
           const transactionDate = new Date(t.date);
           const amount = parseFloat(t.amount.toString());
-          return amount > 0 && 
+          return amount < 0 && 
                  transactionDate >= todayStart && 
                  transactionDate < todayEnd;
         })
@@ -1012,7 +1013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const previousMonthSpending = userTransactions
         .filter(t => {
           const transactionDate = new Date(t.date);
-          return t.amount > 0 && 
+          return t.amount < 0 && 
                  transactionDate.getMonth() === lastMonth.getMonth() &&
                  transactionDate.getFullYear() === lastMonth.getFullYear();
         })
