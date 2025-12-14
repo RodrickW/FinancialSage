@@ -105,12 +105,6 @@ export default function Landing() {
       rating: 5
     },
     {
-      name: "Sarah Johnson",
-      role: "Marketing Manager",
-      content: "Mind My Money helped me save $3,000 in just 6 months! The AI coaching is incredibly insightful.",
-      rating: 5
-    },
-    {
       name: "Michael Chen",
       role: "Software Engineer",
       content: "Finally, a financial app that actually understands my goals. The personalized recommendations are spot-on.",
