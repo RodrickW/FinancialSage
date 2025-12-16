@@ -267,6 +267,27 @@ export default function Goals() {
     setSelectedGoal(goal);
     setGoalName(goal.name);
     
+    // Helper to parse date strings with ordinal suffixes (1st, 2nd, 3rd, 4th, etc.)
+    const parseDeadlineDate = (dateStr: string): Date | null => {
+      if (!dateStr) return null;
+      
+      // Remove ordinal suffixes (st, nd, rd, th) from day numbers
+      const cleanedDate = dateStr.replace(/(\d+)(st|nd|rd|th)/g, '$1');
+      const dateObj = new Date(cleanedDate);
+      
+      if (!isNaN(dateObj.getTime())) {
+        return dateObj;
+      }
+      
+      // Fallback: try original string
+      const fallbackDate = new Date(dateStr);
+      if (!isNaN(fallbackDate.getTime())) {
+        return fallbackDate;
+      }
+      
+      return null;
+    };
+    
     // Handle different goal types
     if (goal.type === 'savings') {
       setTargetAmount(goal.targetAmount.toString());
@@ -274,12 +295,9 @@ export default function Goals() {
       setSelectedColor(goal.color);
       // Parse deadline string to Date object for the calendar
       try {
-        if (goal.deadline) {
-          // Handle different date formats
-          const dateObj = new Date(goal.deadline);
-          if (!isNaN(dateObj.getTime())) {
-            setSelectedDate(dateObj);
-          }
+        const parsedDate = parseDeadlineDate(goal.deadline || '');
+        if (parsedDate) {
+          setSelectedDate(parsedDate);
         }
       } catch (e) {
         console.error("Error parsing date:", e);
@@ -290,12 +308,9 @@ export default function Goals() {
       setSelectedColor(goal.color);
       // Parse targetDate string to Date object for the calendar
       try {
-        if (goal.targetDate) {
-          // Handle different date formats
-          const dateObj = new Date(goal.targetDate);
-          if (!isNaN(dateObj.getTime())) {
-            setSelectedDate(dateObj);
-          }
+        const parsedDate = parseDeadlineDate(goal.targetDate || '');
+        if (parsedDate) {
+          setSelectedDate(parsedDate);
         }
       } catch (e) {
         console.error("Error parsing date:", e);
