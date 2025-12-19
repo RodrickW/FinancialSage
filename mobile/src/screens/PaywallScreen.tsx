@@ -14,10 +14,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 interface PaywallScreenProps {
   onPurchaseComplete: () => void;
   onRestorePurchases: () => Promise<boolean>;
+  onContinueToLogin: () => void;
   userId: string | null;
 }
 
-export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, userId }: PaywallScreenProps) {
+export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, onContinueToLogin, userId }: PaywallScreenProps) {
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,6 +142,17 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
         <Text style={styles.errorText}>Unable to load subscription options</Text>
         <TouchableOpacity style={styles.retryButton} onPress={loadOfferings}>
           <Text style={styles.retryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.errorDivider}>
+          <View style={styles.errorDividerLine} />
+          <Text style={styles.errorDividerText}>or</Text>
+          <View style={styles.errorDividerLine} />
+        </View>
+        
+        <Text style={styles.errorSubtext}>Already a subscriber on the web?</Text>
+        <TouchableOpacity style={styles.continueLoginButton} onPress={onContinueToLogin}>
+          <Text style={styles.continueLoginButtonText}>Continue to Login</Text>
         </TouchableOpacity>
       </View>
     );
@@ -331,6 +343,40 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 16,
+    width: '80%',
+  },
+  errorDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#D1D5DB',
+  },
+  errorDividerText: {
+    marginHorizontal: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  continueLoginButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+  },
+  continueLoginButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',

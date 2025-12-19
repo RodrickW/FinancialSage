@@ -172,6 +172,7 @@ export default function App() {
       <PaywallScreen
         onPurchaseComplete={handlePurchaseComplete}
         onRestorePurchases={handleRestorePurchases}
+        onContinueToLogin={() => setShowWebView(true)}
         userId={userId}
       />
     );
