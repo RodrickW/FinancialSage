@@ -3,14 +3,12 @@ import { SafeAreaView, StyleSheet, ActivityIndicator, View, Text } from 'react-n
 import { StatusBar } from 'expo-status-bar';
 import Purchases from 'react-native-purchases';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import MainApp from './components/MainApp';
 import PaywallScreen from './screens/PaywallScreen';
 
-// IMPORTANT: Replace this with your actual RevenueCat iOS API key before building
-// Get it from: https://app.revenuecat.com → Projects → [Your Project] → API Keys → Public app-specific API keys → iOS
-// Store the key in Replit Secrets as REVENUECAT_PUBLIC_KEY, then copy it here before building
-// The key starts with 'appl_' for iOS
-const REVENUECAT_API_KEY = 'REPLACE_WITH_YOUR_REVENUECAT_IOS_API_KEY';
+// RevenueCat iOS API key from app.json extra config
+const REVENUECAT_API_KEY = Constants.expoConfig?.extra?.revenueCatApiKey || '';
 const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 
 export default function App() {
