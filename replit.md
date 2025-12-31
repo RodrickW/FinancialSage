@@ -38,6 +38,7 @@ Preferred communication style: Simple, everyday language.
 - **Interview Data Persistence**: Created interviews table in database to permanently store user onboarding responses and AI-generated personalized plans. Fixed frontend mutation to properly parse JSON responses. Added database index for performance optimization on user queries (Oct 21, 2025).
 - **Dashboard Spending Fix (Dec 14, 2025)**: Fixed financial overview spending calculations. Bank transactions from Plaid use negative amounts for debits (spending), so changed filters from `amount > 0` to `amount < 0` to properly calculate daily, weekly, and monthly spending totals.
 - **Credit Features Removed (Dec 14, 2025)**: Removed credit score and credit assessment features. Dropped `credit_scores` and `credit_assessments` tables. App now focuses on budgeting, spending tracking, and AI coaching without credit monitoring.
+- **Account Deletion Feature (Dec 31, 2025)**: Added Settings page with account deletion functionality for Apple App Store Guideline 5.1.1v compliance. Created DELETE /api/users/account endpoint that cancels Stripe subscription before deleting user data. PostgreSQL cascade deletes handle all related tables automatically (accounts, transactions, budgets, goals, feedback, etc.). Session is properly destroyed after deletion.
 
 ### Feature Specifications
 - **Dashboard**: Overview of accounts, recent transactions, spending trends, and savings goals summary.

@@ -6,8 +6,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainApp from './components/MainApp';
 import PaywallScreen from './screens/PaywallScreen';
 
-// TODO: Replace with your actual RevenueCat iOS API key from https://app.revenuecat.com
-// Navigate to: Projects → [Your Project] → API Keys → Public app-specific API keys → iOS
+// IMPORTANT: Replace this with your actual RevenueCat iOS API key before building
+// Get it from: https://app.revenuecat.com → Projects → [Your Project] → API Keys → Public app-specific API keys → iOS
+// Store the key in Replit Secrets as REVENUECAT_PUBLIC_KEY, then copy it here before building
+// The key starts with 'appl_' for iOS
 const REVENUECAT_API_KEY = 'REPLACE_WITH_YOUR_REVENUECAT_IOS_API_KEY';
 const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 

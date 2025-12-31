@@ -12,6 +12,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User | undefined>;
   updateStripeInfo(id: number, stripeId: string, subscriptionId: string): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   
   // Account operations
   getAccounts(userId: number): Promise<Account[]>;
@@ -147,6 +148,17 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    // All tables with userId have onDelete: "cascade" configured in the schema
+    // PostgreSQL will automatically cascade the delete to all related tables:
+    // - accounts, transactions, budgets, insights, savingsGoals, debtGoals
+    // - savingsTracker, interviews, dailyCheckins, feedback
+    // - challengeEnrollments, challengeMissions, weeklyReflections, challengeStreaks
+    // - transformationMoments
+    const result = await db.delete(users).where(eq(users.id, id));
+    return true;
   }
   
   // Account operations

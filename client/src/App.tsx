@@ -37,6 +37,7 @@ import Admin from "@/pages/Admin";
 import MoneyReset from "@/pages/MoneyReset";
 import TransformationMoments from "@/pages/TransformationMoments";
 import ReflectionJournal from "@/pages/ReflectionJournal";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -167,6 +168,9 @@ function Router() {
       </Route>
       <Route path="/feedback">
         {(params) => <ProtectedRoute component={Feedback} params={params} />}
+      </Route>
+      <Route path="/settings">
+        {(params) => <ProtectedRoute component={Settings} params={params} />}
       </Route>
       <Route path="/admin">
         {(params) => <ProtectedRoute component={Admin} params={params} />}

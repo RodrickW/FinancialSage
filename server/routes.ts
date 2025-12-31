@@ -780,6 +780,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Delete user account - required for Apple App Store compliance (Guideline 5.1.1v)
+  app.delete('/api/users/account', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      logSecurityEvent('ACCOUNT_DELETION_REQUEST', user.id);
+      
+      // Cancel Stripe subscription if exists - must succeed before account deletion
+      if (user.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+          logSecurityEvent('STRIPE_SUBSCRIPTION_CANCELED', user.id, { subscriptionId: user.stripeSubscriptionId });
+        } catch (stripeError: any) {
+          // Only fail if it's not already cancelled/doesn't exist
+          if (stripeError.code !== 'resource_missing') {
+            console.error('Error canceling Stripe subscription:', stripeError);
+            return res.status(500).json({ 
+              message: 'Failed to cancel subscription. Please contact support or try again.' 
+            });
+          }
+        }
+      }
+      
+      // Delete the user and all related data (PostgreSQL cascades handle related tables)
+      await storage.deleteUser(user.id);
+      
+      logSecurityEvent('ACCOUNT_DELETED', user.id, { email: user.email });
+      
+      // Logout the user and destroy session - wrap in promise for proper sequencing
+      req.logout((err: any) => {
+        if (err) {
+          console.error('Error during logout after account deletion:', err);
+        }
+        // Destroy session to ensure complete cleanup
+        if (req.session) {
+          req.session.destroy((sessionErr) => {
+            if (sessionErr) {
+              console.error('Error destroying session:', sessionErr);
+            }
+          });
+        }
+      });
+      
+      res.json({ message: 'Account deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      res.status(500).json({ message: 'Failed to delete account. Please try again or contact support.' });
+    }
+  });
+
   // Complete onboarding (increment tour view count)
   app.post('/api/users/complete-onboarding', requireAuth, async (req, res) => {
     try {
