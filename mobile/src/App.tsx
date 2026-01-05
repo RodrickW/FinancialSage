@@ -7,9 +7,30 @@ import Constants from 'expo-constants';
 import MainApp from './components/MainApp';
 import PaywallScreen from './screens/PaywallScreen';
 
-// RevenueCat iOS API key from app.json extra config
-const REVENUECAT_API_KEY = Constants.expoConfig?.extra?.revenueCatApiKey || '';
+// RevenueCat iOS API key - check multiple sources for production compatibility
+// In dev: expoConfig.extra, in production builds: manifest.extra or manifest2.extra
+const getRevenueCatApiKey = (): string => {
+  // Try expoConfig first (development)
+  if (Constants.expoConfig?.extra?.revenueCatApiKey) {
+    return Constants.expoConfig.extra.revenueCatApiKey;
+  }
+  // Try manifest (older Expo SDK)
+  if ((Constants as any).manifest?.extra?.revenueCatApiKey) {
+    return (Constants as any).manifest.extra.revenueCatApiKey;
+  }
+  // Try manifest2 (newer Expo SDK production builds)
+  if ((Constants as any).manifest2?.extra?.expoClient?.extra?.revenueCatApiKey) {
+    return (Constants as any).manifest2.extra.expoClient.extra.revenueCatApiKey;
+  }
+  // Hardcoded fallback for production builds where manifest may be stripped
+  return 'appl_OVsddqTxRwXTeuxMmsKmlcgwvhi';
+};
+
+const REVENUECAT_API_KEY = getRevenueCatApiKey();
 const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
+
+// Debug log to verify API key is being retrieved (will show in Expo logs)
+console.log('RevenueCat API Key loaded:', REVENUECAT_API_KEY ? `${REVENUECAT_API_KEY.substring(0, 10)}...` : 'MISSING');
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);

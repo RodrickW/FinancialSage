@@ -32,7 +32,9 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
 
   const loadOfferings = async () => {
     try {
+      console.log('Loading RevenueCat offerings...');
       const offerings = await Purchases.getOfferings();
+      console.log('Offerings loaded:', JSON.stringify(offerings, null, 2));
       
       if (offerings.current !== null) {
         setOffering(offerings.current);
@@ -41,13 +43,17 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
           pkg => pkg.packageType === 'ANNUAL'
         );
         setSelectedPackage(annualPackage || offerings.current.availablePackages[0]);
+        console.log('Offering set:', offerings.current.identifier);
+      } else {
+        console.warn('No current offering available - check RevenueCat dashboard configuration');
       }
       
       setIsLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading offerings:', error);
+      console.error('Error details:', error?.message, error?.code, error?.underlyingErrorMessage);
       setIsLoading(false);
-      Alert.alert('Error', 'Unable to load subscription options. Please try again.');
+      // Don't show alert - let the error UI handle it
     }
   };
 
@@ -153,6 +159,20 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
         <Text style={styles.errorSubtext}>Already a subscriber on the web?</Text>
         <TouchableOpacity style={styles.continueLoginButton} onPress={onContinueToLogin}>
           <Text style={styles.continueLoginButtonText}>Continue to Login</Text>
+        </TouchableOpacity>
+        
+        {/* Account Management in error state */}
+        <TouchableOpacity 
+          style={styles.deleteAccountLink}
+          onPress={() => {
+            Alert.alert(
+              'Delete Account',
+              'To delete your account, please log in and go to Settings > Delete Account. Or visit mindmymoneyapp.com/settings',
+              [{ text: 'OK' }]
+            );
+          }}
+        >
+          <Text style={styles.deleteAccountLinkText}>Delete Account</Text>
         </TouchableOpacity>
       </View>
     );
@@ -290,6 +310,33 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
       <Text style={styles.footerText}>
         Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
       </Text>
+      
+      {/* Account Management Links */}
+      <View style={styles.accountManagementContainer}>
+        <TouchableOpacity 
+          onPress={() => {
+            Alert.alert(
+              'Delete Account',
+              'To delete your account, please log in and go to Settings > Delete Account. Or visit mindmymoneyapp.com/settings',
+              [{ text: 'OK' }]
+            );
+          }}
+        >
+          <Text style={styles.accountManagementLink}>Delete Account</Text>
+        </TouchableOpacity>
+        <Text style={styles.accountManagementDivider}>|</Text>
+        <TouchableOpacity 
+          onPress={() => {
+            Alert.alert(
+              'Privacy Policy',
+              'View our privacy policy at mindmymoneyapp.com/privacy',
+              [{ text: 'OK' }]
+            );
+          }}
+        >
+          <Text style={styles.accountManagementLink}>Privacy Policy</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -576,5 +623,32 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     textAlign: 'center',
     lineHeight: 18,
+  },
+  accountManagementContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  accountManagementLink: {
+    fontSize: 14,
+    color: '#6B7280',
+    textDecorationLine: 'underline',
+  },
+  accountManagementDivider: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginHorizontal: 12,
+  },
+  deleteAccountLink: {
+    marginTop: 24,
+    paddingVertical: 12,
+  },
+  deleteAccountLinkText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textDecorationLine: 'underline',
+    textAlign: 'center',
   },
 });
