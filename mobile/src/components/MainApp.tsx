@@ -94,10 +94,18 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
       // Hide web subscription buttons in mobile app
       const hideWebSubscriptions = function() {
         try {
-          // Hide Stripe checkout buttons
-          const subscribeButtons = document.querySelectorAll('[href*="subscribe"], [data-testid*="subscribe"], button:contains("Subscribe")');
+          // Hide Stripe checkout buttons by href and data-testid
+          var subscribeButtons = document.querySelectorAll('[href*="subscribe"], [data-testid*="subscribe"], [data-testid*="upgrade"]');
           subscribeButtons.forEach(function(btn) {
             if (btn) btn.style.display = 'none';
+          });
+          
+          // Also hide buttons containing Subscribe text
+          var allButtons = document.querySelectorAll('button');
+          allButtons.forEach(function(btn) {
+            if (btn.innerText && btn.innerText.includes('Subscribe')) {
+              btn.style.display = 'none';
+            }
           });
           
           // Add CSS to hide subscription-related elements and show mobile-specific elements
