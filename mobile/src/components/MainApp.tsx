@@ -85,6 +85,12 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
   // Inject JavaScript to communicate user ID and hide subscription buttons
   const injectedJavaScript = `
     (function() {
+      // Mark that we're running in the mobile app - web app will check this
+      localStorage.setItem('isMobileApp', 'true');
+      sessionStorage.setItem('isMobileApp', 'true');
+      window.isMobileApp = true;
+      console.log('Mobile app context set');
+      
       // Hide web subscription buttons in mobile app
       const hideWebSubscriptions = function() {
         try {
@@ -94,16 +100,38 @@ export default function MainApp({ onUserAuthenticated }: MainAppProps) {
             if (btn) btn.style.display = 'none';
           });
           
-          // Add CSS to hide subscription-related elements
-          const style = document.createElement('style');
-          style.textContent = \`
-            [href*="/subscribe"],
-            [data-testid*="subscribe-button"],
-            [data-testid*="upgrade-button"] {
-              display: none !important;
-            }
-          \`;
-          document.head.appendChild(style);
+          // Add CSS to hide subscription-related elements and show mobile-specific elements
+          if (!document.getElementById('mobile-app-styles')) {
+            const style = document.createElement('style');
+            style.id = 'mobile-app-styles';
+            style.textContent = \`
+              /* Hide Stripe/web payment related elements */
+              [href*="/subscribe"],
+              [data-testid*="subscribe-button"],
+              [data-testid*="upgrade-button"],
+              [data-testid="stripe-payment-section"],
+              .stripe-payment-section,
+              .web-subscription-only {
+                display: none !important;
+              }
+              
+              /* Show mobile-only elements */
+              .mobile-only {
+                display: block !important;
+              }
+              
+              /* Make delete account very prominent in mobile */
+              .mobile-delete-account-banner {
+                display: block !important;
+                background: #FEE2E2 !important;
+                border: 2px solid #EF4444 !important;
+                padding: 16px !important;
+                margin: 16px 0 !important;
+                border-radius: 8px !important;
+              }
+            \`;
+            document.head.appendChild(style);
+          }
         } catch (e) {
           console.log('Error hiding web subscriptions:', e);
         }

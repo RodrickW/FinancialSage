@@ -28,8 +28,16 @@ export default function CancelTrial() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  
+  // Detect if running in mobile app WebView
+  const isMobileApp = typeof window !== 'undefined' && (
+    localStorage.getItem('isMobileApp') === 'true' || 
+    sessionStorage.getItem('isMobileApp') === 'true' ||
+    (window as any).isMobileApp === true ||
+    (window as any).ReactNativeWebView !== undefined
+  );
 
-  const { data: userData, isLoading: userLoading } = useQuery({
+  const { data: userData, isLoading: userLoading } = useQuery<any>({
     queryKey: ['/api/users/profile']
   });
 
@@ -162,9 +170,27 @@ export default function CancelTrial() {
           </CardContent>
         </Card>
 
+        {/* Mobile App Notice - Show when in WebView */}
+        {isMobileApp && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Smartphone className="w-6 h-6 text-blue-600 mt-1" />
+                <div>
+                  <p className="font-medium text-blue-900">Mobile App Subscription</p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    To manage your subscription, go to your iPhone/iPad Settings → Your Name → Subscriptions → Mind My Money.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Cancel Options - show if user has active subscription and not already cancelled */}
-        {hasActiveSubscription && !isCancelled && (
-          <Card className="border-red-200">
+        {/* Hide Stripe cancellation UI when in mobile app */}
+        {hasActiveSubscription && !isCancelled && !isMobileApp && (
+          <Card className="border-red-200 web-subscription-only">
             <CardHeader>
               <CardTitle className="text-xl text-red-900 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />

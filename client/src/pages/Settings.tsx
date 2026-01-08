@@ -28,6 +28,14 @@ export default function Settings() {
   const { toast } = useToast();
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Detect if running in mobile app WebView
+  const isMobileApp = typeof window !== 'undefined' && (
+    localStorage.getItem('isMobileApp') === 'true' || 
+    sessionStorage.getItem('isMobileApp') === 'true' ||
+    (window as any).isMobileApp === true ||
+    (window as any).ReactNativeWebView !== undefined
+  );
 
   const { data: user } = useQuery<UserProfile>({
     queryKey: ['/api/users/profile'],
@@ -90,6 +98,82 @@ export default function Settings() {
           </Button>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h1>
+
+          {/* Mobile App Prominent Delete Account Banner - Shows at top when in mobile WebView */}
+          {isMobileApp && (
+            <Card className="mb-6 border-2 border-red-500 bg-red-50 mobile-delete-account-banner" id="delete-account-section">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-700 text-xl">
+                  <Trash2 className="w-6 h-6" />
+                  Delete Your Account
+                </CardTitle>
+                <CardDescription className="text-red-600 text-base">
+                  Permanently remove your account and all data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 mb-4">
+                  To delete your account, tap the button below and type DELETE to confirm.
+                  This will permanently remove all your data including bank connections, 
+                  transactions, budgets, goals, and AI coaching history.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="lg"
+                      className="w-full text-lg py-6"
+                      data-testid="button-delete-account-mobile"
+                    >
+                      <Trash2 className="w-5 h-5 mr-2" />
+                      Delete My Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5" />
+                        Delete Account Permanently?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-3">
+                        <p>
+                          This will permanently delete your account and all associated data.
+                        </p>
+                        <p className="font-semibold text-red-600">
+                          This action cannot be undone.
+                        </p>
+                        <div className="mt-4">
+                          <Label htmlFor="confirm-delete-mobile" className="text-sm font-medium">
+                            Type DELETE to confirm:
+                          </Label>
+                          <Input
+                            id="confirm-delete-mobile"
+                            value={confirmText}
+                            onChange={(e) => setConfirmText(e.target.value)}
+                            placeholder="DELETE"
+                            className="mt-1"
+                            data-testid="input-confirm-delete-mobile"
+                          />
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setConfirmText('')}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        disabled={confirmText !== 'DELETE' || isDeleting}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete Account'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="mb-6">
             <CardHeader>
