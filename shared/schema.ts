@@ -2,6 +2,9 @@ import { pgTable, text, serial, integer, boolean, doublePrecision, timestamp, js
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Subscription tier types: 'free' | 'plus' | 'pro'
+export type SubscriptionTier = 'free' | 'plus' | 'pro';
+
 // User schema
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -12,14 +15,19 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   
-  // Subscription fields
-  isPremium: boolean("is_premium").default(false),
-  premiumTier: text("premium_tier"),
+  // Tiered subscription fields
+  subscriptionTier: text("subscription_tier").default("free").notNull(), // 'free', 'plus', 'pro'
+  isPremium: boolean("is_premium").default(false), // Legacy - kept for backwards compatibility
+  premiumTier: text("premium_tier"), // Legacy - use subscriptionTier instead
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  stripePriceId: text("stripe_price_id"), // Track which price they're on
   subscriptionStatus: text("subscription_status").default("inactive"),
-  trialEndsAt: timestamp("trial_ends_at"),
-  hasStartedTrial: boolean("has_started_trial").default(false),
+  subscriptionPeriod: text("subscription_period"), // 'monthly' or 'annual'
+  
+  // AI usage tracking for Plus tier limits
+  aiMessagesUsedThisMonth: integer("ai_messages_used_this_month").default(0),
+  aiMessagesResetAt: timestamp("ai_messages_reset_at"),
   
   // RevenueCat (Apple IAP) fields
   revenuecatUserId: text("revenuecat_user_id"),
@@ -27,6 +35,7 @@ export const users = pgTable("users", {
   revenuecatProductId: text("revenuecat_product_id"),
   revenuecatExpiresAt: timestamp("revenuecat_expires_at"),
   revenuecatPlatform: text("revenuecat_platform"), // ios, android
+  revenuecatTier: text("revenuecat_tier"), // 'plus' or 'pro' from RevenueCat
   
   // Onboarding tracking
   hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
