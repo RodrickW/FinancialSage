@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
+import TierGate from '@/components/TierGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { UserProfile } from '@/types';
-import { Loader2, MessageCircle, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { UserProfile, SubscriptionTier } from '@/types';
+import { Loader2, MessageCircle, ArrowRight, ArrowLeft, Check, Lock, Sparkles } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 // Removed mock data import - using real API data only
@@ -374,6 +375,29 @@ export default function CoachInterview() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Check tier access - AI Interview requires Plus or higher
+  const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
+  const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+  const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
+  
+  if (!hasLegacyAccess && !hasTierAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 pb-16">
+        <BottomNavigation user={user} />
+        <TopNav title="Money Mind Interview" />
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <TierGate 
+            feature="AI Financial Interview" 
+            requiredTier="plus" 
+            currentTier={currentTier}
+          >
+            <div />
+          </TierGate>
+        </main>
       </div>
     );
   }

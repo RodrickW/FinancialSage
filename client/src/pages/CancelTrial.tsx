@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, AlertTriangle, CheckCircle, CreditCard, Smartphone, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, CreditCard, Smartphone, ArrowLeft, Sparkles, Target, MessageCircle, TrendingUp, Lock, Crown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface SubscriptionStatus {
   isPremium: boolean;
@@ -158,9 +159,9 @@ export default function CancelTrial() {
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-gray-500" />
                     <div>
-                      <p className="font-medium text-gray-900">No Active Subscription</p>
+                      <p className="font-medium text-gray-900">Free Account</p>
                       <p className="text-sm text-gray-600">
-                        Subscribe to access premium features
+                        Upgrade to unlock AI coaching and premium features
                       </p>
                     </div>
                   </div>
@@ -169,6 +170,95 @@ export default function CancelTrial() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Upgrade Options - Show for free users */}
+        {!hasActiveSubscription && !isCancelled && (
+          <Card className="mb-6 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
+            <CardHeader>
+              <CardTitle className="text-xl text-emerald-900 flex items-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                Upgrade Your Account
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Plus Tier */}
+              <div className="p-4 bg-white rounded-lg border border-emerald-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-100 text-emerald-800 font-semibold">Plus</Badge>
+                    <span className="font-medium text-gray-900">$5.99/month</span>
+                    <span className="text-sm text-gray-500">or $49/year</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>AI Financial Interview</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                    <span>AI-Generated Budget</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <Target className="w-4 h-4 text-emerald-600" />
+                    <span>30-Day Money Reset</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <MessageCircle className="w-4 h-4 text-emerald-600" />
+                    <span>20 AI Messages/month</span>
+                  </div>
+                </div>
+                <Button 
+                  className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white"
+                  onClick={() => setLocation('/pricing')}
+                >
+                  Upgrade to Plus
+                </Button>
+              </div>
+
+              {/* Pro Tier */}
+              <div className="p-4 bg-white rounded-lg border-2 border-emerald-400 relative">
+                <div className="absolute -top-3 left-4">
+                  <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Best Value
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between mb-3 mt-2">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-600 text-white font-semibold">Pro</Badge>
+                    <span className="font-medium text-gray-900">$9.99/month</span>
+                    <span className="text-sm text-gray-500">or $89/year</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span>Everything in Plus</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <MessageCircle className="w-4 h-4 text-emerald-600" />
+                    <span>Unlimited AI Coaching</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                    <span>Advanced Insights</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>Priority Support</span>
+                  </div>
+                </div>
+                <Button 
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+                  onClick={() => setLocation('/pricing')}
+                >
+                  Upgrade to Pro
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Mobile App Notice - Show when in WebView */}
         {isMobileApp && (

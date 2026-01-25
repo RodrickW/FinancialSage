@@ -6,14 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import TierGate from '@/components/TierGate';
+import TopNav from '@/components/TopNav';
+import BottomNavigation from '@/components/BottomNavigation';
 import { 
   Flame, Target, Trophy, Sparkles, CheckCircle2, Lock, 
   ArrowRight, ArrowLeft, Share2, Calendar, Zap, Brain, Heart, 
   Coffee, ShoppingBag, Utensils, Play, RefreshCw,
-  ChevronRight, Star, Award, Crown
+  ChevronRight, Star, Award, Crown, Loader2
 } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { UserProfile, SubscriptionTier } from '@/types';
 
 interface ChallengeData {
   enrolled: boolean;
@@ -79,8 +83,22 @@ export default function MoneyReset() {
   const [missionReflection, setMissionReflection] = useState('');
   const [reflectionAnswers, setReflectionAnswers] = useState<Record<number, string>>({});
 
+  // Get user profile for tier checking
+  const { data: userData, isLoading: userLoading } = useQuery<UserProfile>({
+    queryKey: ['/api/users/profile'],
+  });
+  const user = userData as UserProfile;
+
+  // Check tier access - 30-Day Money Reset requires Plus or higher
+  const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
+  const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+  const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
+  const hasAccess = hasLegacyAccess || hasTierAccess;
+
+  // Only fetch challenge data if user has access
   const { data: challengeData, isLoading } = useQuery<ChallengeData>({
     queryKey: ['/api/money-reset'],
+    enabled: hasAccess && !userLoading,
   });
 
   const enrollMutation = useMutation({
@@ -148,10 +166,28 @@ export default function MoneyReset() {
     }
   });
 
-  if (isLoading) {
+  if (isLoading || userLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pb-16">
+        <BottomNavigation user={user} />
+        <TopNav title="30-Day Money Reset" />
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <TierGate 
+            feature="30-Day Money Reset" 
+            requiredTier="plus" 
+            currentTier={currentTier}
+          >
+            <div />
+          </TierGate>
+        </main>
       </div>
     );
   }

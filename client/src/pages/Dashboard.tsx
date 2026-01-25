@@ -8,11 +8,13 @@ import {
 } from '@/components/LoadingStates';
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
+import { LockedFeatureCard } from '@/components/TierGate';
 import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
 import MoneyResetBanner from '@/components/Dashboard/MoneyResetBanner';
 import FaithModeToggle from '@/components/FaithModeToggle';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -20,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
 import { UserProfile, FinancialOverviewData, Transaction } from '@/types';
 import { Link } from 'wouter';
+import { Sparkles, Target, MessageCircle, TrendingUp, Lock } from 'lucide-react';
 
 // Removed all mock data imports - using real API data only
 
@@ -305,6 +308,47 @@ export default function Dashboard() {
               <FinancialOverview data={financialOverview} />
             )}
           </div>
+          
+          {/* Locked Feature Teaser Cards - Show only for free users without legacy access */}
+          {!isDemoMode && user && !hasLegacyAccess && currentTier === 'free' && (
+            <div className="mt-6">
+              <Card className="mb-4 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center gap-2 text-emerald-900">
+                    <Lock className="w-5 h-5" />
+                    Unlock Premium Features
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">Upgrade to get personalized AI coaching and more</p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <LockedFeatureCard 
+                    title="AI Coach"
+                    description="Unlock clarity + direction in 10 minutes"
+                    requiredTier="plus"
+                    icon={<MessageCircle className="w-5 h-5 text-gray-500" />}
+                  />
+                  <LockedFeatureCard 
+                    title="30-Day Money Reset"
+                    description="Transform your relationship with money"
+                    requiredTier="plus"
+                    icon={<Target className="w-5 h-5 text-gray-500" />}
+                  />
+                  <LockedFeatureCard 
+                    title="Personalized Budget"
+                    description="AI-generated budget based on your spending"
+                    requiredTier="plus"
+                    icon={<TrendingUp className="w-5 h-5 text-gray-500" />}
+                  />
+                  <LockedFeatureCard 
+                    title="AI Interview"
+                    description="Get your personalized financial playbook"
+                    requiredTier="plus"
+                    icon={<Sparkles className="w-5 h-5 text-gray-500" />}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
         </div>
       </main>

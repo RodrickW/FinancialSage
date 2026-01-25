@@ -3,15 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
-import TrialGate from '@/components/TrialGate';
+import TierGate from '@/components/TierGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { UserProfile } from '@/types';
-import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap, BookOpen } from 'lucide-react';
+import { UserProfile, SubscriptionTier } from '@/types';
+import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap, BookOpen, Lock } from 'lucide-react';
 
 
 export default function FinancialCoach() {
@@ -39,22 +39,25 @@ export default function FinancialCoach() {
     queryKey: ['/api/users/profile']
   });
 
-  // Get budget recommendations
+  const user = userData as UserProfile;
+  
+  // Check tier access - AI Coach requires Plus or higher
+  const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
+  const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+  const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
+  const hasAccess = hasLegacyAccess || hasTierAccess;
+
+  // Get budget recommendations - only fetch if user has access
   const { data: budgetData, isLoading: budgetLoading } = useQuery({
     queryKey: ['/api/ai/budget-recommendations'],
-    enabled: selectedTab === 'budget'
+    enabled: selectedTab === 'budget' && hasAccess && !userLoading
   });
 
-  // Get comprehensive financial health report
+  // Get comprehensive financial health report - only fetch if user has access
   const { data: healthData, isLoading: healthLoading } = useQuery({
     queryKey: ['/api/ai/financial-health'],
-    enabled: selectedTab === 'health'
+    enabled: selectedTab === 'health' && hasAccess && !userLoading
   });
-
-  // New users should have access by default (don't show trial gates on first login)
-  const hasDefaultAccess = userData && (!(userData as any)?.hasSeenPaywall);
-  
-  const user = userData;
 
   // Check if we should show personalized plan from interview
   useEffect(() => {
@@ -474,7 +477,7 @@ Money Mind 💰`);
             </p>
           </div>
           
-          <TrialGate feature="AI Financial Coach" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || !userData || hasDefaultAccess}>
+          <TierGate feature="AI Financial Coach" requiredTier="plus" currentTier={hasLegacyAccess || hasTierAccess ? currentTier === 'pro' ? 'pro' : 'plus' : currentTier}>
             {showOnboardingInterview ? (
               <Card className="p-6">
                 <CardHeader>
@@ -541,7 +544,7 @@ Money Mind 💰`);
                 </div>
               </Tabs>
             )}
-          </TrialGate>
+          </TierGate>
         </div>
       </main>
     </div>
