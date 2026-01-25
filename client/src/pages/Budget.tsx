@@ -38,8 +38,12 @@ import {
   Plus,
   Edit3,
   Target,
-  Wallet
+  Wallet,
+  Lock,
+  Sparkles
 } from 'lucide-react';
+import { useLocation } from 'wouter';
+import { SubscriptionTier } from '@/types';
 
 // Comprehensive budget category structure based on Dave Ramsey's EveryDollar
 interface BudgetGroup {
@@ -70,11 +74,17 @@ export default function Budget() {
   const [budgetData, setBudgetData] = useState<BudgetGroup[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Get user profile
   const { data: user } = useQuery<UserProfile>({
     queryKey: ['/api/users/profile']
   });
+
+  // Check user's subscription tier for AI features
+  const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
+  const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+  const canAccessAI = hasLegacyAccess || currentTier === 'plus' || currentTier === 'pro';
 
   // Get user's actual spending data
   const { data: transactions = [] } = useQuery<any[]>({
@@ -390,52 +400,80 @@ export default function Budget() {
             </Card>
           </div>
 
-          {/* Prominent Analyze Spending Button */}
+          {/* AI Analyze Spending Button - Plus+ tier feature */}
           <div className="flex justify-center mb-8">
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Ready to see where your money went?</h3>
-              <Button 
-                onClick={() => {
-                  setIsAnalyzing(true);
-                  analyzeMutation.mutate();
-                }}
-                disabled={isAnalyzing || transactions.length === 0}
-                className="bg-emerald-700 text-white hover:bg-emerald-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                size="lg"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
-                    Analyzing Your Spending...
-                  </>
-                ) : (
-                  <>
-                    <Target className="w-5 h-5 mr-3" />
-                    Analyze My Spending
-                  </>
-                )}
-              </Button>
-              {transactions.length === 0 && (
-                <p className="text-sm text-gray-500 mt-2">Connect your bank account to analyze spending</p>
+              {canAccessAI ? (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Ready to see where your money went?</h3>
+                  <Button 
+                    onClick={() => {
+                      setIsAnalyzing(true);
+                      analyzeMutation.mutate();
+                    }}
+                    disabled={isAnalyzing || transactions.length === 0}
+                    className="bg-emerald-700 text-white hover:bg-emerald-800 px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    size="lg"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
+                        Analyzing Your Spending...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-3" />
+                        AI Analyze My Spending
+                      </>
+                    )}
+                  </Button>
+                  {transactions.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2">Connect your bank account to analyze spending</p>
+                  )}
+                </>
+              ) : (
+                <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 max-w-md">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">AI Spending Analysis</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Upgrade to Plus to let AI automatically categorize and analyze your spending patterns.
+                    </p>
+                    <Button 
+                      onClick={() => setLocation('/pricing')}
+                      className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white"
+                    >
+                      Upgrade to Plus
+                    </Button>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
 
-          {/* Budget Categories - Only show categories with actual spending */}
+          {/* Manual Budget Entry Info for Free Users */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Edit3 className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-blue-900">Manual Budget Entry</h4>
+                <p className="text-sm text-blue-700">Click the edit icon next to any category below to set your budget amounts manually.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Budget Categories - Show all categories for manual entry */}
           <div className="space-y-6">
             {budgetData
-              .map((group) => ({
-                ...group,
-                categories: group.categories.filter(category => category.actualSpent > 0)
-              }))
-              .filter((group) => group.categories.length > 0)
               .map((group, groupIndex) => (
               <Card key={group.name}>
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-gray-800">
                     {group.name}
                     <span className="ml-2 text-sm font-normal text-gray-500">
-                      ({group.categories.length} categories with spending)
+                      ({group.categories.length} categories)
                     </span>
                   </CardTitle>
                 </CardHeader>
