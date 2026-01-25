@@ -38,6 +38,7 @@ import MoneyReset from "@/pages/MoneyReset";
 import TransformationMoments from "@/pages/TransformationMoments";
 import ReflectionJournal from "@/pages/ReflectionJournal";
 import Settings from "@/pages/Settings";
+import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -180,6 +181,9 @@ function Router() {
       </Route>
       <Route path="/subscribe">
         {(params) => <ProtectedRoute component={Subscribe} params={params} />}
+      </Route>
+      <Route path="/pricing">
+        {(params) => <ProtectedRoute component={Pricing} params={params} />}
       </Route>
       <Route path="/cancel-trial">
         {(params) => <ProtectedRoute component={CancelTrial} params={params} />}

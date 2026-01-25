@@ -24,7 +24,6 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isActivatingTrial, setIsActivatingTrial] = useState(false);
 
   useEffect(() => {
     loadOfferings();
@@ -75,43 +74,6 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
       }
     } finally {
       setIsPurchasing(false);
-    }
-  };
-
-  const handleStartFreeTrial = async () => {
-    setIsActivatingTrial(true);
-    try {
-      // Call backend to activate trial
-      const response = await fetch('https://www.mindmymoneyapp.com/api/activate-trial', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Mobile-App': 'true',
-          'X-Platform': 'ios'
-        },
-        credentials: 'include'
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        Alert.alert(
-          '🎉 Trial Activated!',
-          'Your 14-day free trial is now active. Enjoy full access to all premium features!',
-          [{ text: 'Get Started', onPress: onPurchaseComplete }]
-        );
-      } else {
-        Alert.alert(
-          'Trial Already Used',
-          data.message || 'You have already used your free trial. Please subscribe to continue.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('Error activating trial:', error);
-      Alert.alert('Error', 'Unable to activate trial. Please try again.');
-    } finally {
-      setIsActivatingTrial(false);
     }
   };
 
@@ -247,29 +209,6 @@ export default function PaywallScreen({ onPurchaseComplete, onRestorePurchases, 
             </TouchableOpacity>
           );
         })}
-      </View>
-
-      {/* Free Trial Button */}
-      <TouchableOpacity
-        style={[styles.freeTrialButton, isActivatingTrial && styles.purchaseButtonDisabled]}
-        onPress={handleStartFreeTrial}
-        disabled={isActivatingTrial}
-      >
-        {isActivatingTrial ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <>
-            <Text style={styles.freeTrialButtonText}>Start 14-Day Free Trial</Text>
-            <Text style={styles.freeTrialSubtext}>No payment required</Text>
-          </>
-        )}
-      </TouchableOpacity>
-
-      {/* Divider */}
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>OR SUBSCRIBE NOW</Text>
-        <View style={styles.dividerLine} />
       </View>
 
       {/* Purchase Button */}

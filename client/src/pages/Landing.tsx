@@ -60,40 +60,58 @@ export default function Landing() {
 
   const plans = [
     {
-      name: "Monthly Plan",
-      price: "$9.99",
-      period: "month",
-      originalPrice: null,
-      savings: null,
-      description: "Perfect for getting started with AI-powered financial management",
+      tier: "free",
+      name: "Basic",
+      price: "Free",
+      period: "forever",
+      description: "Get started with essential money tracking",
       features: [
-        "AI Financial Coach",
-        "Bank Account Integration", 
-        "Smart Budget Creation",
-        "Spending Analytics",
-        "Savings Goal Tracking",
-        "30-Day Money Reset Challenge"
+        "Bank account linking (Plaid)",
+        "Weekly & monthly spending snapshot",
+        "Top 3 spending categories",
+        "Daily check-in (encouragement)",
+        "Basic financial dashboard"
       ],
-      cta: "Start Free Trial",
+      cta: "Start Free",
       popular: false
     },
     {
-      name: "Annual Plan", 
-      price: "$95.99",
-      period: "year",
-      originalPrice: "$119.88",
-      savings: "Save $23.89",
-      description: "Best value! Save 20% with annual billing",
+      tier: "plus",
+      name: "Plus",
+      price: "$5.99",
+      period: "month",
+      annualPrice: "$49",
+      annualSavings: "Save $22.88/year",
+      description: "Transform your money habits",
       features: [
-        "Everything in Monthly",
-        "20% Annual Savings",
-        "Priority Support",
-        "Advanced Analytics",
-        "Export Features",
-        "Early Access to New Features"
+        "Everything in Basic",
+        "AI Financial Interview",
+        "AI-Generated Budget",
+        "30-Day Money Reset Challenge",
+        "Weekly AI Insights",
+        "AI-Assisted Goals",
+        "20 AI coach messages/month"
       ],
-      cta: "Start Free Trial",
+      cta: "Get Plus",
       popular: true
+    },
+    {
+      tier: "pro",
+      name: "Pro",
+      price: "$9.99",
+      period: "month",
+      annualPrice: "$89",
+      annualSavings: "Save $30.88/year",
+      description: "Complete financial transformation",
+      features: [
+        "Everything in Plus",
+        "Unlimited AI Money Coach",
+        "Advanced AI Insights & Projections",
+        "Goal Optimization & Rebalancing",
+        "Priority support"
+      ],
+      cta: "Get Pro",
+      popular: false
     }
   ];
 
@@ -118,26 +136,6 @@ export default function Landing() {
     }
   ];
 
-  const mainPlan = {
-    name: "Mind My Money",
-    price: "$9.99",
-    period: "month",
-    annualPrice: "$95.99",
-    annualSavings: "Save $23.89 yearly",
-    description: "Complete AI-powered financial management system",
-    features: [
-      "Unlimited bank connections",
-      "Money Mind AI coaching",
-      "Advanced spending analytics",
-      "Smart budget tracking",
-      "Goal setting & tracking",
-      "Real-time transaction sync",
-      "Personalized insights",
-      "Priority email support"
-    ],
-    cta: "Start Your 14-Day Free Trial",
-    available: true
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100">
@@ -182,7 +180,7 @@ export default function Landing() {
           </div>
           
           <Badge className="mb-6 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-medium">
-            ✨ Start your free 14-day trial today. No credit card required. ✨
+            ✨ Start free today — Basic plan forever free ✨
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-400 bg-clip-text text-transparent leading-tight">
@@ -342,21 +340,21 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section - Dual Cards */}
+      {/* Pricing Section - Three Tiers */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 to-emerald-100">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
-              Simple Pricing
+              Choose Your Plan
             </h2>
-            <p className="text-xl text-gray-600">Try free for 14 days, then choose monthly or annual</p>
+            <p className="text-xl text-gray-600">Start free, upgrade when you're ready to transform</p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {plans.map((plan, index) => (
               <Card key={index} className={`relative border-2 transition-all duration-300 hover:shadow-xl ${
                 plan.popular 
-                  ? 'border-emerald-300 shadow-xl scale-105' 
+                  ? 'border-emerald-400 shadow-xl md:scale-105 z-10' 
                   : 'border-emerald-200 hover:border-emerald-300'
               }`}>
                 {plan.popular && (
@@ -367,51 +365,49 @@ export default function Landing() {
                   </div>
                 )}
                 
-                <CardContent className="p-8">
+                <CardContent className="p-6">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-4">{plan.name}</h3>
+                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                     
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center justify-center">
+                    <div className="space-y-1 mb-4">
+                      <div className="flex items-baseline justify-center">
                         <span className="text-4xl font-bold">{plan.price}</span>
-                        <span className="text-gray-500 ml-2">/{plan.period}</span>
+                        {plan.period !== 'forever' && (
+                          <span className="text-gray-500 ml-1">/{plan.period}</span>
+                        )}
                       </div>
-                      {plan.savings && (
-                        <div className="flex items-center justify-center space-x-2">
-                          <span className="text-sm text-gray-400 line-through">{plan.originalPrice}</span>
-                          <span className="text-sm text-green-600 font-semibold">{plan.savings}</span>
-                        </div>
-                      )}
-                      {plan.period === 'year' && (
-                        <div className="text-sm text-gray-600">
-                          Just $7.99/month when billed annually
+                      {plan.annualPrice && (
+                        <div className="text-sm text-emerald-600 font-medium">
+                          or {plan.annualPrice}/year • {plan.annualSavings}
                         </div>
                       )}
                     </div>
                     
-                    <p className="text-gray-600">{plan.description}</p>
+                    <p className="text-gray-600 text-sm">{plan.description}</p>
                   </div>
                   
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-2 mb-6">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center">
-                        <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 text-green-500" />
-                        <span className="text-gray-600">{feature}</span>
+                      <li key={featureIndex} className="flex items-start">
+                        <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0 text-green-500 mt-0.5" />
+                        <span className="text-gray-600 text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   
                   <Button 
-                    className={`w-full text-lg py-4 ${
+                    className={`w-full py-3 ${
                       plan.popular
                         ? 'bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white'
+                        : plan.tier === 'free'
+                        ? 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
                         : 'border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50'
                     }`}
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={handleNavigateToRegister}
                   >
                     {plan.cta}
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                    <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </CardContent>
               </Card>
@@ -420,7 +416,7 @@ export default function Landing() {
           
           <div className="text-center mt-8">
             <p className="text-sm text-gray-500">
-              🎉 14-day free trial for both plans • No credit card required • Cancel anytime
+              🎉 Basic plan is free forever • Upgrade anytime • Cancel anytime
             </p>
           </div>
         </div>

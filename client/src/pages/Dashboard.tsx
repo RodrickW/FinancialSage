@@ -8,7 +8,6 @@ import {
 } from '@/components/LoadingStates';
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
-import { TrialStatus } from '@/components/TrialStatus';
 import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
 import MoneyResetBanner from '@/components/Dashboard/MoneyResetBanner';
 import FaithModeToggle from '@/components/FaithModeToggle';
@@ -19,7 +18,6 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PlaidBankOptions, PlaidLinkButton } from '@/components/PlaidLink';
-import TrialNotificationBanner from '@/components/TrialNotificationBanner';
 import { UserProfile, FinancialOverviewData, Transaction } from '@/types';
 import { Link } from 'wouter';
 
@@ -159,8 +157,11 @@ export default function Dashboard() {
   // Check if this is demo mode (only for anonymous marketing preview)
   const isDemoMode = !userData;
   
-  // New users should have access by default (don't show trial gates on first login)
-  const hasDefaultAccess = userData && (!(userData as any)?.hasSeenPaywall);
+  // Get the user's subscription tier
+  const currentTier = (userData?.subscriptionTier as 'free' | 'plus' | 'pro') || 'free';
+  
+  // Legacy access check for backwards compatibility
+  const hasLegacyAccess = userData?.hasStartedTrial || userData?.isPremium;
   
   // For real users, only use actual API data - no fake data
   const user: UserProfile = userData;
@@ -201,39 +202,36 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">
-                <TrialGate feature="Bank Connection" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-                  <PlaidLinkButton 
-                    className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
-                    data-tour="connect-account"
-                    onSuccess={() => {
-                      toast({
-                        title: "Account connected successfully!",
-                        description: "Let's set up your financial profile with our AI coach.",
-                      });
-                      
-                      // Redirect to AI coach for initial interview after brief delay
-                      setTimeout(() => {
-                        window.location.href = '/coach?onboarding=true';
-                      }, 2000);
-                    }}
-                  >
-                    <span className="material-icons text-sm mr-1">add</span>
-                    Connect Account
-                  </PlaidLinkButton>
-                </TrialGate>
+                {/* Bank Connection - Available to all tiers */}
+                <PlaidLinkButton 
+                  className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
+                  data-tour="connect-account"
+                  onSuccess={() => {
+                    toast({
+                      title: "Account connected successfully!",
+                      description: "Let's set up your financial profile with our AI coach.",
+                    });
+                    
+                    // Redirect to AI coach for initial interview after brief delay
+                    setTimeout(() => {
+                      window.location.href = '/coach?onboarding=true';
+                    }, 2000);
+                  }}
+                >
+                  <span className="material-icons text-sm mr-1">add</span>
+                  Connect Account
+                </PlaidLinkButton>
                 
-                <TrialGate feature="Account Management" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-                  <Link href="/accounts">
-                    <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
-                      <span className="material-icons text-sm mr-1">account_balance_wallet</span>
-                      View Accounts
-                    </Button>
-                  </Link>
-                </TrialGate>
-                
+                {/* View Accounts - Available to all tiers */}
+                <Link href="/accounts">
+                  <Button variant="outline" className="flex items-center border-gray-300 text-gray-600 hover:bg-gray-50 shadow-md btn-animate card-hover">
+                    <span className="material-icons text-sm mr-1">account_balance_wallet</span>
+                    View Accounts
+                  </Button>
+                </Link>
 
-                {/* Money Mind Interview Button */}
-                <TrialGate feature="AI Financial Coach" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
+                {/* Money Mind Interview Button - Requires Plus tier */}
+                <TrialGate feature="AI Financial Coach" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess || isDemoMode}>
                   <Link href="/coach?onboarding=true" data-tour="money-mind-interview">
                     <Button variant="outline" className="flex items-center border-green-300 text-green-600 hover:bg-green-50 shadow-md btn-animate card-hover">
                       <span className="material-icons text-sm mr-1">psychology</span>
@@ -264,11 +262,6 @@ export default function Dashboard() {
             </div>
           )}
           
-          {/* Trial Notification Banner (only for real users) */}
-          {!isDemoMode && <TrialNotificationBanner />}
-          
-          {/* Trial Status Component */}
-          {!isDemoMode && <TrialStatus />}
           
           {/* Faith Mode Toggle */}
           {!isDemoMode && user && (
@@ -277,42 +270,40 @@ export default function Dashboard() {
             </div>
           )}
           
-          {/* Daily Check-In Card */}
+          {/* Daily Check-In Card - Requires Plus tier */}
           {!isDemoMode && user && (
             <div data-tour="daily-checkin">
-              <TrialGate feature="Daily Check-In" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
+              <TrialGate feature="Daily Check-In" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess}>
                 <DailyCheckinCard />
               </TrialGate>
             </div>
           )}
           
-          {/* 30-Day Money Reset Banner */}
+          {/* 30-Day Money Reset Banner - Requires Plus tier */}
           {!isDemoMode && user && (
             <div data-tour="money-reset">
-              <TrialGate feature="30-Day Money Reset" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || hasDefaultAccess}>
+              <TrialGate feature="30-Day Money Reset" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess}>
                 <MoneyResetBanner />
               </TrialGate>
             </div>
           )}
           
-          {/* Proactive AI Insights */}
+          {/* Proactive AI Insights - Requires Plus tier */}
           {user && (
             <div className="mb-6" data-tour="ai-coach">
-              <TrialGate feature="AI Financial Insights" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
+              <TrialGate feature="AI Financial Insights" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess || isDemoMode}>
                 <AIInsights user={user} />
               </TrialGate>
             </div>
           )}
 
-          {/* Financial Overview Cards */}
+          {/* Financial Overview Cards - Available to all tiers */}
           <div data-tour="financial-overview">
-            <TrialGate feature="Financial Analytics" hasStartedTrial={user?.hasStartedTrial || user?.isPremium || isDemoMode || hasDefaultAccess}>
-              {financialLoading ? (
-                <FinancialOverviewSkeleton />
-              ) : (
-                <FinancialOverview data={financialOverview} />
-              )}
-            </TrialGate>
+            {financialLoading ? (
+              <FinancialOverviewSkeleton />
+            ) : (
+              <FinancialOverview data={financialOverview} />
+            )}
           </div>
           
         </div>

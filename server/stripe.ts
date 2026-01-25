@@ -146,6 +146,8 @@ export async function syncAllUsersToStripe(): Promise<number> {
   return syncedCount;
 }
 
+import { mapStripePriceToTier } from './tiers';
+
 /**
  * Handle Stripe webhook events
  * @param event Stripe webhook event
@@ -173,6 +175,11 @@ export async function handleStripeWebhook(event: Stripe.Event) {
       // Get the subscription
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
       
+      // Get price ID and determine tier
+      const priceId = subscription.items.data[0]?.price?.id || '';
+      const tier = mapStripePriceToTier(priceId);
+      const period = subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
+      
       // Update user with subscription ID
       if (session.customer && session.subscription) {
         const [user] = await db.select()
@@ -180,20 +187,18 @@ export async function handleStripeWebhook(event: Stripe.Event) {
           .where(eq(users.stripeCustomerId, session.customer as string));
         
         if (user) {
-          // Set trial end date and mark as having started trial
-          const trialEndsAt = subscription.trial_end 
-            ? new Date(subscription.trial_end * 1000) 
-            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-            
           await db.update(users)
             .set({ 
               stripeSubscriptionId: session.subscription as string,
-              hasStartedTrial: true,
-              isPremium: false, // Premium only after trial ends
-              trialEndsAt,
-              subscriptionStatus: 'trialing'
+              subscriptionTier: tier,
+              stripePriceId: priceId,
+              subscriptionPeriod: period,
+              isPremium: tier !== 'free',
+              subscriptionStatus: 'active'
             })
             .where(eq(users.id, user.id));
+            
+          console.log(`User ${user.username} subscribed to ${tier} tier (${period})`);
         }
       }
       break;
@@ -202,19 +207,30 @@ export async function handleStripeWebhook(event: Stripe.Event) {
     case 'customer.subscription.updated': {
       const subscription = event.data.object as Stripe.Subscription;
       
+      // Get price ID and determine tier
+      const priceId = subscription.items.data[0]?.price?.id || '';
+      const tier = mapStripePriceToTier(priceId);
+      const period = subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
+      
       // Handle subscription status changes
       const [user] = await db.select()
         .from(users)
         .where(eq(users.stripeCustomerId, subscription.customer as string));
       
       if (user) {
-        // Update subscription status
+        const isActive = subscription.status === 'active' || subscription.status === 'past_due';
+        
         await db.update(users)
           .set({ 
             subscriptionStatus: subscription.status,
-            isPremium: subscription.status === 'active' || subscription.status === 'trialing'
+            subscriptionTier: isActive ? tier : 'free',
+            stripePriceId: priceId,
+            subscriptionPeriod: period,
+            isPremium: isActive && tier !== 'free'
           })
           .where(eq(users.id, user.id));
+          
+        console.log(`User ${user.username} subscription updated: ${tier} tier, status: ${subscription.status}`);
       }
       break;
     }
@@ -228,15 +244,17 @@ export async function handleStripeWebhook(event: Stripe.Event) {
         .where(eq(users.stripeCustomerId, subscription.customer as string));
       
       if (user) {
-        // Update user as no longer premium
+        // Reset to free tier
         await db.update(users)
           .set({ 
             isPremium: false,
             subscriptionStatus: 'canceled',
-            premiumTier: null,
-            trialEndsAt: null
+            subscriptionTier: 'free',
+            stripePriceId: null
           })
           .where(eq(users.id, user.id));
+          
+        console.log(`User ${user.username} subscription cancelled, reverted to free tier`);
       }
       break;
     }

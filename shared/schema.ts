@@ -29,6 +29,10 @@ export const users = pgTable("users", {
   aiMessagesUsedThisMonth: integer("ai_messages_used_this_month").default(0),
   aiMessagesResetAt: timestamp("ai_messages_reset_at"),
   
+  // Legacy trial fields (deprecated - kept for backwards compatibility)
+  trialEndsAt: timestamp("trial_ends_at"),
+  hasStartedTrial: boolean("has_started_trial").default(false),
+  
   // RevenueCat (Apple IAP) fields
   revenuecatUserId: text("revenuecat_user_id"),
   revenuecatSubscriptionId: text("revenuecat_subscription_id"),

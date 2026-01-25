@@ -19,6 +19,7 @@ import MemoryStore from "memorystore";
 import * as ConnectRedis from "connect-redis";
 import { redisClient } from "./redis";
 import { validateInput, validateSession, logSecurityEvent, csrfProtection, sanitizeInput } from "./security";
+import { getUserTier } from "./tiers";
 import Stripe from "stripe";
 
 // Initialize Stripe
@@ -387,6 +388,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     return false;
+  };
+
+  // Tier-based feature access middleware factory
+  const requireTier = (minTier: 'plus' | 'pro') => {
+    return async (req: any, res: any, next: any) => {
+      const user = req.user as User;
+      const userTier = getUserTier(user);
+      
+      // Also allow legacy access for backwards compatibility
+      if (hasAccess(user, req)) {
+        return next();
+      }
+      
+      const tierOrder = { 'free': 0, 'plus': 1, 'pro': 2 };
+      if (tierOrder[userTier] >= tierOrder[minTier]) {
+        return next();
+      }
+      
+      return res.status(403).json({
+        message: `This feature requires a ${minTier === 'plus' ? 'Plus' : 'Pro'} subscription`,
+        code: 'TIER_REQUIRED',
+        requiredTier: minTier,
+        currentTier: userTier
+      });
+    };
   };
 
   // Enhanced auth middleware with trial checking
@@ -2607,8 +2633,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Budget Creation - Money Mind analyzes spending and creates personalized budget
-  app.post('/api/ai/create-budget', requireAuth, async (req, res) => {
+  // AI Budget Creation - Money Mind analyzes spending and creates personalized budget (Plus+ tier)
+  app.post('/api/ai/create-budget', requireAuth, requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -2704,8 +2730,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Money Mind AI coaching endpoint
-  app.post('/api/ai/coaching', requireAuth, async (req, res) => {
+  // Money Mind AI coaching endpoint (Plus+ tier)
+  app.post('/api/ai/coaching', requireAuth, requireTier('plus'), async (req, res) => {
     try {
       const { question } = req.body;
       
@@ -2895,8 +2921,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI spending analysis endpoint for comprehensive budget categorization
-  app.post('/api/ai/analyze-spending', requireAuth, async (req, res) => {
+  // AI spending analysis endpoint for comprehensive budget categorization (Plus+ tier)
+  app.post('/api/ai/analyze-spending', requireAuth, requireTier('plus'), async (req, res) => {
     try {
       const { transactions } = req.body;
       const user = req.user as User;

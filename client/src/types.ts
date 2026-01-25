@@ -1,4 +1,6 @@
 // Dashboard types
+export type SubscriptionTier = 'free' | 'plus' | 'pro';
+
 export interface UserProfile {
   id: number;
   username: string;
@@ -10,6 +12,7 @@ export interface UserProfile {
   hasStartedTrial: boolean;
   trialEndsAt?: string;
   subscriptionStatus: string;
+  subscriptionTier?: SubscriptionTier;
   faithModeEnabled?: boolean;
 }
 

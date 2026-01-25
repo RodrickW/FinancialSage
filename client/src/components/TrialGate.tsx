@@ -2,68 +2,90 @@ import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Star, TrendingUp, Shield } from 'lucide-react';
-import { MoneyMindLogo } from '@/components/Logo';
+import { Lock, Sparkles, TrendingUp, Target, MessageCircle } from 'lucide-react';
+
+type SubscriptionTier = 'free' | 'plus' | 'pro';
 
 interface TrialGateProps {
   feature: string;
   children: React.ReactNode;
-  hasStartedTrial: boolean;
+  hasStartedTrial?: boolean;
+  currentTier?: SubscriptionTier;
+  requiredTier?: SubscriptionTier;
 }
 
-export default function TrialGate({ feature, children, hasStartedTrial }: TrialGateProps) {
+const tierOrder: Record<SubscriptionTier, number> = {
+  'free': 0,
+  'plus': 1, 
+  'pro': 2
+};
+
+export default function TrialGate({ 
+  feature, 
+  children, 
+  hasStartedTrial, 
+  currentTier = 'free',
+  requiredTier = 'plus' 
+}: TrialGateProps) {
   const [, setLocation] = useLocation();
 
-  if (hasStartedTrial) {
+  const hasAccess = hasStartedTrial || tierOrder[currentTier] >= tierOrder[requiredTier];
+  
+  if (hasAccess) {
     return <>{children}</>;
   }
 
   return (
-    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+    <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
       <CardHeader className="text-center pb-4">
-        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
           <Lock className="w-8 h-8 text-white" />
         </div>
         <CardTitle className="text-xl text-gray-900">
-          Start Your Free Trial to Access {feature}
+          Upgrade to Unlock {feature}
         </CardTitle>
         <p className="text-gray-600 mt-2">
-          Unlock all premium features with our 14-day free trial
+          Get access to powerful features that transform your finances
         </p>
-        <Badge className="mx-auto mt-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white">
-          No Credit Card Required
-        </Badge>
+        <div className="flex justify-center gap-2 mt-3">
+          <Badge className="bg-emerald-100 text-emerald-800">
+            Plus $5.99/mo
+          </Badge>
+          <Badge variant="outline" className="border-emerald-300 text-emerald-700">
+            Pro $9.99/mo
+          </Badge>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="flex items-center space-x-2 text-sm">
-            <MoneyMindLogo className="w-4 h-4" />
-            <span>AI Financial Coach</span>
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <span>AI Financial Interview</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
-            <TrendingUp className="w-4 h-4 text-emerald-700" />
-            <span>Smart Analytics</span>
+            <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <span>AI-Generated Budget</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
-            <Star className="w-4 h-4 text-emerald-700" />
-            <span>Goal Tracking</span>
+            <Target className="w-4 h-4 text-emerald-600" />
+            <span>30-Day Money Reset</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
-            <Shield className="w-4 h-4 text-emerald-700" />
-            <span>Bank Integration</span>
+            <MessageCircle className="w-4 h-4 text-emerald-600" />
+            <span>AI Coach Messages</span>
           </div>
         </div>
 
         <Button 
           className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white font-medium py-3"
-          onClick={() => setLocation('/subscribe')}
+          onClick={() => setLocation('/pricing')}
         >
-          Start Free Trial
+          View Plans
         </Button>
         
         <p className="text-xs text-center text-gray-500 mt-3">
-          Full access for 14 days • Cancel anytime • No credit card required
+          Instant access • Cancel anytime
         </p>
       </CardContent>
     </Card>
