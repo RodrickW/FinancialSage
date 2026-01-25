@@ -100,13 +100,13 @@ export function SubscriptionBanner() {
         <div className="text-center md:text-left mb-3 md:mb-0">
           <p className="font-medium">
             {subscriptionStatus?.isOnFreeTrial 
-              ? `Your free trial ends in ${subscriptionStatus.trialDaysLeft} days` 
-              : "Start your 14-day free trial of Mind My Money!"}
+              ? `Your trial ends in ${subscriptionStatus.trialDaysLeft} days` 
+              : "Unlock AI coaching and premium features!"}
           </p>
           <p className="text-sm text-white/80">
             {subscriptionStatus?.isOnFreeTrial 
-              ? "Continue with your Standard subscription after your trial ends." 
-              : "Full access to all features - credit card required for trial setup."}
+              ? "Upgrade to keep access to all premium features." 
+              : "Choose a plan that fits your financial journey."}
           </p>
         </div>
         <div className="flex gap-3">
@@ -115,7 +115,7 @@ export function SubscriptionBanner() {
               <Button 
                 variant="secondary" 
                 className="bg-white text-primary hover:bg-white/90 hover:text-primary/90"
-                onClick={() => setLocation("/subscribe")}
+                onClick={() => setLocation("/pricing")}
               >
                 Upgrade Now
               </Button>
@@ -132,9 +132,9 @@ export function SubscriptionBanner() {
               variant="secondary" 
               className="bg-white text-teal-700 hover:bg-white/90 hover:text-teal-800"
               disabled={isLoading}
-              onClick={startFreeTrial}
+              onClick={() => setLocation("/pricing")}
             >
-              Start Free Trial
+              View Plans
             </Button>
           )}
         </div>

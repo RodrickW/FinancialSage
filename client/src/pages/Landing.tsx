@@ -197,7 +197,7 @@ export default function Landing() {
               onClick={handleNavigateToRegister}
               className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
             >
-              Start Free Trial
+              Create Free Account
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button 
