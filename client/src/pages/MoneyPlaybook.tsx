@@ -128,7 +128,7 @@ export default function MoneyPlaybook() {
                 and get your personalized 30-day action plan.
               </p>
               <Button 
-                onClick={() => setLocation('/coach-interview')}
+                onClick={() => setLocation('/coach/interview')}
                 className="bg-black text-white hover:bg-gray-800"
                 data-testid="button-start-interview"
               >
@@ -379,7 +379,7 @@ export default function MoneyPlaybook() {
         <div className="text-center pt-4">
           <Button 
             variant="outline"
-            onClick={() => setLocation('/coach-interview')}
+            onClick={() => setLocation('/coach/interview')}
             className="border-gray-300"
             data-testid="button-retake-interview"
           >
