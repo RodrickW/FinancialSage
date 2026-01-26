@@ -8,7 +8,6 @@ import {
 } from '@/components/LoadingStates';
 import OnboardingTour from '@/components/OnboardingTour';
 import TrialGate from '@/components/TrialGate';
-import { LockedFeatureCard } from '@/components/TierGate';
 import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
 import MoneyResetBanner from '@/components/Dashboard/MoneyResetBanner';
 import FaithModeToggle from '@/components/FaithModeToggle';
@@ -273,30 +272,30 @@ export default function Dashboard() {
             </div>
           )}
           
-          {/* Daily Check-In Card - Requires Plus tier */}
-          {!isDemoMode && user && (
-            <div data-tour="daily-checkin">
-              <TrialGate feature="Daily Check-In" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess}>
+          {/* Premium features - only show if user has access */}
+          {!isDemoMode && user && (hasLegacyAccess || currentTier !== 'free') && (
+            <>
+              {/* Daily Check-In Card */}
+              <div data-tour="daily-checkin">
                 <DailyCheckinCard />
-              </TrialGate>
-            </div>
-          )}
-          
-          {/* 30-Day Money Reset Banner - Requires Plus tier */}
-          {!isDemoMode && user && (
-            <div data-tour="money-reset">
-              <TrialGate feature="30-Day Money Reset" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess}>
+              </div>
+              
+              {/* 30-Day Money Reset Banner */}
+              <div data-tour="money-reset">
                 <MoneyResetBanner />
-              </TrialGate>
-            </div>
+              </div>
+              
+              {/* Proactive AI Insights */}
+              <div className="mb-6" data-tour="ai-coach">
+                <AIInsights user={user} />
+              </div>
+            </>
           )}
           
-          {/* Proactive AI Insights - Requires Plus tier */}
-          {user && (
+          {/* Demo mode AI Insights */}
+          {isDemoMode && user && (
             <div className="mb-6" data-tour="ai-coach">
-              <TrialGate feature="AI Financial Insights" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess || isDemoMode}>
-                <AIInsights user={user} />
-              </TrialGate>
+              <AIInsights user={user} />
             </div>
           )}
 
@@ -309,42 +308,72 @@ export default function Dashboard() {
             )}
           </div>
           
-          {/* Locked Feature Teaser Cards - Show only for free users without legacy access */}
+          {/* Consolidated Upgrade Card - Show only for free users without legacy access */}
           {!isDemoMode && user && !hasLegacyAccess && currentTier === 'free' && (
             <div className="mt-6">
-              <Card className="mb-4 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center gap-2 text-emerald-900">
-                    <Lock className="w-5 h-5" />
-                    Unlock Premium Features
+              <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200 shadow-lg">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
+                    <Lock className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl text-gray-900">
+                    Unlock Your Financial Transformation
                   </CardTitle>
-                  <p className="text-sm text-gray-600">Upgrade to get personalized AI coaching and more</p>
+                  <p className="text-gray-600 mt-2">
+                    Get personalized AI coaching and powerful tools to transform your money mindset
+                  </p>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <LockedFeatureCard 
-                    title="AI Coach"
-                    description="Unlock clarity + direction in 10 minutes"
-                    requiredTier="plus"
-                    icon={<MessageCircle className="w-5 h-5 text-gray-500" />}
-                  />
-                  <LockedFeatureCard 
-                    title="30-Day Money Reset"
-                    description="Transform your relationship with money"
-                    requiredTier="plus"
-                    icon={<Target className="w-5 h-5 text-gray-500" />}
-                  />
-                  <LockedFeatureCard 
-                    title="Personalized Budget"
-                    description="AI-generated budget based on your spending"
-                    requiredTier="plus"
-                    icon={<TrendingUp className="w-5 h-5 text-gray-500" />}
-                  />
-                  <LockedFeatureCard 
-                    title="AI Interview"
-                    description="Get your personalized financial playbook"
-                    requiredTier="plus"
-                    icon={<Sparkles className="w-5 h-5 text-gray-500" />}
-                  />
+                <CardContent className="space-y-6">
+                  {/* Plus Features */}
+                  <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-emerald-800 text-lg">Plus Plan</h3>
+                      <span className="text-emerald-700 font-bold">$5.99/mo</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 text-emerald-600" />
+                        <span>AI Coach (20 msgs/month)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-emerald-600" />
+                        <span>AI Financial Interview</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Target className="w-4 h-4 text-emerald-600" />
+                        <span>30-Day Money Reset</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-emerald-600" />
+                        <span>AI-Generated Budget</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Pro Features */}
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-purple-800 text-lg">Pro Plan</h3>
+                      <span className="text-purple-700 font-bold">$9.99/mo</span>
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      <p className="mb-2">Everything in Plus, plus:</p>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        <span>Unlimited AI Coach messages</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Link href="/pricing">
+                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 text-lg">
+                      View Plans & Upgrade
+                    </Button>
+                  </Link>
+                  
+                  <p className="text-xs text-center text-gray-500">
+                    Instant access • Cancel anytime • Save with annual plans
+                  </p>
                 </CardContent>
               </Card>
             </div>
