@@ -393,16 +393,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Tier-based feature access middleware factory
   const requireTier = (minTier: 'plus' | 'pro') => {
     return async (req: any, res: any, next: any) => {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       const user = req.user as User;
       const userTier = getUserTier(user);
       
-      // Also allow legacy access for backwards compatibility
-      if (hasAccess(user, req)) {
+      // Check tier-based access
+      const tierOrder = { 'free': 0, 'plus': 1, 'pro': 2 };
+      if (tierOrder[userTier] >= tierOrder[minTier]) {
         return next();
       }
       
-      const tierOrder = { 'free': 0, 'plus': 1, 'pro': 2 };
-      if (tierOrder[userTier] >= tierOrder[minTier]) {
+      // Legacy access: users with hasStartedTrial AND active trialing status get Plus access
+      // This maintains backward compatibility for existing trial users
+      if (user.hasStartedTrial && user.subscriptionStatus === 'trialing' && !isTrialExpired(user)) {
+        return next();
+      }
+      
+      // Legacy access: premium users get Pro access
+      if (user.isPremium) {
         return next();
       }
       
@@ -672,25 +683,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(result.data.password, saltRounds);
       
-      // Calculate 14-day trial end date
-      const trialEndDate = new Date();
-      trialEndDate.setDate(trialEndDate.getDate() + 14);
-      
-      // Create complete user object with 14-day trial started immediately
+      // Create complete user object with FREE tier (no trial - freemium model)
       const userWithHashedPassword = {
         username: result.data.username,
         password: hashedPassword,
         firstName: result.data.firstName,
         lastName: result.data.lastName,
         email: result.data.email,
-        // Set 14-day trial - full access without credit card required
-        isPremium: false, // Will become true only after payment
+        // New freemium model - users start on FREE tier
+        isPremium: false,
         premiumTier: null,
         stripeCustomerId: null,
         stripeSubscriptionId: null,
-        subscriptionStatus: 'trialing', // Set to trialing status
-        trialEndsAt: trialEndDate, // Set 14-day expiration
-        hasStartedTrial: true, // Mark trial as started
+        subscriptionStatus: null, // No active subscription
+        subscriptionTier: 'free', // Free tier by default
+        trialEndsAt: null, // No trial
+        hasStartedTrial: false, // No auto-trial in freemium model
         hasCompletedOnboarding: false,
         hasSeenTour: false,
         loginCount: 0,
@@ -1793,7 +1801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // New proactive AI insights endpoint using real user data with behavioral analytics
-  app.get('/api/ai/proactive-insights', requireAccess, async (req, res) => {
+  app.get('/api/ai/proactive-insights', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       const { generateProactiveInsights } = await import('./openai');
@@ -1997,7 +2005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.get('/api/ai/budget-recommendations', requireAccess, async (req, res) => {
+  app.get('/api/ai/budget-recommendations', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -2323,7 +2331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Comprehensive financial health assessment
-  app.get('/api/ai/financial-health', requireAccess, async (req, res) => {
+  app.get('/api/ai/financial-health', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -2389,7 +2397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Money Mind Interview endpoint - Save user responses and generate Money Playbook
-  app.post('/api/ai/interview', requireAccess, async (req, res) => {
+  app.post('/api/ai/interview', requireTier('plus'), async (req, res) => {
     try {
       const { responses, completedAt } = req.body;
       const user = req.user as User;
@@ -4249,7 +4257,7 @@ IMPORTANT:
   // ===== 30-DAY MONEY RESET CHALLENGE ROUTES =====
 
   // Get current challenge status
-  app.get('/api/money-reset', requireAccess, async (req, res) => {
+  app.get('/api/money-reset', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       const enrollment = await storage.getActiveChallenge(user.id);
@@ -4289,7 +4297,7 @@ IMPORTANT:
   });
 
   // Start the 30-Day Money Reset challenge
-  app.post('/api/money-reset/enroll', requireAccess, async (req, res) => {
+  app.post('/api/money-reset/enroll', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -4364,7 +4372,7 @@ IMPORTANT:
   });
 
   // Complete today's mission
-  app.post('/api/money-reset/complete-mission', requireAccess, async (req, res) => {
+  app.post('/api/money-reset/complete-mission', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       const { missionId, reflection } = req.body;
@@ -4461,7 +4469,7 @@ IMPORTANT:
   });
 
   // Advance to next day (generate new mission)
-  app.post('/api/money-reset/next-day', requireAccess, async (req, res) => {
+  app.post('/api/money-reset/next-day', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -4563,7 +4571,7 @@ IMPORTANT:
   });
 
   // Submit weekly reflection answers
-  app.post('/api/money-reset/submit-reflection', requireAccess, async (req, res) => {
+  app.post('/api/money-reset/submit-reflection', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       const { reflectionId, responses } = req.body;
@@ -4613,7 +4621,7 @@ IMPORTANT:
   });
 
   // Get all user reflections (mission reflections + weekly reflections)
-  app.get('/api/money-reset/reflections', requireAccess, async (req, res) => {
+  app.get('/api/money-reset/reflections', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       const enrollment = await storage.getActiveChallenge(user.id);
@@ -4658,7 +4666,7 @@ IMPORTANT:
   });
 
   // Get transformation moments for sharing
-  app.get('/api/money-reset/moments', requireAccess, async (req, res) => {
+  app.get('/api/money-reset/moments', requireTier('plus'), async (req, res) => {
     try {
       const user = req.user as User;
       const moments = await storage.getTransformationMoments(user.id);
