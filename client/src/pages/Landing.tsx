@@ -185,7 +185,7 @@ export default function Landing() {
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-5 leading-[1.1]">
             Your Financial
             <br />
-            <span className="text-emerald-600">Transformation System</span>
+            <span className="text-emerald-600">Transformation Assistant</span>
           </h1>
           
           <p className="text-lg text-gray-500 mb-10 max-w-xl mx-auto leading-relaxed">
