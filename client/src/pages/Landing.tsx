@@ -19,9 +19,10 @@ import {
   BarChart3,
   MessageCircle,
   Smartphone,
-  Globe
+  Globe,
+  Sparkles,
+  Check
 } from 'lucide-react';
-import { MoneyMindLogo } from '@/components/Logo';
 
 export default function Landing() {
   const [, setLocation] = useLocation();
@@ -138,31 +139,30 @@ export default function Landing() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100">
-      {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <ChessCrownLogo className="w-8 h-8" color="text-emerald-700" />
-              <span className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-white">
+      <nav className="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14">
+            <div className="flex items-center space-x-2">
+              <ChessCrownLogo className="w-7 h-7" color="text-emerald-600" />
+              <span className="text-lg font-bold text-gray-900">
                 Mind My Money
               </span>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-emerald-700 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-emerald-700 transition-colors">How It Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-emerald-700 transition-colors">Pricing</a>
+            <div className="hidden md:flex items-center space-x-6">
+              <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">Features</a>
+              <a href="#how-it-works" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">How It Works</a>
+              <a href="#pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">Pricing</a>
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 onClick={() => setLocation('/login')}
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                className="text-sm text-gray-600 hover:text-gray-900 font-medium"
               >
                 Sign In
               </Button>
               <Button 
                 onClick={handleNavigateToRegister}
-                className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5"
               >
                 Get Started
               </Button>
@@ -171,86 +171,71 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          {/* Large Logo */}
-          <div className="flex justify-center mb-8">
-            <MoneyMindLogo className="w-32 h-32 md:w-40 md:h-40" />
-          </div>
-          
-          <Badge className="mb-6 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-medium">
-            ✨ Start free today — Basic plan forever free ✨
+      <section className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center">
+          <Badge variant="secondary" className="mb-6 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-50 font-medium text-sm px-4 py-1.5">
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+            Basic plan free forever
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-400 bg-clip-text text-transparent leading-tight">
-            Your Financial Transformation System
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-5 leading-[1.1]">
+            Your Financial
+            <br />
+            <span className="text-emerald-600">Transformation System</span>
           </h1>
           
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-500 mb-10 max-w-xl mx-auto leading-relaxed">
             More than budgeting — Mind My Money helps you align your finances with your goals and values.
           </p>
           
-          <div className="flex flex-col gap-4 justify-center mb-12 max-w-md mx-auto">
+          <div className="flex justify-center mb-14">
             <Button 
               size="lg" 
               onClick={handleNavigateToRegister}
-              className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white text-lg px-8 py-4 shadow-lg"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-base font-semibold px-8 py-3 h-12 rounded-lg"
             >
               Create Free Account
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => setLocation('/login')}
-              className="w-full border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-lg px-8 py-4"
-            >
-              Login/See Demo
+              <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
           
-          {/* Trust Signals */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-sm text-gray-600 max-w-2xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-sm text-gray-400">
             <div className="flex items-center">
-              <Shield className="w-4 h-4 mr-2 text-green-500" />
+              <Shield className="w-4 h-4 mr-2 text-emerald-500" />
               <span>Bank-level security with Plaid</span>
             </div>
             <div className="flex items-center">
-              <Zap className="w-4 h-4 mr-2 text-green-500" />
+              <Zap className="w-4 h-4 mr-2 text-emerald-500" />
               <span>Cancel anytime, no hidden fees</span>
             </div>
             <div className="flex items-center">
-              <Users className="w-4 h-4 mr-2 text-green-500" />
+              <Users className="w-4 h-4 mr-2 text-emerald-500" />
               <span>Trusted by everyday people who want to master their money</span>
             </div>
           </div>
-          
-
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3">
               Master Your Money. Live With Purpose.
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-500 max-w-xl mx-auto">
               Here's how we help you take back control
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
             {painPointFeatures.map((feature, index) => (
-              <Card key={index} className="border-emerald-100 hover:border-emerald-200 transition-colors group hover:shadow-lg">
+              <Card key={index} className="rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white">
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-100 rounded-lg flex items-center justify-center mb-4 group-hover:from-emerald-200 group-hover:to-emerald-200 transition-colors">
-                    <feature.icon className="w-6 h-6 text-emerald-700" />
+                  <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
+                    <feature.icon className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 text-gray-900">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-lg font-semibold mb-2 text-gray-900">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -258,19 +243,18 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 to-emerald-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-500 max-w-xl mx-auto">
               Get started in minutes
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-4xl mx-auto">
             {[
               {
                 step: 1,
@@ -292,46 +276,38 @@ export default function Landing() {
               }
             ].map((step, index) => (
               <div key={index} className="text-center">
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <step.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-emerald-200">
-                    <span className="text-sm font-bold text-emerald-700">{step.step}</span>
-                  </div>
+                <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto mb-5 text-lg font-bold">
+                  {step.step}
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.description}</p>
+                <h3 className="text-lg font-semibold mb-2 text-gray-900">{step.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
-          
-
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3">
               User Reviews
             </h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-emerald-100 hover:shadow-lg transition-shadow">
+              <Card key={index} className="rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white">
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                      <Star key={i} className="w-4 h-4 text-amber-400 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-600 mb-4 italic">"{testimonial.content}"</p>
+                  <p className="text-gray-600 mb-5 text-sm leading-relaxed">"{testimonial.content}"</p>
                   <div>
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>
+                    <p className="text-xs text-gray-400">{testimonial.role}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -340,68 +316,64 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section - Three Tiers */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 to-emerald-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3">
               Choose Your Plan
             </h2>
-            <p className="text-xl text-gray-600">Start free, upgrade when you're ready to transform</p>
+            <p className="text-lg text-gray-500">Start free, upgrade when you're ready to transform</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative border-2 transition-all duration-300 hover:shadow-xl ${
+              <Card key={index} className={`relative rounded-2xl transition-shadow ${
                 plan.popular 
-                  ? 'border-emerald-400 shadow-xl md:scale-105 z-10' 
-                  : 'border-emerald-200 hover:border-emerald-300'
+                  ? 'border-2 border-emerald-500 shadow-md' 
+                  : 'border border-gray-200 shadow-sm hover:shadow-md'
               }`}>
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-emerald-700 to-emerald-500 text-white px-4 py-1">
-                      🏆 Most Popular
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-emerald-600 text-white text-xs font-semibold px-3 py-0.5">
+                      Most Popular
                     </Badge>
                   </div>
                 )}
                 
                 <CardContent className="p-6">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">{plan.name}</h3>
+                    <p className="text-gray-500 text-sm mb-4">{plan.description}</p>
                     
-                    <div className="space-y-1 mb-4">
+                    <div className="mb-2">
                       <div className="flex items-baseline justify-center">
-                        <span className="text-4xl font-bold">{plan.price}</span>
+                        <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
                         {plan.period !== 'forever' && (
-                          <span className="text-gray-500 ml-1">/{plan.period}</span>
+                          <span className="text-gray-400 ml-1 text-sm">/{plan.period}</span>
                         )}
                       </div>
                       {plan.annualPrice && (
-                        <div className="text-sm text-emerald-600 font-medium">
-                          or {plan.annualPrice}/year • {plan.annualSavings}
+                        <div className="text-xs text-emerald-600 font-medium mt-1">
+                          or {plan.annualPrice}/year · {plan.annualSavings}
                         </div>
                       )}
                     </div>
-                    
-                    <p className="text-gray-600 text-sm">{plan.description}</p>
                   </div>
                   
-                  <ul className="space-y-2 mb-6">
+                  <ul className="space-y-2.5 mb-6">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
-                        <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0 text-green-500 mt-0.5" />
+                        <Check className="w-4 h-4 mr-2.5 flex-shrink-0 text-emerald-500 mt-0.5" />
                         <span className="text-gray-600 text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   
                   <Button 
-                    className={`w-full py-3 ${
+                    className={`w-full ${
                       plan.popular
-                        ? 'bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white'
-                        : plan.tier === 'free'
-                        ? 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
-                        : 'border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50'
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        : 'border border-gray-200 text-gray-700 hover:bg-gray-50'
                     }`}
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={handleNavigateToRegister}
@@ -415,66 +387,62 @@ export default function Landing() {
           </div>
           
           <div className="text-center mt-8">
-            <p className="text-sm text-gray-500">
-              🎉 Basic plan is free forever • Upgrade anytime • Cancel anytime
+            <p className="text-sm text-gray-400">
+              Basic plan is free forever · Upgrade anytime · Cancel anytime
             </p>
           </div>
         </div>
       </section>
 
-
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="bg-gray-900 text-gray-300 py-14 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <ChessCrownLogo className="w-8 h-8" color="text-emerald-400" />
-                <span className="text-xl font-bold text-white">Mind My Money</span>
+              <div className="flex items-center space-x-2 mb-4">
+                <ChessCrownLogo className="w-7 h-7" color="text-emerald-400" />
+                <span className="text-lg font-bold text-white">Mind My Money</span>
               </div>
-              <p className="text-gray-400">
+              <p className="text-gray-400 text-sm leading-relaxed">
                 AI-powered financial coaching to help you achieve your money goals.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li><a href="#features" className="hover:text-emerald-400 transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-emerald-400 transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Security</a></li>
+              <h4 className="font-semibold text-white text-sm mb-4">Product</h4>
+              <ul className="space-y-2.5">
+                <li><a href="#features" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Features</a></li>
+                <li><a href="#pricing" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Pricing</a></li>
+                <li><a href="#" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Security</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Careers</a></li>
+              <h4 className="font-semibold text-white text-sm mb-4">Company</h4>
+              <ul className="space-y-2.5">
+                <li><a href="#" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">About</a></li>
+                <li><a href="#" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Blog</a></li>
+                <li><a href="#" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Careers</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold text-white mb-4">Support</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Contact</a></li>
-                <li><a href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
+              <h4 className="font-semibold text-white text-sm mb-4">Support</h4>
+              <ul className="space-y-2.5">
+                <li><a href="#" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Help Center</a></li>
+                <li><a href="#" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Contact</a></li>
+                <li><a href="/privacy" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2025 Mind My Money. All rights reserved.
+          <div className="border-t border-gray-800 mt-10 pt-8 text-center">
+            <p className="text-gray-500 text-sm">
+              © 2026 Mind My Money. All rights reserved.
             </p>
           </div>
         </div>
       </footer>
       
-      {/* Install prompt for mobile users */}
       <InstallPrompt />
     </div>
   );

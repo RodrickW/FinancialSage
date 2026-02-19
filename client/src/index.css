@@ -1,70 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 99%;
+    --foreground: 220 20% 10%;
  
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 20% 10%;
  
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 20% 10%;
  
-    /* Primary colors - Emerald green */
-    --primary: 160 84% 39%; /* Emerald #059669 */
-    --primary-foreground: 210 40% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
  
-    /* Secondary colors - lighter emerald */
-    --secondary: 160 60% 50%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 158 20% 95%;
+    --secondary-foreground: 160 84% 30%;
  
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
  
-    /* Accent colors - very light emerald */
-    --accent: 160 40% 92%;
-    --accent-foreground: 160 84% 35%;
+    --accent: 158 30% 94%;
+    --accent-foreground: 160 84% 30%;
  
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
  
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 160 84% 39%;
  
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
  
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
- 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
- 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
- 
-    /* Dark mode primary colors */
     --primary: 160 70% 50%;
     --primary-foreground: 210 40% 98%;
- 
-    /* Dark mode secondary colors */
     --secondary: 160 50% 60%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
     --accent: 160 40% 25%;
     --accent-foreground: 210 40% 98%;
- 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 160 70% 50%;
@@ -77,341 +66,233 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.025em;
+    font-weight: 700;
   }
 }
 
-/* Enhanced Animations and Transitions */
 @layer utilities {
-  /* Smooth page transitions */
   .page-transition {
     @apply transition-all duration-300 ease-in-out;
   }
 
-  /* Modern card hover animations */
   .card-hover {
-    @apply transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02];
+    @apply transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5;
   }
 
-  /* Gamified card styling */
   .gamified-card {
-    @apply relative transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 hover:shadow-purple-500/20 border-2 border-transparent hover:border-purple-300/50;
-    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    backdrop-filter: blur(10px);
+    @apply relative transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1;
   }
 
-  /* Modern button animations */
   .btn-animate {
-    @apply transition-all duration-200 ease-out transform active:scale-95 hover:scale-105;
+    @apply transition-all duration-150 ease-out transform active:scale-[0.98];
   }
 
-  /* Gamified button */
   .btn-gamified {
-    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-105 active:scale-95 text-white font-bold;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    @apply relative overflow-hidden transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-white font-semibold;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
   }
   
-  .btn-gamified::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s ease;
-  }
-  
-  .btn-gamified:hover::before {
-    left: 100%;
+  .btn-gamified:hover {
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
   }
 
-  /* Achievement badge */
   .achievement-badge {
-    @apply relative transform transition-all duration-300 hover:scale-110;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    box-shadow: 0 8px 20px rgba(240, 147, 251, 0.4);
+    @apply relative transform transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
   }
 
-  /* XP bar */
   .xp-bar {
     @apply relative overflow-hidden;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    animation: xpFill 2s ease-out;
+    background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+    animation: xpFill 1.5s ease-out;
   }
 
-  /* Progress ring */
   .progress-ring {
     transform-origin: center;
     animation: progressRing 1.5s ease-out;
   }
 
-  /* Celebration animation */
   .celebrate {
-    animation: celebrate 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: celebrate 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
-  /* XP gain animation */
   .xp-gain {
     animation: xpGain 1s ease-out forwards;
   }
 
-  /* Bounce animation */
   .bounce-in {
-    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
-  /* Pulse glow animation */
   .pulse-glow {
     animation: pulseGlow 2s infinite;
   }
 
-  /* Achievement unlock animation */
   .achievement-unlock {
-    animation: achievementUnlock 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: achievementUnlock 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
-  /* Fade in animation */
   .fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.4s ease-out;
   }
 
-  /* Slide up animation */
   .slide-up {
-    animation: slideUp 0.4s ease-out;
+    animation: slideUp 0.35s ease-out;
   }
 
-  /* Glass morphism effect */
   .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
-  /* Neon glow text */
-  .neon-text {
-    text-shadow: 0 0 10px rgba(102, 126, 234, 0.8),
-                 0 0 20px rgba(102, 126, 234, 0.6),
-                 0 0 40px rgba(102, 126, 234, 0.4);
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
 
-  /* Stagger animation for lists */
   .stagger-item {
     animation: staggerIn 0.3s ease-out both;
   }
 
-  .stagger-item:nth-child(1) { animation-delay: 0.1s; }
-  .stagger-item:nth-child(2) { animation-delay: 0.2s; }
-  .stagger-item:nth-child(3) { animation-delay: 0.3s; }
-  .stagger-item:nth-child(4) { animation-delay: 0.4s; }
-  .stagger-item:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-item:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-item:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-item:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-item:nth-child(5) { animation-delay: 0.25s; }
 
-  /* Loading shimmer effect */
   .shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, #f5f5f5 25%, #ebebeb 50%, #f5f5f5 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
+
+  .metric-card {
+    @apply bg-white rounded-2xl p-5 border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  .section-card {
+    @apply bg-white rounded-2xl border border-gray-100 shadow-sm;
+  }
 }
 
-/* Keyframe animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes staggerIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* Enhanced pulse animation */
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
 }
 
-/* Gamification keyframes */
 @keyframes celebrate {
-  0% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.1) rotate(-3deg); }
-  50% { transform: scale(1.2) rotate(3deg); }
-  75% { transform: scale(1.1) rotate(-1deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 
 @keyframes xpGain {
-  0% { 
-    transform: translateY(0px) scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(-20px) scale(1.2);
-    opacity: 0.8;
-  }
-  100% { 
-    transform: translateY(-40px) scale(1);
-    opacity: 0;
-  }
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(0.9); opacity: 0; }
 }
 
 @keyframes progressRing {
-  0% {
-    stroke-dashoffset: 100;
-    transform: rotate(-90deg);
-  }
-  100% {
-    stroke-dashoffset: 0;
-    transform: rotate(-90deg);
-  }
+  0% { stroke-dashoffset: 100; transform: rotate(-90deg); }
+  100% { stroke-dashoffset: 0; transform: rotate(-90deg); }
 }
 
 @keyframes bounceIn {
-  0% {
-    transform: scale(0.3) translateY(-50px);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05) translateY(0px);
-    opacity: 0.8;
-  }
-  70% {
-    transform: scale(0.9) translateY(0px);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) translateY(0px);
-    opacity: 1;
-  }
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
-  }
+  0%, 100% { box-shadow: 0 0 12px rgba(5, 150, 105, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(5, 150, 105, 0.5); }
 }
 
 @keyframes achievementUnlock {
-  0% {
-    transform: scale(0) rotate(180deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2) rotate(90deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
+  0% { transform: scale(0) rotate(90deg); opacity: 0; }
+  60% { transform: scale(1.1) rotate(-5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes xpFill {
-  0% {
-    transform: scaleX(0);
-  }
-  100% {
-    transform: scaleX(1);
-  }
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
 }
 
-/* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
 }
 
-/* Tour and onboarding styles */
-.tour-active {
-  overflow: hidden;
-}
-
-.tour-overlay {
-  backdrop-filter: blur(2px);
-}
-
+.tour-active { overflow: hidden; }
+.tour-overlay { backdrop-filter: blur(2px); }
 .tour-spotlight {
   position: relative;
   z-index: 45;
-  border-radius: 8px;
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.4), 0 0 20px rgba(0, 0, 0, 0.3);
   animation: spotlight 0.5s ease-out;
 }
 
 @keyframes spotlight {
-  from {
-    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.8), 0 0 0px rgba(0, 0, 0, 0.5);
-  }
-  to {
-    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
-  }
+  from { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4), 0 0 0 rgba(0, 0, 0, 0.3); }
+  to { box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.4), 0 0 20px rgba(0, 0, 0, 0.3); }
 }
 
-/* Color utility classes for the Emerald green scheme */
 .bg-primary-gradient {
-  @apply bg-gradient-to-r from-emerald-700 to-emerald-600;
+  @apply bg-gradient-to-r from-emerald-600 to-emerald-500;
 }
 
 .bg-app-gradient {
-  @apply bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500;
+  background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%);
 }
 
 .text-primary-gradient {
-  @apply bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent;
 }
 
 .border-primary-gradient {
-  @apply border-emerald-600;
+  @apply border-emerald-500;
 }
 
 .hover-primary-gradient:hover {
-  @apply bg-gradient-to-r from-emerald-800 to-emerald-700;
+  @apply bg-gradient-to-r from-emerald-700 to-emerald-600;
 }
 
-/* Custom styles for Money Mind app */
 .font-money {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Material Icons */
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
@@ -433,4 +314,8 @@ html {
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+}
+
+.neon-text {
+  text-shadow: none;
 }
