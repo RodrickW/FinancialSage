@@ -173,8 +173,8 @@ export default function Landing() {
 
       <section className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto text-center">
-          <div className="w-20 h-20 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-sm">
-            <ChessCrownLogo className="w-12 h-12" color="text-emerald-600" />
+          <div className="flex justify-center mb-6">
+            <ChessCrownLogo className="w-28 h-28" color="text-emerald-600" />
           </div>
           
           <Badge variant="secondary" className="mb-6 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-50 font-medium text-sm px-4 py-1.5">
