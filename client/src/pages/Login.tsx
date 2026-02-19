@@ -199,13 +199,21 @@ export default function Login() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="justify-center pb-6">
+        <CardFooter className="flex flex-col gap-3 pb-6">
           <p className="text-sm text-gray-500">
             Don't have an account?{' '}
             <Link href="/register" className="text-emerald-600 font-medium hover:underline">
               Register here
             </Link>
           </p>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="text-gray-500 hover:text-gray-700"
+            onClick={() => navigate('/')}
+          >
+            Back to Home
+          </Button>
         </CardFooter>
       </Card>
     </div>

@@ -197,6 +197,13 @@ export default function Landing() {
               Create Free Account
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setLocation('/login')}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 text-base font-medium px-8 py-3 h-12 rounded-lg"
+            >
+              Log In
+            </Button>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-sm text-gray-400">
