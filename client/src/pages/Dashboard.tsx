@@ -19,7 +19,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { PlaidLinkButton } from '@/components/PlaidLink';
 import { UserProfile, FinancialOverviewData, Transaction } from '@/types';
 import { Link } from 'wouter';
-import { Sparkles, Target, MessageCircle, TrendingUp, Lock, Plus, Wallet, Brain, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Target, MessageCircle, TrendingUp, Lock, Plus, Wallet, Brain, ArrowRight, CheckCircle2, CircleCheck, Circle } from 'lucide-react';
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -54,6 +54,26 @@ export default function Dashboard() {
   
   const { data: financialData, isLoading: financialLoading } = useQuery<any>({
     queryKey: ['/api/financial-overview']
+  });
+
+  const { data: accounts = [] } = useQuery<any[]>({
+    queryKey: ['/api/accounts'],
+    enabled: !!userData
+  });
+
+  const { data: goals = [] } = useQuery<any[]>({
+    queryKey: ['/api/goals'],
+    enabled: !!userData
+  });
+
+  const { data: savedBudgets = [] } = useQuery<any[]>({
+    queryKey: ['/api/budgets'],
+    enabled: !!userData
+  });
+
+  const { data: interviewData } = useQuery<any>({
+    queryKey: ['/api/ai/interview/latest'],
+    enabled: !!userData
   });
 
   const refreshTransactionsMutation = useMutation({
