@@ -224,6 +224,78 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Setup Checklist — shown when user has no connected account yet */}
+          {!isDemoMode && user && (accounts as any[]).length === 0 && (
+            <div className="mb-6 section-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <Target className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">Get started with 4 steps</h3>
+                  <p className="text-xs text-gray-500">Complete setup to unlock your full financial picture</p>
+                </div>
+              </div>
+              <div className="space-y-2.5">
+                {[
+                  {
+                    label: 'Connect your bank account',
+                    done: (accounts as any[]).length > 0,
+                    href: null,
+                    cta: 'Connect'
+                  },
+                  {
+                    label: 'Set up your budget',
+                    done: (savedBudgets as any[]).some((b: any) => b.amount > 0),
+                    href: '/budget',
+                    cta: 'Set budget'
+                  },
+                  {
+                    label: 'Create a savings goal',
+                    done: (goals as any[]).length > 0,
+                    href: '/goals',
+                    cta: 'Add goal'
+                  },
+                  {
+                    label: 'Complete the Money Mind Interview',
+                    done: interviewData?.hasInterview,
+                    href: '/coach/interview',
+                    cta: 'Start'
+                  }
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <div className="flex items-center gap-3">
+                      {step.done
+                        ? <CircleCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                        : <Circle className="w-5 h-5 text-gray-300 flex-shrink-0" />}
+                      <span className={`text-sm ${step.done ? 'line-through text-gray-400' : 'text-gray-700 font-medium'}`}>
+                        {step.label}
+                      </span>
+                    </div>
+                    {!step.done && (
+                      step.href ? (
+                        <Link href={step.href}>
+                          <button className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 whitespace-nowrap">
+                            {step.cta} →
+                          </button>
+                        </Link>
+                      ) : (
+                        <PlaidLinkButton
+                          className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer"
+                          onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+                          }}
+                        >
+                          {step.cta} →
+                        </PlaidLinkButton>
+                      )
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Financial Overview */}
           <div data-tour="financial-overview">
             {financialLoading ? (

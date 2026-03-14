@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { UserProfile, SubscriptionTier } from '@/types';
-import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap, BookOpen, Lock } from 'lucide-react';
+import { Loader2, MessageCircle, Target, TrendingUp, PiggyBank, CircleDollarSign, Zap, BookOpen, Lock, Sparkles } from 'lucide-react';
 
 
 export default function FinancialCoach() {
@@ -470,13 +470,29 @@ Money Mind 💰`);
         <TopNav title="Financial Coach" />
         
         <div className="p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold">AI Financial Coach</h1>
-            <p className="text-neutral-600">
-              Get personalized financial advice and budget recommendations based on your data.
+          <div className="mb-5">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Money Mind</h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              Your AI financial coach — always watching, always coaching.
             </p>
           </div>
-          
+
+          {/* Proactive Coach Greeting */}
+          {hasAccess && (
+            <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 flex gap-3">
+              <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-emerald-800 mb-0.5">Money Mind noticed something</p>
+                <p className="text-sm text-emerald-700 leading-relaxed">
+                  {user?.firstName ? `Hey ${user.firstName}! ` : 'Hey! '}
+                  Most people overspend in 2–3 categories without realizing it. Ask me to analyze your spending or run a budget check — I'll tell you exactly where your money is going and how to keep more of it.
+                </p>
+              </div>
+            </div>
+          )}
+
           <TierGate feature="AI Financial Coach" requiredTier="plus" currentTier={hasLegacyAccess || hasTierAccess ? currentTier === 'pro' ? 'pro' : 'plus' : currentTier}>
             {showOnboardingInterview ? (
               <Card className="p-6">

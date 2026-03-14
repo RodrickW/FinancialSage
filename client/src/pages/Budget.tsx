@@ -512,22 +512,26 @@ export default function Budget() {
                                 </div>
                               </div>
                               
-                              {category.plannedAmount > 0 && (
-                                <div className="space-y-1">
-                                  <Progress 
-                                    value={progressPercentage}
-                                    className={`h-2 ${isOverBudget ? 'bg-red-100' : 'bg-gray-200'}`}
-                                  />
-                                  <div className="flex justify-between text-xs">
-                                    <span className={isOverBudget ? 'text-red-600' : 'text-gray-500'}>
-                                      {progressPercentage.toFixed(0)}% used
-                                    </span>
-                                    <span style={{color: category.remaining >= 0 ? '#2563eb' : '#dc2626', fontWeight: '500'}}>
-                                      ${Math.abs(category.remaining).toLocaleString()} {category.remaining >= 0 ? 'left' : 'over'}
-                                    </span>
-                                  </div>
+                              <div className="space-y-1">
+                                <Progress 
+                                  value={category.plannedAmount > 0 ? progressPercentage : 0}
+                                  className={`h-2 ${isOverBudget ? 'bg-red-100' : 'bg-gray-100'}`}
+                                />
+                                <div className="flex justify-between text-xs">
+                                  {category.plannedAmount > 0 ? (
+                                    <>
+                                      <span className={isOverBudget ? 'text-red-600' : 'text-gray-400'}>
+                                        {progressPercentage.toFixed(0)}% used
+                                      </span>
+                                      <span style={{color: category.remaining >= 0 ? '#2563eb' : '#dc2626', fontWeight: '500'}}>
+                                        ${Math.abs(category.remaining).toLocaleString()} {category.remaining >= 0 ? 'left' : 'over'}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400 italic">Tap ✏ to set a budget</span>
+                                  )}
                                 </div>
-                              )}
+                              </div>
                             </div>
                           </div>
                         </div>

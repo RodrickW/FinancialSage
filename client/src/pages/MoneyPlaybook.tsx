@@ -112,31 +112,80 @@ export default function MoneyPlaybook() {
 
   if (!interviewData?.hasInterview || !interviewData.interview?.moneyPlaybook) {
     return (
-      <div className="min-h-screen bg-white pb-20">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
         <TopNav title="My Money Playbook" />
-        <main className="max-w-2xl mx-auto px-4 py-8">
-          <Card className="text-center">
-            <CardContent className="p-8">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Brain className="w-8 h-8 text-gray-400" />
+        <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+
+          {/* CTA Header */}
+          <div className="text-center pt-2 pb-1">
+            <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Brain className="w-7 h-7 text-emerald-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Your Money Playbook</h2>
+            <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">
+              Complete the 5-minute Money Mind Interview to unlock your personalized money personality type and 30-day action plan.
+            </p>
+            <Button
+              onClick={() => setLocation('/coach/interview')}
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 h-11 rounded-xl shadow-sm"
+              data-testid="button-start-interview"
+            >
+              Start the Interview
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+
+          {/* Blurred Preview */}
+          <div className="relative rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+            {/* Blur overlay */}
+            <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/60 flex flex-col items-center justify-center gap-3">
+              <div className="bg-white rounded-2xl shadow-md px-6 py-4 text-center max-w-xs">
+                <Sparkles className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+                <p className="font-semibold text-gray-900 text-sm">Preview locked</p>
+                <p className="text-xs text-gray-500 mt-1">Complete the interview to reveal your full Playbook</p>
               </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                No Money Playbook Yet
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Complete the Money Mind Interview to discover your Money Personality Type 
-                and get your personalized 30-day action plan.
-              </p>
-              <Button 
-                onClick={() => setLocation('/coach/interview')}
-                className="bg-black text-white hover:bg-gray-800"
-                data-testid="button-start-interview"
-              >
-                Start Interview
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Sample blurred content */}
+            <div className="p-5 space-y-4 select-none pointer-events-none">
+              {/* Personality card preview */}
+              <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-5 text-white">
+                <div className="text-xs font-semibold uppercase tracking-wider text-emerald-100 mb-1">Your Money Personality</div>
+                <div className="text-2xl font-bold mb-1">The Planner</div>
+                <div className="text-sm text-white/80">You approach finances with structure and foresight, but sometimes analysis paralysis can hold you back from acting.</div>
+              </div>
+
+              {/* Scores preview */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+                <div className="font-semibold text-gray-800 text-sm">Your Financial Scores</div>
+                {[
+                  { label: 'Saving Habits', val: 72, color: 'bg-emerald-500' },
+                  { label: 'Financial Awareness', val: 85, color: 'bg-emerald-400' },
+                  { label: 'Spending Trigger Intensity', val: 48, color: 'bg-orange-400' },
+                ].map((s, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{s.label}</span><span>{s.val}/100</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.val}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 30-day plan preview */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <div className="font-semibold text-gray-800 text-sm mb-3">Your 30-Day Action Plan</div>
+                {['Week 1', 'Week 2', 'Week 3', 'Week 4'].map((w, i) => (
+                  <div key={i} className="flex items-center gap-2 py-2 border-b border-gray-50 last:border-0">
+                    <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">{i+1}</div>
+                    <div className="h-3 bg-gray-200 rounded-full flex-1" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </main>
         <BottomNavigation user={user} />
       </div>
