@@ -29,8 +29,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { toast } = useToast();
+  const isNewUser = new URLSearchParams(location.split('?')[1] || '').get('new') === 'true';
   
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -81,9 +82,9 @@ export default function Login() {
           variant: 'default',
         });
         
-        // Navigate to dashboard after successful login
+        // Navigate to interview for new users, dashboard for returning users
         setTimeout(() => {
-          navigate('/');
+          navigate(isNewUser ? '/coach/interview?onboarding=true' : '/');
         }, 500);
       } else {
         const errorData = await response.json();

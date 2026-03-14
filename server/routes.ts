@@ -2444,6 +2444,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Save interview responses without AI (free tier onboarding)
+  app.post('/api/interview/save', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { responses, completedAt } = req.body;
+      const interview = await storage.createInterview({
+        userId: user.id,
+        responses: responses,
+        completedAt: completedAt ? new Date(completedAt) : new Date()
+      });
+      res.json({ success: true, interviewId: interview.id });
+    } catch (error) {
+      console.error('Error saving interview:', error);
+      res.status(500).json({ message: 'Failed to save interview' });
+    }
+  });
+
   // Money Mind Interview endpoint - Save user responses and generate Money Playbook
   app.post('/api/ai/interview', requireTier('plus'), async (req, res) => {
     try {

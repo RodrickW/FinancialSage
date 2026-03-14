@@ -39,6 +39,10 @@ import TransformationMoments from "@/pages/TransformationMoments";
 import ReflectionJournal from "@/pages/ReflectionJournal";
 import Settings from "@/pages/Settings";
 import Pricing from "@/pages/Pricing";
+import WhatIfSimulator from "@/pages/WhatIfSimulator";
+import DebtPayoff from "@/pages/DebtPayoff";
+import MoneyStory from "@/pages/MoneyStory";
+import FaithMode from "@/pages/FaithMode";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -184,6 +188,18 @@ function Router() {
       </Route>
       <Route path="/pricing">
         {(params) => <ProtectedRoute component={Pricing} params={params} />}
+      </Route>
+      <Route path="/what-if">
+        {(params) => <ProtectedRoute component={WhatIfSimulator} params={params} />}
+      </Route>
+      <Route path="/debt-payoff">
+        {(params) => <ProtectedRoute component={DebtPayoff} params={params} />}
+      </Route>
+      <Route path="/money-story">
+        {(params) => <ProtectedRoute component={MoneyStory} params={params} />}
+      </Route>
+      <Route path="/faith-mode">
+        {(params) => <ProtectedRoute component={FaithMode} params={params} />}
       </Route>
       <Route path="/cancel-trial">
         {(params) => <ProtectedRoute component={CancelTrial} params={params} />}

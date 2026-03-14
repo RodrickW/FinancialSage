@@ -20,7 +20,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { PlaidLinkButton } from '@/components/PlaidLink';
 import { UserProfile, FinancialOverviewData, Transaction } from '@/types';
 import { Link } from 'wouter';
-import { Sparkles, Target, MessageCircle, TrendingUp, Lock, Plus, Wallet, Brain, ArrowRight, CheckCircle2, CircleCheck, Circle } from 'lucide-react';
+import { Sparkles, Target, MessageCircle, TrendingUp, Lock, Plus, Wallet, Brain, ArrowRight, CheckCircle2, CircleCheck, Circle, SlidersHorizontal, CreditCard, BookOpenText, Heart } from 'lucide-react';
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -309,6 +309,33 @@ export default function Dashboard() {
             <SpendingChart />
           )}
           
+          {/* Financial Tools */}
+          {!isDemoMode && user && (
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Financial Tools</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { href: '/what-if', icon: SlidersHorizontal, label: 'What If Simulator', desc: 'See how small changes add up', color: 'bg-emerald-50 text-emerald-600' },
+                  { href: '/debt-payoff', icon: CreditCard, label: 'Debt Payoff Planner', desc: 'Snowball vs. avalanche', color: 'bg-blue-50 text-blue-600' },
+                  { href: '/money-story', icon: BookOpenText, label: 'Money Story', desc: 'Your monthly recap', color: 'bg-amber-50 text-amber-600' },
+                  ...(((user as any)?.faithModeEnabled) ? [{ href: '/faith-mode', icon: Heart, label: 'Faith Mode', desc: 'Tithing & generosity', color: 'bg-purple-50 text-purple-600' }] : []),
+                ].map(tool => (
+                  <Link key={tool.href} href={tool.href}>
+                    <div className="section-card p-4 flex items-start gap-3 cursor-pointer hover:shadow-md transition-shadow">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tool.color}`}>
+                        <tool.icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-900 leading-tight">{tool.label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-tight">{tool.desc}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Upgrade Card */}
           {!isDemoMode && user && !hasLegacyAccess && currentTier === 'free' && (
             <div className="mt-6 section-card overflow-hidden">

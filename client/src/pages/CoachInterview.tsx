@@ -296,9 +296,12 @@ export default function CoachInterview() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isComplete, setIsComplete] = useState(false);
-  const [, setLocation] = useLocation();
+  const [isFreeTierComplete, setIsFreeTierComplete] = useState(false);
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const isOnboarding = new URLSearchParams(location.split('?')[1] || '').get('onboarding') === 'true';
 
   // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -307,7 +310,7 @@ export default function CoachInterview() {
 
   const user: UserProfile = userData as any;
 
-  // Save interview responses
+  // Save interview responses with AI (Plus/Pro)
   const saveInterviewMutation = useMutation({
     mutationFn: async (interviewData: any) => {
       const response = await apiRequest('POST', '/api/ai/interview', interviewData);
@@ -326,6 +329,20 @@ export default function CoachInterview() {
         description: "There was a problem saving your responses. Please try again.",
         variant: "destructive",
       });
+    }
+  });
+
+  // Save interview responses without AI (Free tier onboarding)
+  const saveBasicInterviewMutation = useMutation({
+    mutationFn: async (interviewData: any) => {
+      const response = await apiRequest('POST', '/api/interview/save', interviewData);
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsFreeTierComplete(true);
+    },
+    onError: () => {
+      setIsFreeTierComplete(true);
     }
   });
 
@@ -352,11 +369,15 @@ export default function CoachInterview() {
     if (currentQuestion < interviewQuestions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
-      // Complete the interview
-      saveInterviewMutation.mutate({
-        responses,
-        completedAt: new Date().toISOString()
-      });
+      const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
+      const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+      const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
+
+      if (hasTierAccess || hasLegacyAccess) {
+        saveInterviewMutation.mutate({ responses, completedAt: new Date().toISOString() });
+      } else {
+        saveBasicInterviewMutation.mutate({ responses, completedAt: new Date().toISOString() });
+      }
     }
   };
 
@@ -367,8 +388,11 @@ export default function CoachInterview() {
   };
 
   const handleFinish = () => {
-    // Navigate to Money Playbook to see results
-    setLocation('/money-playbook');
+    setLocation(isOnboarding ? '/' : '/money-playbook');
+  };
+
+  const handleSkip = () => {
+    setLocation('/');
   };
 
   if (userLoading) {
@@ -379,12 +403,12 @@ export default function CoachInterview() {
     );
   }
 
-  // Check tier access - AI Interview requires Plus or higher
+  // Check tier access - gate non-onboarding access for free users
   const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
   const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
   const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
   
-  if (!hasLegacyAccess && !hasTierAccess) {
+  if (!isOnboarding && !hasLegacyAccess && !hasTierAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 pb-16">
         <BottomNavigation user={user} />
@@ -397,6 +421,36 @@ export default function CoachInterview() {
           >
             <div />
           </TierGate>
+        </main>
+      </div>
+    );
+  }
+
+  // Free tier onboarding completion screen
+  if (isFreeTierComplete) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10">
+        <TopNav title="You're All Set!" />
+        <main className="max-w-2xl mx-auto px-4 py-12 text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-emerald-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Your answers are saved!</h2>
+          <p className="text-gray-600 mb-6">
+            We've recorded your financial profile. Upgrade to Plus to unlock your personalized AI financial plan based on everything you just shared.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => setLocation('/subscribe')}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2 rounded-xl font-semibold"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Upgrade to Plus
+            </Button>
+            <Button variant="outline" onClick={() => setLocation('/')} className="rounded-xl">
+              Go to Dashboard
+            </Button>
+          </div>
         </main>
       </div>
     );
@@ -596,7 +650,7 @@ export default function CoachInterview() {
             </Card>
 
             {/* Navigation */}
-            <div className="flex justify-between mb-20 lg:mb-6">
+            <div className="flex justify-between mb-6">
               <Button
                 variant="outline"
                 onClick={handlePrevious}
@@ -606,29 +660,36 @@ export default function CoachInterview() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
-              
-              <Button
-                onClick={handleNext}
-                disabled={saveInterviewMutation.isPending}
-                className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white flex items-center z-10 relative"
-              >
-                {saveInterviewMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : currentQuestion === interviewQuestions.length - 1 ? (
-                  <>
-                    Complete Interview
-                    <Check className="w-4 h-4 ml-2" />
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
+
+              <div className="flex items-center gap-2">
+                {isOnboarding && (
+                  <Button variant="ghost" onClick={handleSkip} className="text-gray-400 text-sm z-10 relative">
+                    Skip for now
+                  </Button>
                 )}
-              </Button>
+                <Button
+                  onClick={handleNext}
+                  disabled={saveInterviewMutation.isPending || saveBasicInterviewMutation.isPending}
+                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white flex items-center z-10 relative"
+                >
+                  {(saveInterviewMutation.isPending || saveBasicInterviewMutation.isPending) ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : currentQuestion === interviewQuestions.length - 1 ? (
+                    <>
+                      Complete
+                      <Check className="w-4 h-4 ml-2" />
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
             {/* Helpful Tips */}

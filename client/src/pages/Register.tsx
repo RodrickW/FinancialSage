@@ -55,10 +55,10 @@ export default function Register() {
       if (response.ok) {
         toast({
           title: 'Registration successful',
-          description: 'Your account has been created. You can now log in.',
+          description: "Welcome! Let's get to know you first.",
           variant: 'default',
         });
-        navigate('/login');
+        navigate('/login?new=true');
       } else {
         const errorData = await response.json();
         toast({
