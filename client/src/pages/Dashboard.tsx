@@ -11,6 +11,7 @@ import TrialGate from '@/components/TrialGate';
 import DailyCheckinCard from '@/components/Dashboard/DailyCheckinCard';
 import MoneyResetBanner from '@/components/Dashboard/MoneyResetBanner';
 import FaithModeToggle from '@/components/FaithModeToggle';
+import SpendingChart from '@/components/Dashboard/SpendingChart';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -169,14 +170,12 @@ export default function Dashboard() {
               </Button>
             </Link>
 
-            <TrialGate feature="AI Financial Coach" currentTier={currentTier} requiredTier="plus" hasStartedTrial={hasLegacyAccess || isDemoMode}>
-              <Link href="/coach?onboarding=true" data-tour="money-mind-interview">
-                <Button variant="outline" size="sm" className="gap-1.5 text-sm font-medium border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                  <Brain className="w-4 h-4" />
-                  Money Mind
-                </Button>
-              </Link>
-            </TrialGate>
+            <Link href="/coach" data-tour="money-mind-interview">
+              <Button variant="outline" size="sm" className="gap-1.5 text-sm font-medium border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                <Brain className="w-4 h-4" />
+                Money Mind
+              </Button>
+            </Link>
           </div>
           
           {/* Demo Mode Banner */}
@@ -304,6 +303,11 @@ export default function Dashboard() {
               <FinancialOverview data={financialOverview} />
             )}
           </div>
+
+          {/* Spending Trend Chart */}
+          {!isDemoMode && user && (
+            <SpendingChart />
+          )}
           
           {/* Upgrade Card */}
           {!isDemoMode && user && !hasLegacyAccess && currentTier === 'free' && (

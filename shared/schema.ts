@@ -52,6 +52,10 @@ export const users = pgTable("users", {
   
   // Faith Mode - Biblical money mindset
   faithModeEnabled: boolean("faith_mode_enabled").default(false),
+
+  // Notification preferences
+  emailNotifications: boolean("email_notifications").default(true),
+  marketingEmails: boolean("marketing_emails").default(false),
 });
 
 // Connected account schema (bank accounts via Plaid)

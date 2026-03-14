@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { apiRequest } from '@/lib/queryClient';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { 
   Home, 
   Car, 
@@ -399,6 +400,54 @@ export default function Budget() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Spending Donut Chart */}
+          {(() => {
+            const donutData = budgetData
+              .map(group => ({
+                name: group.name,
+                value: group.categories.reduce((s, c) => s + c.actualSpent, 0)
+              }))
+              .filter(d => d.value > 0);
+
+            const COLORS = ['#059669','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#10b981'];
+
+            if (donutData.length === 0) return null;
+
+            return (
+              <div className="mb-8 section-card p-5">
+                <h3 className="text-sm font-semibold text-gray-800 mb-4">Spending Breakdown</h3>
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={donutData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={85}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {donutData.map((_, index) => (
+                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                        contentStyle={{ borderRadius: '12px', border: '1px solid #f3f4f6', fontSize: '12px' }}
+                      />
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: '11px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* AI Analyze Spending Button - Plus+ tier feature */}
           <div className="flex justify-center mb-8">

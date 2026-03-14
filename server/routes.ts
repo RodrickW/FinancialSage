@@ -1023,6 +1023,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(req.user);
   });
 
+  // Change password endpoint
+  app.post('/api/users/change-password', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Current and new password are required' });
+      }
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: 'New password must be at least 8 characters' });
+      }
+
+      const bcrypt = await import('bcrypt');
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+
+      const saltRounds = 12;
+      const hashed = await bcrypt.hash(newPassword, saltRounds);
+      await storage.updateUser(user.id, { password: hashed });
+
+      return res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Change password error:', error);
+      return res.status(500).json({ message: 'Failed to update password' });
+    }
+  });
+
+  // Update notification preferences
+  app.post('/api/users/notification-preferences', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { emailNotifications, marketingEmails } = req.body;
+
+      await storage.updateUser(user.id, {
+        emailNotifications: emailNotifications ?? user.emailNotifications,
+        marketingEmails: marketingEmails ?? user.marketingEmails,
+      });
+
+      return res.json({ message: 'Notification preferences updated' });
+    } catch (error) {
+      console.error('Notification preferences error:', error);
+      return res.status(500).json({ message: 'Failed to update preferences' });
+    }
+  });
+
   // Mobile-specific endpoint to check access (used by WebView)
   app.get('/api/mobile/access', requireAuth, (req, res) => {
     const user = req.user as User;
