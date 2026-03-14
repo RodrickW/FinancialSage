@@ -266,6 +266,33 @@ export default function Budget() {
     setIsEditDialogOpen(true);
   };
 
+  const saveBudgetMutation = useMutation({
+    mutationFn: async (groups: typeof budgetData) => {
+      const budgets = groups.flatMap(group =>
+        group.categories.map(cat => ({
+          category: cat.id,
+          amount: cat.plannedAmount,
+          spent: cat.actualSpent,
+          remaining: cat.plannedAmount - cat.actualSpent,
+          icon: cat.id
+        }))
+      );
+      const response = await apiRequest('POST', '/api/budgets', { budgets });
+      if (!response.ok) throw new Error('Failed to save');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+    },
+    onError: () => {
+      toast({
+        title: "Save failed",
+        description: "Could not save your budget. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleSaveAmount = () => {
     if (!editingCategory) return;
     
@@ -294,13 +321,14 @@ export default function Budget() {
     }));
 
     setBudgetData(updatedGroups);
+    saveBudgetMutation.mutate(updatedGroups);
     setIsEditDialogOpen(false);
     setEditingCategory(null);
     setEditAmount('');
 
     toast({
-      title: "Budget Updated",
-      description: "Category amount has been updated successfully."
+      title: "Budget Saved",
+      description: "Your budget amount has been saved."
     });
   };
 
