@@ -1,0 +1,73 @@
+Hey,
+Spent time going through every screen of the app. Here's my honest take.
+What's working:
+
+Brand identity is solid the green palette, logo, and name all feel
+cohesive and approachable
+Faith Mode is a genuine differentiator. No major competitor (Mint, YNAB,
+Monarch) has this. You're sitting on a blue ocean and barely using it
+Pricing is well calibrated $5.99/$9.99 is accessible and the free tier
+builds trust
+The Goals page has real personality the badges, levels, and streaks show
+good instincts around gamification. Bring that energy to the rest of the
+app
+The AI Coach concept is smart. The suggested prompt chips are a nice
+touch
+
+What needs fixing:
+The home page leads with a paywall before delivering any value. The
+first thing a new user sees is a locked upgrade card before they've done
+anything. Show value first, ask for money second. Also, having two
+separate upgrade CTAs on the same screen creates ad-blindness. Pick one
+and remove the other.
+The Budget page is a plain text list with $0/$0 next to everything. This
+is your core feature and it has no visual expression whatsoever. Even
+simple progress bars per category would be a meaningful improvement. A
+donut/wheel chart would be transformative.
+The Playbook page is just an empty white box for new users. It's your
+most interesting concept a personalized 30-day plan based on money
+personality — and it's completely invisible until someone subscribes.
+Show a blurred preview so users can see what they're working toward.
+Settings has two things: read-only profile info and a delete account
+button. No password change, no notifications, no profile photo. For a
+financial app this is a trust issue. Users need to feel in control of
+their data.
+The AI Coach only speaks when spoken to. A real coach watches your back
+without being asked. Even a proactive opening message when users log in
+("Here's something I noticed about your finances this week...") would
+change the feel entirely.
+There's no data visualization anywhere in the app. No charts, no graphs,
+no trend lines. In 2026 a finance app without visuals feels unfinished.
+Biggest opportunities:
+
+Make the Money Mind Interview the first thing every new user does before
+connecting an account. The personality type reveal creates an immediate
+"this app gets me" moment and gives users a reason to come back
+Go all-in on Faith Mode. Make it a full experience — scripture alongside
+decisions, "Stewardship" replacing "Budget" in the nav, a tithing
+calculator, a Generosity Score. Then market it directly to churches and
+Christian finance influencers. Nobody owns this space
+Add a "What If" simulator — sliders that show the compound impact of
+small changes ("What if I put $50/month toward debt?"). This is the
+feature people screenshot and share
+Build a Debt Payoff visualizer with snowball/avalanche toggles and a
+debt-free date counter. People share their debt-free dates. It's viral
+by design
+End-of-month "Money Story" recap a Spotify Wrapped for your finances.
+Shareable, visual, personal. This is a referral loop built into the
+product
+
+Ship these this week:
+
+Replace the empty $0 cards with a setup checklist (Connect account → Set
+budget → Create goal → Complete Playbook)
+Add progress bars to every budget category row
+Show a blurred Playbook preview for non-subscribers
+Give the AI a proactive greeting on login
+
+The bones are good. The gap between here and something people can't stop
+talking about is mostly depth and visualization make the data feel real,
+make the empty states sell the vision, and let the AI actually coach
+instead of waiting to be asked.
+Keep building.
+Shane
