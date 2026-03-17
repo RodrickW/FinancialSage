@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChessCrownLogo } from '@/components/Logo';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { useTheme } from '@/contexts/ThemeContext';
 import { 
   TrendingUp, 
   Shield, 
@@ -21,11 +22,14 @@ import {
   Smartphone,
   Globe,
   Sparkles,
-  Check
+  Check,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function Landing() {
   const [, setLocation] = useLocation();
+  const { isDark, toggleTheme } = useTheme();
   
   const handleNavigateToRegister = () => {
     try {
@@ -140,32 +144,63 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+      <nav className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <div className="flex items-center space-x-2">
               <ChessCrownLogo className="w-7 h-7" color="text-emerald-600" />
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-bold text-gray-900 dark:text-white">
                 Mind My Money
               </span>
             </div>
-            <div className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">Features</a>
-              <a href="#how-it-works" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">How It Works</a>
-              <a href="#pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">Pricing</a>
-              <Button 
-                variant="ghost" 
-                onClick={() => setLocation('/login')}
-                className="text-sm text-gray-600 hover:text-gray-900 font-medium"
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="hidden md:flex items-center space-x-6">
+                <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors font-medium">Features</a>
+                <a href="#how-it-works" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors font-medium">How It Works</a>
+                <a href="#pricing" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors font-medium">Pricing</a>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setLocation('/login')}
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium"
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  onClick={handleNavigateToRegister}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5"
+                >
+                  Get Started
+                </Button>
+              </div>
+              {/* Dark mode toggle — visible on all screen sizes */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                aria-label="Toggle dark mode"
               >
-                Sign In
-              </Button>
-              <Button 
-                onClick={handleNavigateToRegister}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5"
-              >
-                Get Started
-              </Button>
+                {isDark
+                  ? <Sun className="w-4 h-4 text-amber-400" />
+                  : <Moon className="w-4 h-4 text-gray-500" />
+                }
+              </button>
+              {/* Mobile: Sign In + Get Started */}
+              <div className="flex md:hidden items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation('/login')}
+                  className="text-sm text-gray-600 dark:text-gray-300 font-medium px-2"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleNavigateToRegister}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3"
+                >
+                  Get Started
+                </Button>
+              </div>
             </div>
           </div>
         </div>
