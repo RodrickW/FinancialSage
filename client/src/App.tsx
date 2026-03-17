@@ -8,6 +8,7 @@ import FloatingCoach from "@/components/FloatingCoach";
 import { SubscriptionBanner } from "@/components/ui/subscription-banner";
 import TrialAlert from "@/components/TrialAlert";
 import MobileUserSync from "@/components/MobileUserSync";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 // Import pages
 import Landing from "@/pages/Landing";
@@ -247,16 +248,18 @@ function App() {
   }, []);
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <MobileUserSync />
-        <Toaster />
-        {isLoggedIn && <TrialAlert />}
-        {isLoggedIn && <SubscriptionBanner />}
-        <Router />
-        {isLoggedIn && <FloatingCoach />}
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <MobileUserSync />
+          <Toaster />
+          {isLoggedIn && <TrialAlert />}
+          {isLoggedIn && <SubscriptionBanner />}
+          <Router />
+          {isLoggedIn && <FloatingCoach />}
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

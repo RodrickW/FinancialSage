@@ -4,7 +4,8 @@ import { logout, redirectToLogin } from '@/lib/auth';
 import { ChessCrownLogo } from '@/components/Logo';
 import { NotificationDrawer } from '@/components/ui/notification-drawer';
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, Search, Menu, X, LayoutDashboard, PieChart, Target, MessageSquare, Settings, Download, CreditCard, Shield } from 'lucide-react';
+import { LogOut, Search, Menu, X, LayoutDashboard, PieChart, Target, MessageSquare, Settings, Download, CreditCard, Shield, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface TopNavProps {
   title: string;
@@ -14,6 +15,7 @@ interface TopNavProps {
 export default function TopNav({ title, isPremium = false }: TopNavProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   
   const { data: user } = useQuery({
     queryKey: ['/api/users/profile'],
@@ -32,18 +34,18 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 glass-nav border-b border-gray-200/50">
+    <header className="sticky top-0 z-40 glass-nav border-b border-gray-200/50 dark:border-slate-700/50">
       <div className="flex items-center justify-between h-14 px-4 md:px-6">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setMenuOpen(!menuOpen)} 
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
           >
-            {menuOpen ? <X className="w-5 h-5 text-gray-700" /> : <Menu className="w-5 h-5 text-gray-700" />}
+            {menuOpen ? <X className="w-5 h-5 text-gray-700 dark:text-gray-300" /> : <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />}
           </button>
           <div className="flex items-center gap-2">
             <ChessCrownLogo className="w-6 h-6" />
-            <span className="text-base font-semibold text-gray-900 tracking-tight">{title}</span>
+            <span className="text-base font-semibold text-gray-900 dark:text-white tracking-tight">{title}</span>
           </div>
           {isPremium && (
             <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">Pro</span>
@@ -52,18 +54,28 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
       
         <div className="flex items-center gap-2">
           <NotificationDrawer />
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {isDark
+              ? <Sun className="w-4 h-4 text-amber-400" />
+              : <Moon className="w-4 h-4 text-gray-500" />
+            }
+          </button>
           <div className="hidden md:block relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search..."
-              className="pl-9 pr-4 py-1.5 h-9 w-48 bg-gray-50 border-gray-200 text-sm rounded-lg focus:bg-white transition-colors"
+              className="pl-9 pr-4 py-1.5 h-9 w-48 bg-gray-50 border-gray-200 text-sm rounded-lg focus:bg-white transition-colors dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button 
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             onClick={async () => {
               const success = await logout();
               if (success) {
@@ -80,13 +92,13 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
       {menuOpen && (
         <>
           <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setMenuOpen(false)} />
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50 fade-in">
+          <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 shadow-lg z-50 fade-in">
             <nav className="max-w-lg mx-auto py-2 px-2">
               {menuItems.map((item) => (
                 <a 
                   key={item.href}
                   href={item.href} 
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg transition-colors"
                   onClick={() => setMenuOpen(false)}
                 >
                   <item.icon className="w-4 h-4" />

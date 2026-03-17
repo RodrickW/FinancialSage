@@ -20,14 +20,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { UserProfile } from '@/types';
-import { AlertTriangle, Trash2, User, Lock, Bell, Eye, EyeOff, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Trash2, User, Lock, Bell, Eye, EyeOff, Loader2, ArrowLeft, CheckCircle, Sun, Moon, Palette } from 'lucide-react';
 import BottomNavigation from '@/components/BottomNavigation';
 import TopNav from '@/components/TopNav';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Settings() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isDark, toggleTheme } = useTheme();
 
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -170,6 +172,31 @@ export default function Settings() {
               </CardContent>
             </Card>
           )}
+
+          {/* Appearance */}
+          <Card className="section-card border-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Palette className="w-4 h-4 text-emerald-600" />
+                Appearance
+              </CardTitle>
+              <CardDescription>Customize how the app looks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                    {isDark ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{isDark ? 'Dark theme is on' : 'Light theme is on'}</p>
+                  </div>
+                </div>
+                <Switch checked={isDark} onCheckedChange={toggleTheme} />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Profile Info */}
           <Card className="section-card border-0">

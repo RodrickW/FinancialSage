@@ -20,7 +20,7 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
   ];
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-200/50 z-50 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-200/50 dark:border-slate-700/50 z-50 safe-area-bottom">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -31,13 +31,13 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 min-w-[64px]",
                 active 
-                  ? "text-emerald-600" 
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "text-emerald-500" 
+                  : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               )}
             >
               <div className={cn(
                 "flex items-center justify-center w-10 h-7 rounded-full transition-all duration-200",
-                active && "bg-emerald-100"
+                active && "bg-emerald-100 dark:bg-emerald-900/40"
               )}>
                 <item.icon className={cn("w-[18px] h-[18px]", active && "stroke-[2.5px]")} />
               </div>
