@@ -7,37 +7,36 @@ import Constants from 'expo-constants';
 import MainApp from './components/MainApp';
 import PaywallScreen from './screens/PaywallScreen';
 
-// RevenueCat iOS API key - check multiple sources for production compatibility
-// In dev: expoConfig.extra, in production builds: manifest.extra or manifest2.extra
+type SubscriptionTier = 'plus' | 'pro';
+
 const getRevenueCatApiKey = (): string => {
-  // Try expoConfig first (development)
   if (Constants.expoConfig?.extra?.revenueCatApiKey) {
     return Constants.expoConfig.extra.revenueCatApiKey;
   }
-  // Try manifest (older Expo SDK)
   if ((Constants as any).manifest?.extra?.revenueCatApiKey) {
     return (Constants as any).manifest.extra.revenueCatApiKey;
   }
-  // Try manifest2 (newer Expo SDK production builds)
   if ((Constants as any).manifest2?.extra?.expoClient?.extra?.revenueCatApiKey) {
     return (Constants as any).manifest2.extra.expoClient.extra.revenueCatApiKey;
   }
-  // Hardcoded fallback for production builds where manifest may be stripped
   return 'appl_OVsddqTxRwXTeuxMmsKmlcgwvhi';
 };
 
 const REVENUECAT_API_KEY = getRevenueCatApiKey();
-const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 
-// Debug log to verify API key is being retrieved (will show in Expo logs)
-console.log('RevenueCat API Key loaded:', REVENUECAT_API_KEY ? `${REVENUECAT_API_KEY.substring(0, 10)}...` : 'MISSING');
+function getActiveTier(entitlements: Record<string, any>): SubscriptionTier | null {
+  if (typeof entitlements['pro'] !== 'undefined') return 'pro';
+  if (typeof entitlements['plus'] !== 'undefined') return 'plus';
+  if (typeof entitlements['premium'] !== 'undefined') return 'plus';
+  return null;
+}
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
+  const [activeTier, setActiveTier] = useState<SubscriptionTier | null>(null);
 
   useEffect(() => {
     initializeApp();
@@ -45,122 +44,94 @@ export default function App() {
 
   const initializeApp = async () => {
     try {
-      // Initialize RevenueCat SDK first
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
-      
-      // Try to get stored user ID
+
       const storedUserId = await AsyncStorage.getItem('userId');
-      
+
       if (storedUserId) {
         setUserId(storedUserId);
-        
-        // Identify user to RevenueCat
         await Purchases.logIn(storedUserId);
-        console.log(`✅ Logged in to RevenueCat as user: ${storedUserId}`);
-        
-        // Check RevenueCat subscription only (web check will happen in WebView)
+
         const info = await Purchases.getCustomerInfo();
-        const hasRevenueCatAccess = typeof info.entitlements.active['premium'] !== 'undefined';
-        
-        if (hasRevenueCatAccess) {
-          // User has RevenueCat subscription - grant access immediately
+        const tier = getActiveTier(info.entitlements.active);
+
+        if (tier) {
+          setActiveTier(tier);
+          await AsyncStorage.setItem('subscriptionTier', tier);
           setHasAccess(true);
-          console.log('✅ User has RevenueCat subscription');
         } else {
-          // No RevenueCat subscription - need to check web subscription via WebView
-          console.log('ℹ️ No RevenueCat subscription - checking web subscription via WebView');
           setShowWebView(true);
         }
       } else {
-        // No user ID stored - need to show WebView to capture it
-        console.log('ℹ️ No stored user ID - showing WebView for login');
         setShowWebView(true);
       }
-      
-      setIsLoading(false);
     } catch (error) {
-      console.error('App initialization error:', error);
+      console.error('App init error:', error);
+      setShowWebView(true);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const checkRevenueCatOnly = async () => {
+  const checkRevenueCatSubscription = async (): Promise<{ hasAccess: boolean; tier: SubscriptionTier | null }> => {
     try {
       const info = await Purchases.getCustomerInfo();
-      setCustomerInfo(info);
-      
-      // Check if user has active RevenueCat entitlement
-      const hasRevenueCatAccess = 
-        typeof info.entitlements.active['premium'] !== 'undefined';
-      
-      // NOTE: We do NOT check Stripe from native code (cookies don't work)
-      // Stripe subscription check happens in WebView and is passed via message
-      
-      setHasAccess(hasRevenueCatAccess);
-      
-      if (!hasRevenueCatAccess) {
-        console.log('ℹ️ No RevenueCat subscription');
-      }
+      const tier = getActiveTier(info.entitlements.active);
+      return { hasAccess: tier !== null, tier };
     } catch (error) {
-      console.error('Error checking RevenueCat:', error);
+      console.error('RevenueCat check error:', error);
+      return { hasAccess: false, tier: null };
     }
   };
 
   const handleUserAuthenticated = async (authenticatedUserId: string, hasWebSubscription?: boolean) => {
     try {
-      // Store user ID
       await AsyncStorage.setItem('userId', authenticatedUserId);
       setUserId(authenticatedUserId);
-      
-      // Identify user to RevenueCat
+
       await Purchases.logIn(authenticatedUserId);
-      console.log(`✅ User ${authenticatedUserId} identified to RevenueCat`);
-      
-      // Hide WebView now that we have user ID
+
       setShowWebView(false);
-      
-      // Check RevenueCat subscription
-      const info = await Purchases.getCustomerInfo();
-      const hasRevenueCatAccess = typeof info.entitlements.active['premium'] !== 'undefined';
-      
-      // MULTIPLATFORM: Grant access if user has EITHER RevenueCat OR web subscription
-      const totalAccess = hasRevenueCatAccess || (hasWebSubscription === true);
-      setHasAccess(totalAccess);
-      
-      if (hasRevenueCatAccess) {
-        console.log('✅ User has RevenueCat subscription - granting access');
-      } else if (hasWebSubscription) {
-        console.log('✅ User has web subscription - granting mobile access');
+
+      const { hasAccess: rcAccess, tier } = await checkRevenueCatSubscription();
+
+      if (rcAccess && tier) {
+        setActiveTier(tier);
+        await AsyncStorage.setItem('subscriptionTier', tier);
+        setHasAccess(true);
+      } else if (hasWebSubscription === true) {
+        setHasAccess(true);
       } else {
-        console.log('ℹ️ User has no active subscription - will show paywall');
+        setHasAccess(false);
       }
     } catch (error) {
-      console.error('Error identifying user:', error);
+      console.error('Error in handleUserAuthenticated:', error);
     }
   };
 
-  const handlePurchaseComplete = async () => {
-    try {
-      await checkRevenueCatOnly();
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
+  const handlePurchaseComplete = async (tier: SubscriptionTier) => {
+    setActiveTier(tier);
+    await AsyncStorage.setItem('subscriptionTier', tier);
+    setHasAccess(true);
   };
 
-  const handleRestorePurchases = async () => {
+  const handleRestorePurchases = async (): Promise<{ hasAccess: boolean; tier?: SubscriptionTier }> => {
     try {
       const info = await Purchases.restorePurchases();
-      setCustomerInfo(info);
-      
-      const hasActiveSubscription = 
-        typeof info.entitlements.active['premium'] !== 'undefined';
-      
-      setHasAccess(hasActiveSubscription);
-      
-      return hasActiveSubscription;
+      const tier = getActiveTier(info.entitlements.active);
+      const hasRestoredAccess = tier !== null;
+
+      if (hasRestoredAccess && tier) {
+        setActiveTier(tier);
+        await AsyncStorage.setItem('subscriptionTier', tier);
+        setHasAccess(true);
+        return { hasAccess: true, tier };
+      }
+
+      return { hasAccess: false };
     } catch (error) {
-      console.error('Error restoring purchases:', error);
-      return false;
+      console.error('Restore error:', error);
+      return { hasAccess: false };
     }
   };
 
@@ -176,19 +147,25 @@ export default function App() {
     );
   }
 
-  // Determine which screen to show
   const renderScreen = () => {
-    // Priority 1: Show WebView if we need to capture user ID
     if (showWebView || (!userId && !hasAccess)) {
-      return <MainApp onUserAuthenticated={handleUserAuthenticated} />;
+      return (
+        <MainApp
+          onUserAuthenticated={handleUserAuthenticated}
+          activeTier={activeTier}
+        />
+      );
     }
-    
-    // Priority 2: Show main app if user has subscription
+
     if (hasAccess) {
-      return <MainApp onUserAuthenticated={handleUserAuthenticated} />;
+      return (
+        <MainApp
+          onUserAuthenticated={handleUserAuthenticated}
+          activeTier={activeTier}
+        />
+      );
     }
-    
-    // Priority 3: Show paywall if user identified but no subscription
+
     return (
       <PaywallScreen
         onPurchaseComplete={handlePurchaseComplete}

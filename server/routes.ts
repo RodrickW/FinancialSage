@@ -1075,14 +1075,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/mobile/access', requireAuth, (req, res) => {
     const user = req.user as User;
     const hasSubscription = hasAccess(user, req);
+    const tier = getUserTier(user);
     
     res.json({
       userId: user.id,
       hasAccess: hasSubscription,
+      subscriptionTier: tier,
       isPremium: user.isPremium,
       subscriptionStatus: user.subscriptionStatus,
       stripeSubscriptionId: user.stripeSubscriptionId,
-      revenuecatExpiresAt: user.revenuecatExpiresAt
+      revenuecatExpiresAt: user.revenuecatExpiresAt,
+      revenuecatTier: user.revenuecatTier
     });
   });
 
@@ -4267,18 +4270,28 @@ IMPORTANT:
         return res.status(200).json({ received: true });
       }
 
+      // Determine subscription tier from product ID
+      // Convention: product IDs containing 'pro' → Pro tier, otherwise → Plus tier
+      const tierFromProduct = (id: string): 'plus' | 'pro' => {
+        const lower = (id || '').toLowerCase();
+        return lower.includes('pro') ? 'pro' : 'plus';
+      };
+      const purchasedTier = tierFromProduct(productId);
+
       // Handle different event types
       switch (eventType) {
         case 'INITIAL_PURCHASE':
         case 'RENEWAL':
         case 'NON_RENEWING_PURCHASE':
-          console.log(`✅ [User ${user.id}] ${eventType}: Activating subscription`);
+          console.log(`✅ [User ${user.id}] ${eventType}: Activating ${purchasedTier} subscription`);
           await storage.updateUser(user.id, {
             revenuecatUserId: appUserId,
             revenuecatSubscriptionId: event.id,
             revenuecatProductId: productId,
             revenuecatExpiresAt: expiresDate,
             revenuecatPlatform: platform,
+            revenuecatTier: purchasedTier,
+            subscriptionTier: purchasedTier,
             isPremium: true,
             subscriptionStatus: 'active'
           });
@@ -4297,7 +4310,9 @@ IMPORTANT:
           await storage.updateUser(user.id, {
             isPremium: false,
             subscriptionStatus: 'expired',
-            revenuecatExpiresAt: null
+            subscriptionTier: 'free',
+            revenuecatExpiresAt: null,
+            revenuecatTier: null
           });
           break;
 
