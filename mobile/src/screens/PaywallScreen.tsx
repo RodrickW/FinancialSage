@@ -97,12 +97,13 @@ export default function PaywallScreen({
     if (packages.length === 0) return null;
 
     const tierStr = selectedTier;
-    const periodStr = isAnnual ? 'annual' : 'monthly';
+    // Match 'yearly' OR 'annual' since App Store Connect uses 'yearly'
+    const periodTerms = isAnnual ? ['yearly', 'annual'] : ['monthly'];
 
     const byId = packages.find(
       (p) =>
         p.identifier.toLowerCase().includes(tierStr) &&
-        p.identifier.toLowerCase().includes(periodStr),
+        periodTerms.some((term) => p.identifier.toLowerCase().includes(term)),
     );
     if (byId) return byId;
 

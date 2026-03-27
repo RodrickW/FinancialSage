@@ -25,44 +25,41 @@ In RevenueCat → Project → Entitlements, create:
 
 > **Note:** If you previously had a `premium` entitlement, leave it but add the new ones too. The mobile app code checks all three.
 
-### 2. Create Products in App Store Connect First
+### 2. App Store Connect Products — Already Created ✅
 
-Go to **App Store Connect → My Apps → Mind My Money → In-App Purchases → +**
+Your four subscription products are already created and Ready to Submit:
 
-Create four Auto-Renewable Subscription products:
+| Product ID | Reference Name | Duration | Price |
+|---|---|---|---|
+| `mmm_plus_monthly_` | Mind My Money Plus Monthly Subscription | 1 month | $5.99 |
+| `mmm_plus_yearly_` | Mind My Money Plus Yearly Subscription | 1 year | $49.00 |
+| `mmm_pro_monthly_` | Mind My Money Pro Monthly Subscription | 1 month | $9.99 |
+| `mmm_pro_yearly_` | Mind My Money Pro Yearly Subscription | 1 year | $89.00 |
 
-| Product ID | Display Name | Price |
-|---|---|---|
-| `com.mindmymoney.plus.monthly` | Mind My Money Plus Monthly | $5.99 |
-| `com.mindmymoney.plus.annual` | Mind My Money Plus Annual | $49.00 |
-| `com.mindmymoney.pro.monthly` | Mind My Money Pro Monthly | $9.99 |
-| `com.mindmymoney.pro.annual` | Mind My Money Pro Annual | $89.00 |
-
-For each product:
-- Set **Subscription Group** to "Mind My Money Plans"
-- Set **Review Screenshot** (required by Apple — screenshot of the paywall)
-- Status must be **"Ready to Submit"** before you can submit the app
+Make sure each product has:
+- A **Review Screenshot** attached (required by Apple — screenshot of your paywall)
+- Status showing **"Ready to Submit"**
 
 ### 3. Add Products to RevenueCat
 
-In RevenueCat → Project → Products → +, import each of the 4 products above.
+In RevenueCat → Project → Products → +, import each of the 4 products above using the exact Product IDs listed.
 
 ### 4. Create Offerings
 
 In RevenueCat → Project → Offerings → +, create:
 
 **Offering: "default"** (this is what the app loads)
-- Add package: `plus_monthly` → Product: `com.mindmymoney.plus.monthly`
-- Add package: `plus_annual` → Product: `com.mindmymoney.plus.annual`
-- Add package: `pro_monthly` → Product: `com.mindmymoney.pro.monthly`
-- Add package: `pro_annual` → Product: `com.mindmymoney.pro.annual`
+- Add package identifier: `mmm_plus_monthly_` → Product: `mmm_plus_monthly_`
+- Add package identifier: `mmm_plus_yearly_` → Product: `mmm_plus_yearly_`
+- Add package identifier: `mmm_pro_monthly_` → Product: `mmm_pro_monthly_`
+- Add package identifier: `mmm_pro_yearly_` → Product: `mmm_pro_yearly_`
 
 Set "default" as the **Current Offering**.
 
 ### 5. Attach Products to Entitlements
 
-- Attach `com.mindmymoney.plus.*` products to the `plus` entitlement
-- Attach `com.mindmymoney.pro.*` products to the `pro` entitlement
+- Attach `mmm_plus_monthly_` and `mmm_plus_yearly_` to the `plus` entitlement
+- Attach `mmm_pro_monthly_` and `mmm_pro_yearly_` to the `pro` entitlement
 
 ### 6. Configure the Webhook
 
