@@ -301,7 +301,7 @@ export default function PaywallScreen({
       <View style={styles.webSection}>
         <Text style={styles.webSectionText}>Already subscribed on the web?</Text>
         <TouchableOpacity style={styles.loginButton} onPress={onContinueToLogin}>
-          <Text style={styles.loginButtonText}>Log In to Access</Text>
+          <Text style={styles.loginButtonText}>Back to App — Log In</Text>
         </TouchableOpacity>
       </View>
 

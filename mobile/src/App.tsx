@@ -27,16 +27,17 @@ const REVENUECAT_API_KEY = getRevenueCatApiKey();
 function getActiveTier(entitlements: Record<string, any>): SubscriptionTier | null {
   if (typeof entitlements['pro'] !== 'undefined') return 'pro';
   if (typeof entitlements['plus'] !== 'undefined') return 'plus';
+  // Legacy fallback: old 'premium' entitlement maps to 'plus'
   if (typeof entitlements['premium'] !== 'undefined') return 'plus';
   return null;
 }
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [hasAccess, setHasAccess] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [showWebView, setShowWebView] = useState(false);
   const [activeTier, setActiveTier] = useState<SubscriptionTier | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  // Controls whether the native paywall is shown over the WebView
+  const [showNativePaywall, setShowNativePaywall] = useState(false);
 
   useEffect(() => {
     initializeApp();
@@ -47,84 +48,66 @@ export default function App() {
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
 
       const storedUserId = await AsyncStorage.getItem('userId');
-
       if (storedUserId) {
         setUserId(storedUserId);
         await Purchases.logIn(storedUserId);
 
         const info = await Purchases.getCustomerInfo();
         const tier = getActiveTier(info.entitlements.active);
-
         if (tier) {
           setActiveTier(tier);
           await AsyncStorage.setItem('subscriptionTier', tier);
-          setHasAccess(true);
-        } else {
-          setShowWebView(true);
         }
-      } else {
-        setShowWebView(true);
       }
     } catch (error) {
       console.error('App init error:', error);
-      setShowWebView(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const checkRevenueCatSubscription = async (): Promise<{ hasAccess: boolean; tier: SubscriptionTier | null }> => {
-    try {
-      const info = await Purchases.getCustomerInfo();
-      const tier = getActiveTier(info.entitlements.active);
-      return { hasAccess: tier !== null, tier };
-    } catch (error) {
-      console.error('RevenueCat check error:', error);
-      return { hasAccess: false, tier: null };
-    }
-  };
-
-  const handleUserAuthenticated = async (authenticatedUserId: string, hasWebSubscription?: boolean) => {
+  const handleUserAuthenticated = async (
+    authenticatedUserId: string,
+    hasWebSubscription?: boolean,
+  ) => {
     try {
       await AsyncStorage.setItem('userId', authenticatedUserId);
       setUserId(authenticatedUserId);
 
       await Purchases.logIn(authenticatedUserId);
 
-      setShowWebView(false);
+      const info = await Purchases.getCustomerInfo();
+      const tier = getActiveTier(info.entitlements.active);
 
-      const { hasAccess: rcAccess, tier } = await checkRevenueCatSubscription();
-
-      if (rcAccess && tier) {
+      if (tier) {
         setActiveTier(tier);
         await AsyncStorage.setItem('subscriptionTier', tier);
-        setHasAccess(true);
-      } else if (hasWebSubscription === true) {
-        setHasAccess(true);
-      } else {
-        setHasAccess(false);
       }
+      // No action needed if no IAP subscription — free tier or web subscriber
     } catch (error) {
       console.error('Error in handleUserAuthenticated:', error);
     }
   };
 
+  const handleShowNativePaywall = () => {
+    setShowNativePaywall(true);
+  };
+
   const handlePurchaseComplete = async (tier: SubscriptionTier) => {
     setActiveTier(tier);
     await AsyncStorage.setItem('subscriptionTier', tier);
-    setHasAccess(true);
+    setShowNativePaywall(false);
   };
 
   const handleRestorePurchases = async (): Promise<{ hasAccess: boolean; tier?: SubscriptionTier }> => {
     try {
       const info = await Purchases.restorePurchases();
       const tier = getActiveTier(info.entitlements.active);
-      const hasRestoredAccess = tier !== null;
 
-      if (hasRestoredAccess && tier) {
+      if (tier) {
         setActiveTier(tier);
         await AsyncStorage.setItem('subscriptionTier', tier);
-        setHasAccess(true);
+        setShowNativePaywall(false);
         return { hasAccess: true, tier };
       }
 
@@ -133,6 +116,10 @@ export default function App() {
       console.error('Restore error:', error);
       return { hasAccess: false };
     }
+  };
+
+  const handleDismissPaywall = () => {
+    setShowNativePaywall(false);
   };
 
   if (isLoading) {
@@ -147,39 +134,30 @@ export default function App() {
     );
   }
 
-  const renderScreen = () => {
-    if (showWebView || (!userId && !hasAccess)) {
-      return (
-        <MainApp
-          onUserAuthenticated={handleUserAuthenticated}
-          activeTier={activeTier}
-        />
-      );
-    }
-
-    if (hasAccess) {
-      return (
-        <MainApp
-          onUserAuthenticated={handleUserAuthenticated}
-          activeTier={activeTier}
-        />
-      );
-    }
-
-    return (
-      <PaywallScreen
-        onPurchaseComplete={handlePurchaseComplete}
-        onRestorePurchases={handleRestorePurchases}
-        onContinueToLogin={() => setShowWebView(true)}
-        userId={userId}
-      />
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      {renderScreen()}
+
+      {/* The WebView is always mounted — free tier users browse normally */}
+      <View style={[styles.flex, showNativePaywall && styles.hidden]}>
+        <MainApp
+          onUserAuthenticated={handleUserAuthenticated}
+          onShowPaywall={handleShowNativePaywall}
+          activeTier={activeTier}
+        />
+      </View>
+
+      {/* Native paywall appears on top when the web app requests an upgrade */}
+      {showNativePaywall && (
+        <View style={styles.flex}>
+          <PaywallScreen
+            onPurchaseComplete={handlePurchaseComplete}
+            onRestorePurchases={handleRestorePurchases}
+            onContinueToLogin={handleDismissPaywall}
+            userId={userId}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -188,6 +166,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  flex: {
+    flex: 1,
+  },
+  hidden: {
+    display: 'none',
   },
   loadingContainer: {
     flex: 1,

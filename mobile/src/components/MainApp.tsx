@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Alert, Linking } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -7,10 +7,11 @@ const WEB_APP_URL = 'https://www.mindmymoneyapp.com';
 
 interface MainAppProps {
   onUserAuthenticated: (userId: string, hasSubscription?: boolean) => void;
+  onShowPaywall: () => void;
   activeTier?: 'plus' | 'pro' | null;
 }
 
-export default function MainApp({ onUserAuthenticated, activeTier }: MainAppProps) {
+export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier }: MainAppProps) {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -39,13 +40,12 @@ export default function MainApp({ onUserAuthenticated, activeTier }: MainAppProp
   };
 
   const handleShouldStartLoadWithRequest = (request: any) => {
-    // Block ONLY the Stripe hosted checkout page — mobile users pay via Apple IAP
+    // Block ONLY the Stripe hosted checkout page — mobile users pay via Apple IAP.
+    // The /subscribe page itself is allowed to load so upgrade prompts appear,
+    // then the web app posts SHOW_PAYWALL to transition to native IAP.
     if (request.url.includes('checkout.stripe.com')) {
-      Alert.alert(
-        'Subscribe via App Store',
-        'To subscribe on mobile, please use the in-app subscription options. Tap the back button and look for the upgrade prompt.',
-        [{ text: 'OK' }],
-      );
+      // Instead of opening Stripe checkout, route to native paywall
+      onShowPaywall();
       return false;
     }
 
@@ -65,27 +65,20 @@ export default function MainApp({ onUserAuthenticated, activeTier }: MainAppProp
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
     console.error('WebView error:', nativeEvent);
-    Alert.alert(
-      'Connection Error',
-      'Unable to load Mind My Money. Please check your internet connection.',
-      [{ text: 'Retry', onPress: handleRefresh }],
-    );
   };
 
   const handleMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
 
+      // Web app detected an authenticated user
       if (data.type === 'USER_AUTHENTICATED' && data.userId) {
         onUserAuthenticated(data.userId.toString(), data.hasSubscription);
       }
 
+      // Web app is requesting the native upgrade/paywall flow
       if (data.type === 'SHOW_PAYWALL') {
-        Alert.alert(
-          'Upgrade Required',
-          'This feature requires a Plus or Pro subscription. Use the in-app purchase to subscribe.',
-          [{ text: 'OK' }],
-        );
+        onShowPaywall();
       }
     } catch (error) {
       console.error('Error parsing WebView message:', error);
@@ -96,44 +89,53 @@ export default function MainApp({ onUserAuthenticated, activeTier }: MainAppProp
 
   const injectedJavaScript = `
     (function() {
-      // Identify this session as the mobile app
+      // Mark session as mobile app
       localStorage.setItem('isMobileApp', 'true');
       sessionStorage.setItem('isMobileApp', 'true');
       window.isMobileApp = true;
       window.mobileSubscriptionTier = ${tierStr};
 
-      // Inject CSS that hides web-only Stripe checkout elements
+      // Inject CSS helpers
       if (!document.getElementById('mmm-mobile-styles')) {
-        const style = document.createElement('style');
+        var style = document.createElement('style');
         style.id = 'mmm-mobile-styles';
-        style.textContent = \`
-          /* Hide Stripe-direct checkout buttons */
-          [data-testid="stripe-payment-section"],
-          .stripe-payment-section,
-          .web-subscription-only { display: none !important; }
-          /* Show mobile-specific content */
-          .mobile-only { display: block !important; }
-          .mobile-delete-account-banner {
-            display: block !important;
-            background: #FEE2E2 !important;
-            border: 2px solid #EF4444 !important;
-            padding: 16px !important;
-            margin: 16px 0 !important;
-            border-radius: 8px !important;
-          }
-        \`;
+        style.textContent = [
+          '.mobile-only { display: block !important; }',
+          '.web-subscription-only { display: none !important; }',
+          '.mobile-delete-account-banner {',
+          '  display: block !important;',
+          '  background: #FEE2E2 !important;',
+          '  border: 2px solid #EF4444 !important;',
+          '  padding: 16px !important;',
+          '  margin: 16px 0 !important;',
+          '  border-radius: 8px !important; }'
+        ].join('');
         document.head.appendChild(style);
       }
 
-      // Detect authenticated user and report back to native layer
+      // Intercept any click that would go to checkout.stripe.com and trigger native paywall
+      document.addEventListener('click', function(e) {
+        var target = e.target;
+        while (target && target !== document) {
+          if (target.tagName === 'A' && target.href && target.href.includes('checkout.stripe.com')) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOW_PAYWALL' }));
+            return;
+          }
+          target = target.parentElement;
+        }
+      }, true);
+
+      // Report authenticated user to native layer
       var authCheckCount = 0;
       var checkAuth = setInterval(function() {
         authCheckCount++;
         if (authCheckCount > 30) { clearInterval(checkAuth); return; }
 
         try {
-          var userEl = document.querySelector('[data-user-id]');
           var storedId = sessionStorage.getItem('userId') || localStorage.getItem('userId');
+          var userEl = document.querySelector('[data-user-id]');
           var userId = (userEl && userEl.getAttribute('data-user-id')) || storedId;
 
           if (userId) {
