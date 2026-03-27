@@ -96,6 +96,8 @@ export default function App() {
   const handlePurchaseComplete = async (tier: SubscriptionTier) => {
     setActiveTier(tier);
     await AsyncStorage.setItem('subscriptionTier', tier);
+    // Dismiss paywall — WebView will re-mount and see the updated tier
+    // via mobileSubscriptionTier injected JS on next load
     setShowNativePaywall(false);
   };
 

@@ -326,8 +326,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // If this is a mobile app request, check MULTIPLE subscription sources
     // This allows existing web subscribers to use mobile app (multiplatform service)
     if (req && isMobileAppRequest(req)) {
-      // 1. Active RevenueCat subscription (Apple IAP purchase)
-      if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
+      // 1. Active RevenueCat subscription via tier field (plus or pro)
+      const rcTier = user.revenuecatTier as string | null;
+      if (rcTier === 'plus' || rcTier === 'pro') {
+        if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
+          return true;
+        }
+      }
+
+      // 1b. Legacy: RevenueCat expiry set without tier (backward compat)
+      if (!rcTier && user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
         return true;
       }
       
