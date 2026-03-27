@@ -4,7 +4,7 @@ import { logout, redirectToLogin } from '@/lib/auth';
 import { ChessCrownLogo } from '@/components/Logo';
 import { NotificationDrawer } from '@/components/ui/notification-drawer';
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, Search, Menu, X, LayoutDashboard, PieChart, Target, MessageSquare, Settings, Download, CreditCard, Shield, Sun, Moon } from 'lucide-react';
+import { LogOut, Search, Menu, X, LayoutDashboard, PieChart, Target, MessageSquare, Settings, CreditCard, Shield, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface TopNavProps {
@@ -30,7 +30,6 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
     ...((user as any)?.isAdmin ? [{ href: '/admin', icon: Shield, label: 'Admin' }] : []),
     { href: '/cancel-trial', icon: CreditCard, label: 'Manage Subscription' },
     { href: '/settings', icon: Settings, label: 'Settings' },
-    { href: '/install', icon: Download, label: 'Install App' },
   ];
 
   return (
