@@ -31,6 +31,15 @@ export default function Pricing() {
       return response.json();
     },
     onSuccess: (data) => {
+      if (data.mobile) {
+        // Backend detected a mobile request — trigger native paywall
+        if ((window as any).ReactNativeWebView) {
+          (window as any).ReactNativeWebView.postMessage(
+            JSON.stringify({ type: 'SHOW_PAYWALL' })
+          );
+        }
+        return;
+      }
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       }
@@ -44,7 +53,22 @@ export default function Pricing() {
     }
   });
 
+  const isMobileApp =
+    typeof window !== 'undefined' &&
+    (localStorage.getItem('isMobileApp') === 'true' ||
+      sessionStorage.getItem('isMobileApp') === 'true' ||
+      (window as any).isMobileApp === true);
+
   const handleSubscribe = (tier: 'plus' | 'pro') => {
+    if (isMobileApp) {
+      // Mobile: route to native Apple IAP paywall instead of Stripe
+      if ((window as any).ReactNativeWebView) {
+        (window as any).ReactNativeWebView.postMessage(
+          JSON.stringify({ type: 'SHOW_PAYWALL' })
+        );
+      }
+      return;
+    }
     checkoutMutation.mutate({ 
       tier, 
       period: isAnnual ? 'annual' : 'monthly' 

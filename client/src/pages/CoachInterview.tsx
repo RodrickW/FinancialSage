@@ -441,7 +441,16 @@ export default function CoachInterview() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
-              onClick={() => setLocation('/subscribe')}
+              onClick={() => {
+                const isMobileApp = localStorage.getItem('isMobileApp') === 'true' ||
+                  sessionStorage.getItem('isMobileApp') === 'true' ||
+                  (window as any).isMobileApp === true;
+                if (isMobileApp && (window as any).ReactNativeWebView) {
+                  (window as any).ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOW_PAYWALL' }));
+                } else {
+                  setLocation('/subscribe');
+                }
+              }}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2 rounded-xl font-semibold"
             >
               <Sparkles className="w-4 h-4 mr-2" />

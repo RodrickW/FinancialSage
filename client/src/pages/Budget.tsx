@@ -519,7 +519,16 @@ export default function Budget() {
                       Upgrade to Plus to let AI automatically categorize and analyze your spending patterns.
                     </p>
                     <Button 
-                      onClick={() => setLocation('/pricing')}
+                      onClick={() => {
+                        const isMobileApp = localStorage.getItem('isMobileApp') === 'true' ||
+                          sessionStorage.getItem('isMobileApp') === 'true' ||
+                          (window as any).isMobileApp === true;
+                        if (isMobileApp && (window as any).ReactNativeWebView) {
+                          (window as any).ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOW_PAYWALL' }));
+                        } else {
+                          setLocation('/pricing');
+                        }
+                      }}
                       className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white"
                     >
                       Upgrade to Plus

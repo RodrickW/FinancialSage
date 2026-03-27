@@ -11,6 +11,19 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
   app.post('/api/subscription/checkout', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+
+      // Mobile app users must subscribe via Apple In-App Purchase, not Stripe
+      const isMobile =
+        req.headers['x-mobile-app'] === 'true' ||
+        req.headers['x-platform'] === 'ios' ||
+        req.headers['x-platform'] === 'android';
+      if (isMobile) {
+        return res.status(200).json({
+          mobile: true,
+          message: 'Use in-app purchase on mobile'
+        });
+      }
+
       const { tier, period } = req.body as { tier: 'plus' | 'pro', period: 'monthly' | 'annual' };
       
       if (!tier || !['plus', 'pro'].includes(tier)) {

@@ -33,6 +33,20 @@ const tierPricing = {
   pro: { monthly: '$9.99', annual: '$89/year' },
 };
 
+const isMobileAppEnv =
+  typeof window !== 'undefined' &&
+  (localStorage.getItem('isMobileApp') === 'true' ||
+    sessionStorage.getItem('isMobileApp') === 'true' ||
+    (window as any).isMobileApp === true);
+
+function triggerNativePaywall() {
+  if ((window as any).ReactNativeWebView) {
+    (window as any).ReactNativeWebView.postMessage(
+      JSON.stringify({ type: 'SHOW_PAYWALL' })
+    );
+  }
+}
+
 export default function TierGate({ feature, requiredTier, currentTier, children }: TierGateProps) {
   const [, setLocation] = useLocation();
 
@@ -46,6 +60,14 @@ export default function TierGate({ feature, requiredTier, currentTier, children 
   const features = tierFeatures[requiredTier];
   const pricing = tierPricing[requiredTier];
   const tierName = requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1);
+
+  const handleUpgrade = () => {
+    if (isMobileAppEnv) {
+      triggerNativePaywall();
+    } else {
+      setLocation('/pricing');
+    }
+  };
 
   return (
     <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
@@ -81,13 +103,13 @@ export default function TierGate({ feature, requiredTier, currentTier, children 
 
         <Button 
           className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-700 text-white font-medium py-3"
-          onClick={() => setLocation('/pricing')}
+          onClick={handleUpgrade}
         >
           Upgrade to {tierName}
         </Button>
         
         <p className="text-xs text-center text-gray-500 mt-3">
-          Instant access • Cancel anytime
+          {isMobileAppEnv ? 'Subscribe via Apple In-App Purchase' : 'Instant access • Cancel anytime'}
         </p>
       </CardContent>
     </Card>
@@ -104,9 +126,17 @@ interface LockedFeatureCardProps {
 export function LockedFeatureCard({ title, description, requiredTier, icon }: LockedFeatureCardProps) {
   const [, setLocation] = useLocation();
   const tierName = requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1);
+
+  const handleClick = () => {
+    if (isMobileAppEnv) {
+      triggerNativePaywall();
+    } else {
+      setLocation('/pricing');
+    }
+  };
   
   return (
-    <Card className="border-gray-200 bg-gray-50 opacity-80 hover:opacity-100 transition-opacity cursor-pointer" onClick={() => setLocation('/pricing')}>
+    <Card className="border-gray-200 bg-gray-50 opacity-80 hover:opacity-100 transition-opacity cursor-pointer" onClick={handleClick}>
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center relative">
