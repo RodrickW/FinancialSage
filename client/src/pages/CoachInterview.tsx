@@ -310,8 +310,8 @@ export default function CoachInterview() {
 
   const user: UserProfile = userData as any;
 
-  // Save interview responses with AI (Plus/Pro)
-  const saveInterviewMutation = useMutation({
+  // Save interview responses with AI (Plus/Pro) — called AFTER basic save succeeds
+  const saveAiInterviewMutation = useMutation({
     mutationFn: async (interviewData: any) => {
       const response = await apiRequest('POST', '/api/ai/interview', interviewData);
       return response.json();
@@ -323,25 +323,36 @@ export default function CoachInterview() {
       });
       setIsComplete(true);
     },
-    onError: (error) => {
+    onError: () => {
+      // AI generation failed but responses were already saved — still mark complete
       toast({
-        title: "Error Saving Interview",
-        description: "There was a problem saving your responses. Please try again.",
-        variant: "destructive",
+        title: "Interview Saved!",
+        description: "Your responses have been saved. Your personalized plan will be available shortly.",
       });
+      setIsComplete(true);
     }
   });
 
-  // Save interview responses without AI (Free tier onboarding)
+  // Save interview responses (all users — no tier gate)
   const saveBasicInterviewMutation = useMutation({
     mutationFn: async (interviewData: any) => {
       const response = await apiRequest('POST', '/api/interview/save', interviewData);
       return response.json();
     },
-    onSuccess: () => {
-      setIsFreeTierComplete(true);
+    onSuccess: (_data, variables) => {
+      const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
+      const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+      const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
+
+      if (hasTierAccess || hasLegacyAccess) {
+        // Responses saved — now try to generate AI plan
+        saveAiInterviewMutation.mutate(variables);
+      } else {
+        setIsFreeTierComplete(true);
+      }
     },
     onError: () => {
+      // Even if basic save fails, let the user proceed
       setIsFreeTierComplete(true);
     }
   });
@@ -369,15 +380,8 @@ export default function CoachInterview() {
     if (currentQuestion < interviewQuestions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
-      const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
-      const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
-      const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
-
-      if (hasTierAccess || hasLegacyAccess) {
-        saveInterviewMutation.mutate({ responses, completedAt: new Date().toISOString() });
-      } else {
-        saveBasicInterviewMutation.mutate({ responses, completedAt: new Date().toISOString() });
-      }
+      // Always save basic first (no tier gate) — AI generation happens after if eligible
+      saveBasicInterviewMutation.mutate({ responses, completedAt: new Date().toISOString() });
     }
   };
 
@@ -678,10 +682,10 @@ export default function CoachInterview() {
                 )}
                 <Button
                   onClick={handleNext}
-                  disabled={saveInterviewMutation.isPending || saveBasicInterviewMutation.isPending}
+                  disabled={saveAiInterviewMutation.isPending || saveBasicInterviewMutation.isPending}
                   className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white flex items-center z-10 relative"
                 >
-                  {(saveInterviewMutation.isPending || saveBasicInterviewMutation.isPending) ? (
+                  {(saveAiInterviewMutation.isPending || saveBasicInterviewMutation.isPending) ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Saving...
