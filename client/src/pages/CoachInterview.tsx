@@ -352,8 +352,11 @@ export default function CoachInterview() {
       }
     },
     onError: () => {
-      // Even if basic save fails, let the user proceed
-      setIsFreeTierComplete(true);
+      toast({
+        title: "Error Saving Interview",
+        description: "There was a problem saving your responses. Please check your connection and try again.",
+        variant: "destructive",
+      });
     }
   });
 
