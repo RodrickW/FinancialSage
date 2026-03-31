@@ -274,6 +274,57 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent horizontal overflow on all screens */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* iOS safe area insets for bottom navigation and content */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+}
+
+/* Minimum touch target helper — apply .touch-target to interactive elements that need it */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive font scaling utilities */
+@layer utilities {
+  .text-responsive-xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+  .text-responsive-lg {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  /* Consistent page-level horizontal padding */
+  .page-x-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  /* Bottom padding to clear fixed bottom nav + safe area */
+  .pb-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+  }
 }
 
 .tour-active { overflow: hidden; }

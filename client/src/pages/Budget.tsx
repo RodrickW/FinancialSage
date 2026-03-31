@@ -376,7 +376,7 @@ export default function Budget() {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <TopNav title="Mind My Money" />
       
-      <main className="flex-1 overflow-x-hidden pb-16">
+      <main className="flex-1 overflow-x-hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
         {user && <BottomNavigation user={user} />}
         
         <div className="p-6">

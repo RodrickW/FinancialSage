@@ -20,7 +20,7 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
   ];
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-200/50 dark:border-slate-700/50 z-50 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-200/50 dark:border-slate-700/50 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
         {navItems.map((item) => {
           const active = isActive(item.path);

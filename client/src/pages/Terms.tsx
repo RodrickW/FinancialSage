@@ -37,8 +37,8 @@ export default function Terms() {
               <FileText className="w-10 h-10 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Terms of Use</h1>
-          <p className="text-gray-500 text-lg">Last updated: March 2026</p>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-3">Terms of Use</h1>
+          <p className="text-gray-500 text-base sm:text-lg">Last updated: March 2026</p>
         </div>
 
         <div className="space-y-6">

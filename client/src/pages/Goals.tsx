@@ -583,7 +583,7 @@ export default function Goals() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-indigo-100">
       <TopNav title="Mind My Money" />
       
-      <main className="flex-1 overflow-x-hidden pb-16">
+      <main className="flex-1 overflow-x-hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
         {user && <BottomNavigation user={user} />}
         
         <div className="p-6">

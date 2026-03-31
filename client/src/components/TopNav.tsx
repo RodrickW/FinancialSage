@@ -42,9 +42,9 @@ export default function TopNav({ title, isPremium = false }: TopNavProps) {
           >
             {menuOpen ? <X className="w-5 h-5 text-gray-700 dark:text-gray-300" /> : <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />}
           </button>
-          <div className="flex items-center gap-2">
-            <ChessCrownLogo className="w-6 h-6" />
-            <span className="text-base font-semibold text-gray-900 dark:text-white tracking-tight">{title}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <ChessCrownLogo className="w-6 h-6 shrink-0" />
+            <span className="text-base font-semibold text-gray-900 dark:text-white tracking-tight truncate max-w-[140px] sm:max-w-none">{title}</span>
           </div>
           {isPremium && (
             <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">Pro</span>
