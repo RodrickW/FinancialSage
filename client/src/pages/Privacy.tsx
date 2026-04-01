@@ -193,6 +193,56 @@ export default function Privacy() {
             </CardContent>
           </Card>
 
+          {/* AI Data Sharing */}
+          <Card className="border-emerald-300 bg-emerald-50/50">
+            <CardContent className="p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center mr-4">
+                  <Globe className="w-6 h-6 text-emerald-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">AI Coaching & Third-Party AI Service</h2>
+              </div>
+
+              <div className="space-y-5">
+                <div className="bg-white p-5 rounded-lg border border-emerald-200">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">Who processes your data</h3>
+                  <p className="text-gray-600">
+                    Our Money Mind AI Coach feature is powered by <strong>OpenAI, LLC</strong> (openai.com), a third-party artificial intelligence service. When you use the AI Coach, a summary of your financial information is sent to OpenAI's servers to generate personalized coaching advice.
+                  </p>
+                </div>
+
+                <div className="bg-white p-5 rounded-lg border border-emerald-200">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">What data is sent to OpenAI</h3>
+                  <ul className="list-disc list-inside space-y-1.5 text-gray-600 ml-2">
+                    <li>Account balances and account types (e.g., checking, savings)</li>
+                    <li>Spending totals broken down by category (e.g., groceries, dining, transport)</li>
+                    <li>Budget amounts and how much of each budget has been used</li>
+                    <li>Savings goal names and progress amounts</li>
+                    <li>Your first name (for personalized responses)</li>
+                    <li>Questions you type into the AI chat</li>
+                  </ul>
+                  <p className="text-gray-500 text-sm mt-3">
+                    <strong>We never send:</strong> your bank credentials, full account numbers, Social Security Number, or any government-issued ID.
+                  </p>
+                </div>
+
+                <div className="bg-white p-5 rounded-lg border border-emerald-200">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">How OpenAI uses this data</h3>
+                  <p className="text-gray-600">
+                    OpenAI uses your data solely to generate the AI coaching response you requested. Per OpenAI's API data usage policy, data submitted via the API is <strong>not used to train OpenAI's models</strong> and is not retained beyond the processing of your request. You can review OpenAI's privacy policy at <a href="https://openai.com/policies/privacy-policy" className="text-emerald-600 underline" target="_blank" rel="noopener noreferrer">openai.com/policies/privacy-policy</a>.
+                  </p>
+                </div>
+
+                <div className="bg-white p-5 rounded-lg border border-emerald-200">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">Your consent</h3>
+                  <p className="text-gray-600">
+                    Before your data is sent to OpenAI for the first time, the app displays a clear disclosure dialog that explains what data will be shared and with whom. You must explicitly agree before any data is transmitted. You can decline at any time — this only affects the AI coaching feature; all other app features remain fully available.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Data Sharing */}
           <Card className="border-primary/20">
             <CardContent className="p-8">
@@ -212,13 +262,14 @@ export default function Privacy() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-gray-800">Limited Sharing</h3>
-                  <p className="text-gray-600 mb-3">We only share your information in these specific circumstances:</p>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800">Third-Party Services We Use</h3>
+                  <p className="text-gray-600 mb-3">We share data with these trusted service providers only as necessary to operate the app:</p>
                   <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                    <li><strong>Service Providers:</strong> Trusted partners who help us operate the app (like Plaid for bank connections)</li>
+                    <li><strong>Plaid (plaid.com):</strong> Secure bank account connection and transaction data retrieval</li>
+                    <li><strong>OpenAI (openai.com):</strong> AI-powered financial coaching — see the AI section above for full details</li>
+                    <li><strong>Stripe (stripe.com):</strong> Payment processing for web subscriptions</li>
+                    <li><strong>RevenueCat (revenuecat.com):</strong> Apple In-App Purchase management for the iOS app</li>
                     <li><strong>Legal Requirements:</strong> When required by law or to protect our rights and users</li>
-                    <li><strong>With Your Consent:</strong> When you explicitly authorize us to share specific information</li>
-                    <li><strong>Anonymized Data:</strong> Aggregated, non-identifiable data for research and app improvement</li>
                   </ul>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
 import TierGate from '@/components/TierGate';
+import AiConsentModal, { hasAiConsent } from '@/components/AiConsentModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,6 +26,34 @@ export default function FinancialCoach() {
   const [showOnboardingInterview, setShowOnboardingInterview] = useState(false);
   const [interviewStep, setInterviewStep] = useState(0);
   const [isCreatingBudget, setIsCreatingBudget] = useState(false);
+
+  // AI data sharing consent (required by Apple App Store guideline 5.1.2)
+  const [aiConsentGiven, setAiConsentGiven] = useState(() => hasAiConsent());
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  const requireConsent = (action: () => void) => {
+    if (aiConsentGiven) {
+      action();
+    } else {
+      setPendingAction(() => action);
+      setShowConsentModal(true);
+    }
+  };
+
+  const handleConsentAccepted = () => {
+    setAiConsentGiven(true);
+    setShowConsentModal(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleConsentDeclined = () => {
+    setShowConsentModal(false);
+    setPendingAction(null);
+  };
   
   // Check if coming from onboarding flow
   useEffect(() => {
@@ -405,7 +434,7 @@ Money Mind 💰`);
             </div>
             <div className="mt-3 flex justify-end">
               <Button
-                onClick={handleAskQuestion}
+                onClick={() => requireConsent(handleAskQuestion)}
                 disabled={isAsking || !aiQuestion.trim()}
                 className="bg-primary-500 hover:bg-primary-600"
               >
@@ -563,6 +592,12 @@ Money Mind 💰`);
           </TierGate>
         </div>
       </main>
+
+      <AiConsentModal
+        open={showConsentModal}
+        onAccept={handleConsentAccepted}
+        onDecline={handleConsentDeclined}
+      />
     </div>
   );
 }

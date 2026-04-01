@@ -4765,6 +4765,197 @@ IMPORTANT:
     }
   });
 
+  // Demo account setup — called once to create Apple reviewer test account
+  app.post('/api/demo/setup', async (req, res) => {
+    const secret = req.headers['x-demo-secret'] || req.body?.secret;
+    if (secret !== 'AppleReview2026') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    try {
+      const bcrypt = await import('bcrypt');
+      const demoEmail = 'demo@mindmymoney.com';
+      const demoPassword = await bcrypt.hash('AppReview2026!', 12);
+
+      // Delete existing demo user data and recreate fresh
+      let demoUser = await storage.getUserByUsername('demo_reviewer');
+      if (demoUser) {
+        // Delete cascades via FK to accounts, transactions, budgets, goals, etc.
+        await storage.deleteUser(demoUser.id);
+      }
+
+      demoUser = await storage.createUser({
+        username: 'demo_reviewer',
+        password: demoPassword,
+        firstName: 'Alex',
+        lastName: 'Demo',
+        email: demoEmail,
+      });
+
+      // Upgrade to Pro
+      await storage.updateUser(demoUser.id, {
+        subscriptionTier: 'pro',
+        isPremium: true,
+        subscriptionStatus: 'active',
+        hasCompletedOnboarding: true,
+      });
+
+      // Create bank accounts
+      const checking = await storage.createAccount({
+        userId: demoUser.id,
+        accountName: 'Chase Total Checking',
+        accountType: 'checking',
+        accountNumber: '****4821',
+        balance: 3247.50,
+        institutionName: 'Chase',
+        isConnected: true,
+      });
+
+      const savings = await storage.createAccount({
+        userId: demoUser.id,
+        accountName: 'Chase Savings',
+        accountType: 'savings',
+        accountNumber: '****9034',
+        balance: 12450.00,
+        institutionName: 'Chase',
+        isConnected: true,
+      });
+
+      const credit = await storage.createAccount({
+        userId: demoUser.id,
+        accountName: 'Chase Sapphire',
+        accountType: 'credit',
+        accountNumber: '****7712',
+        balance: -1856.40,
+        institutionName: 'Chase',
+        isConnected: true,
+      });
+
+      // Seed 45 transactions over last 60 days
+      const now = new Date();
+      const txData = [
+        { daysAgo: 1, acct: checking.id, amount: -67.43, cat: 'Groceries', desc: 'Whole Foods Market', merchant: 'Whole Foods' },
+        { daysAgo: 2, acct: credit.id, amount: -14.99, cat: 'Entertainment', desc: 'Netflix Subscription', merchant: 'Netflix' },
+        { daysAgo: 3, acct: credit.id, amount: -42.18, cat: 'Restaurants', desc: 'Chipotle Mexican Grill', merchant: 'Chipotle' },
+        { daysAgo: 4, acct: checking.id, amount: -55.00, cat: 'Transportation', desc: 'Shell Gas Station', merchant: 'Shell' },
+        { daysAgo: 5, acct: credit.id, amount: -129.00, cat: 'Shopping', desc: 'Amazon.com', merchant: 'Amazon' },
+        { daysAgo: 6, acct: checking.id, amount: -11.50, cat: 'Coffee', desc: 'Starbucks', merchant: 'Starbucks' },
+        { daysAgo: 7, acct: credit.id, amount: -85.20, cat: 'Groceries', desc: 'Trader Joe\'s', merchant: 'Trader Joe\'s' },
+        { daysAgo: 8, acct: checking.id, amount: 3200.00, cat: 'Income', desc: 'Direct Deposit Payroll', merchant: 'Employer' },
+        { daysAgo: 9, acct: credit.id, amount: -9.99, cat: 'Entertainment', desc: 'Spotify Premium', merchant: 'Spotify' },
+        { daysAgo: 10, acct: credit.id, amount: -32.75, cat: 'Restaurants', desc: 'Panera Bread', merchant: 'Panera Bread' },
+        { daysAgo: 11, acct: checking.id, amount: -1250.00, cat: 'Housing', desc: 'Rent Payment', merchant: 'Landlord' },
+        { daysAgo: 12, acct: credit.id, amount: -46.99, cat: 'Transportation', desc: 'Lyft Rides', merchant: 'Lyft' },
+        { daysAgo: 13, acct: credit.id, amount: -23.40, cat: 'Coffee', desc: 'Blue Bottle Coffee', merchant: 'Blue Bottle' },
+        { daysAgo: 14, acct: checking.id, amount: -75.00, cat: 'Utilities', desc: 'Electric Bill', merchant: 'Con Edison' },
+        { daysAgo: 15, acct: credit.id, amount: -58.30, cat: 'Groceries', merchant: 'Safeway', desc: 'Safeway Grocery' },
+        { daysAgo: 16, acct: credit.id, amount: -19.99, cat: 'Entertainment', desc: 'Disney+ Subscription', merchant: 'Disney+' },
+        { daysAgo: 17, acct: checking.id, amount: -45.00, cat: 'Healthcare', desc: 'CVS Pharmacy', merchant: 'CVS' },
+        { daysAgo: 18, acct: credit.id, amount: -67.80, cat: 'Restaurants', desc: 'Local Sushi Restaurant', merchant: 'Sakura Sushi' },
+        { daysAgo: 19, acct: credit.id, amount: -199.00, cat: 'Shopping', desc: 'Target', merchant: 'Target' },
+        { daysAgo: 21, acct: checking.id, amount: -12.00, cat: 'Coffee', desc: 'Starbucks', merchant: 'Starbucks' },
+        { daysAgo: 22, acct: checking.id, amount: 3200.00, cat: 'Income', desc: 'Direct Deposit Payroll', merchant: 'Employer' },
+        { daysAgo: 23, acct: credit.id, amount: -91.50, cat: 'Groceries', desc: 'Costco Wholesale', merchant: 'Costco' },
+        { daysAgo: 24, acct: credit.id, amount: -28.40, cat: 'Restaurants', desc: 'Five Guys Burgers', merchant: 'Five Guys' },
+        { daysAgo: 25, acct: checking.id, amount: -55.00, cat: 'Transportation', desc: 'BP Gas Station', merchant: 'BP' },
+        { daysAgo: 26, acct: credit.id, amount: -89.99, cat: 'Shopping', desc: 'Zara Clothing', merchant: 'Zara' },
+        { daysAgo: 27, acct: credit.id, amount: -15.49, cat: 'Entertainment', desc: 'Hulu Subscription', merchant: 'Hulu' },
+        { daysAgo: 28, acct: checking.id, amount: -1250.00, cat: 'Housing', desc: 'Rent Payment', merchant: 'Landlord' },
+        { daysAgo: 30, acct: credit.id, amount: -44.25, cat: 'Restaurants', desc: 'Olive Garden', merchant: 'Olive Garden' },
+        { daysAgo: 32, acct: checking.id, amount: -78.00, cat: 'Utilities', desc: 'Internet & Phone Bill', merchant: 'Verizon' },
+        { daysAgo: 33, acct: credit.id, amount: -33.50, cat: 'Groceries', desc: 'Aldi Supermarket', merchant: 'Aldi' },
+        { daysAgo: 35, acct: checking.id, amount: 3200.00, cat: 'Income', desc: 'Direct Deposit Payroll', merchant: 'Employer' },
+        { daysAgo: 36, acct: credit.id, amount: -22.99, cat: 'Entertainment', desc: 'Amazon Prime', merchant: 'Amazon' },
+        { daysAgo: 38, acct: credit.id, amount: -53.60, cat: 'Groceries', desc: 'Whole Foods Market', merchant: 'Whole Foods' },
+        { daysAgo: 40, acct: credit.id, amount: -36.75, cat: 'Restaurants', desc: 'Shake Shack', merchant: 'Shake Shack' },
+        { daysAgo: 42, acct: checking.id, amount: -60.00, cat: 'Transportation', desc: 'Exxon Gas Station', merchant: 'Exxon' },
+        { daysAgo: 44, acct: credit.id, amount: -145.00, cat: 'Shopping', desc: 'Best Buy Electronics', merchant: 'Best Buy' },
+        { daysAgo: 45, acct: checking.id, amount: -1250.00, cat: 'Housing', desc: 'Rent Payment', merchant: 'Landlord' },
+        { daysAgo: 46, acct: credit.id, amount: -8.99, cat: 'Entertainment', desc: 'Apple TV+', merchant: 'Apple' },
+        { daysAgo: 48, acct: credit.id, amount: -71.20, cat: 'Groceries', desc: 'Kroger Supermarket', merchant: 'Kroger' },
+        { daysAgo: 50, acct: checking.id, amount: 3200.00, cat: 'Income', desc: 'Direct Deposit Payroll', merchant: 'Employer' },
+        { daysAgo: 52, acct: credit.id, amount: -29.99, cat: 'Restaurants', desc: 'Domino\'s Pizza', merchant: 'Domino\'s' },
+        { daysAgo: 54, acct: credit.id, amount: -112.40, cat: 'Shopping', desc: 'H&M Clothing', merchant: 'H&M' },
+        { daysAgo: 56, acct: checking.id, amount: -55.00, cat: 'Transportation', desc: 'Shell Gas Station', merchant: 'Shell' },
+        { daysAgo: 58, acct: credit.id, amount: -18.75, cat: 'Coffee', desc: 'Peet\'s Coffee', merchant: 'Peet\'s' },
+        { daysAgo: 60, acct: checking.id, amount: -75.00, cat: 'Utilities', desc: 'Electric Bill', merchant: 'Con Edison' },
+      ];
+
+      for (const tx of txData) {
+        const txDate = new Date(now);
+        txDate.setDate(txDate.getDate() - tx.daysAgo);
+        await storage.createTransaction({
+          userId: demoUser.id,
+          accountId: tx.acct,
+          amount: tx.amount,
+          category: tx.cat,
+          description: tx.desc,
+          date: txDate,
+          merchantName: tx.merchant,
+        });
+      }
+
+      // Create budget plan
+      const budgetItems = [
+        { category: 'Groceries', amount: 500, spent: 346.06, icon: '🛒' },
+        { category: 'Restaurants', amount: 250, spent: 214.38, icon: '🍽️' },
+        { category: 'Transportation', amount: 200, spent: 215.00, icon: '🚗' },
+        { category: 'Entertainment', amount: 100, spent: 73.95, icon: '🎬' },
+        { category: 'Shopping', amount: 300, spent: 573.39, icon: '🛍️' },
+        { category: 'Coffee', amount: 60, spent: 47.99, icon: '☕' },
+        { category: 'Housing', amount: 1250, spent: 1250.00, icon: '🏠' },
+        { category: 'Utilities', amount: 150, spent: 150.00, icon: '💡' },
+      ];
+
+      for (const b of budgetItems) {
+        await storage.createBudget({
+          userId: demoUser.id,
+          category: b.category,
+          amount: b.amount,
+          period: 'monthly',
+          spent: b.spent,
+          remaining: Math.max(0, b.amount - b.spent),
+          icon: b.icon,
+        });
+      }
+
+      // Create savings goals
+      await storage.createSavingsGoal({
+        userId: demoUser.id,
+        name: 'Emergency Fund',
+        targetAmount: 10000,
+        currentAmount: 4200,
+        deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        icon: '🛡️',
+        color: '#059669',
+      });
+
+      await storage.createSavingsGoal({
+        userId: demoUser.id,
+        name: 'Vacation to Hawaii',
+        targetAmount: 3500,
+        currentAmount: 875,
+        deadline: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+        icon: '🌺',
+        color: '#3B82F6',
+      });
+
+      res.json({
+        success: true,
+        message: 'Demo account created successfully',
+        credentials: {
+          email: demoEmail,
+          password: 'AppReview2026!',
+          tier: 'pro',
+          note: 'This account has pre-populated bank accounts, 45 transactions, budgets, and savings goals',
+        },
+      });
+    } catch (error: any) {
+      console.error('Demo setup error:', error);
+      res.status(500).json({ message: 'Demo setup failed', error: error.message });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
