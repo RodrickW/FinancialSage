@@ -140,9 +140,12 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* The WebView is always mounted — free tier users browse normally */}
+      {/* The WebView is always mounted — free tier users browse normally.
+          key changes when activeTier changes so the WebView reloads with the
+          updated injected mobileSubscriptionTier after a successful purchase. */}
       <View style={[styles.flex, showNativePaywall && styles.hidden]}>
         <MainApp
+          key={activeTier || 'free'}
           onUserAuthenticated={handleUserAuthenticated}
           onShowPaywall={handleShowNativePaywall}
           activeTier={activeTier}

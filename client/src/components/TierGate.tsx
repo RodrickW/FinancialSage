@@ -50,8 +50,19 @@ function triggerNativePaywall() {
 export default function TierGate({ feature, requiredTier, currentTier, children }: TierGateProps) {
   const [, setLocation] = useLocation();
 
-  const tierOrder = { free: 0, plus: 1, pro: 2 };
-  const hasAccess = tierOrder[currentTier] >= tierOrder[requiredTier];
+  const tierOrder: Record<SubscriptionTier, number> = { free: 0, plus: 1, pro: 2 };
+
+  // On mobile, the native app injects window.mobileSubscriptionTier after a successful
+  // Apple IAP purchase. Trust whichever is higher — native or backend — so content
+  // unlocks immediately without waiting for the RevenueCat webhook to update the DB.
+  const nativeTier = typeof window !== 'undefined'
+    ? (window as any).mobileSubscriptionTier as SubscriptionTier | null
+    : null;
+  const effectiveRank = Math.max(
+    tierOrder[currentTier] ?? 0,
+    tierOrder[nativeTier as SubscriptionTier] ?? 0
+  );
+  const hasAccess = effectiveRank >= tierOrder[requiredTier];
 
   if (hasAccess) {
     return <>{children}</>;
