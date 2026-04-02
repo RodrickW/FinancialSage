@@ -1860,7 +1860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // New proactive AI insights endpoint using real user data with behavioral analytics
-  app.get('/api/ai/proactive-insights', requireTier('plus'), async (req, res) => {
+  app.get('/api/ai/proactive-insights', requireTier('pro'), async (req, res) => {
     try {
       const user = req.user as User;
       const { generateProactiveInsights } = await import('./openai');
@@ -2390,7 +2390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Comprehensive financial health assessment
-  app.get('/api/ai/financial-health', requireTier('plus'), async (req, res) => {
+  app.get('/api/ai/financial-health', requireTier('pro'), async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -2823,7 +2823,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Question is required' });
       }
       
-      const user = req.user as User;
+      let user = req.user as User;
+
+      // Enforce 20 message/month limit for Plus tier (Pro gets unlimited)
+      const isProUser = user.subscriptionTier === 'pro' ||
+        (user.revenuecatTier === 'pro' && user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date());
+      
+      if (!isProUser) {
+        const PLUS_MONTHLY_LIMIT = 20;
+        const now = new Date();
+        const resetAt = user.aiMessagesResetAt ? new Date(user.aiMessagesResetAt) : null;
+        const needsReset = !resetAt ||
+          resetAt.getMonth() !== now.getMonth() ||
+          resetAt.getFullYear() !== now.getFullYear();
+
+        let usedCount = needsReset ? 0 : (user.aiMessagesUsedThisMonth || 0);
+
+        if (usedCount >= PLUS_MONTHLY_LIMIT) {
+          return res.status(429).json({
+            message: 'Monthly AI message limit reached',
+            code: 'MESSAGE_LIMIT_REACHED',
+            messagesUsed: usedCount,
+            messagesLimit: PLUS_MONTHLY_LIMIT,
+            remaining: 0,
+          });
+        }
+
+        // Increment before calling OpenAI so we don't miss counts on error
+        const updated = await storage.updateUser(user.id, {
+          aiMessagesUsedThisMonth: usedCount + 1,
+          aiMessagesResetAt: needsReset ? now : user.aiMessagesResetAt,
+        });
+        if (updated) user = updated;
+      }
       
       // Get relevant user financial data to provide context to the model
       const accounts = await storage.getAccounts(user.id);
@@ -2883,8 +2915,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add a personality to the coach in the prompt
       const answer = await getFinancialCoaching(question, userData, user.faithModeEnabled || false);
-      
-      res.json({ answer, faithModeEnabled: user.faithModeEnabled || false });
+
+      // Include message usage in response for Plus users
+      const isProUser2 = user.subscriptionTier === 'pro' ||
+        (user.revenuecatTier === 'pro' && user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date());
+      const PLUS_MONTHLY_LIMIT = 20;
+      const usedAfter = isProUser2 ? null : (user.aiMessagesUsedThisMonth || 0);
+
+      res.json({
+        answer,
+        faithModeEnabled: user.faithModeEnabled || false,
+        messagesUsed: usedAfter,
+        messagesLimit: isProUser2 ? null : PLUS_MONTHLY_LIMIT,
+        remaining: isProUser2 ? null : Math.max(0, PLUS_MONTHLY_LIMIT - (usedAfter || 0)),
+      });
     } catch (error) {
       console.error('Error getting coaching advice:', error);
       res.status(500).json({ message: 'Failed to get coaching advice' });

@@ -75,18 +75,34 @@ export default function FinancialCoach() {
   const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
   const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
   const hasAccess = hasLegacyAccess || hasTierAccess;
+  const isProTier = currentTier === 'pro' ||
+    ((window as any).mobileSubscriptionTier === 'pro');
 
-  // Get budget recommendations - only fetch if user has access
+  // Get budget recommendations - only fetch if user has Plus+
   const { data: budgetData, isLoading: budgetLoading } = useQuery({
     queryKey: ['/api/ai/budget-recommendations'],
     enabled: selectedTab === 'budget' && hasAccess && !userLoading
   });
 
-  // Get comprehensive financial health report - only fetch if user has access
+  // Financial Health Report is Pro-only (advanced AI insights)
   const { data: healthData, isLoading: healthLoading } = useQuery({
     queryKey: ['/api/ai/financial-health'],
-    enabled: selectedTab === 'health' && hasAccess && !userLoading
+    enabled: selectedTab === 'health' && isProTier && !userLoading
   });
+
+  // Track remaining messages for Plus users (from last coaching response)
+  const [messagesRemaining, setMessagesRemaining] = useState<number | null>(null);
+
+  // Initialize message counter from user profile
+  useEffect(() => {
+    if (!user || isProTier) return;
+    const PLUS_MONTHLY_LIMIT = 20;
+    const used = (user as any).aiMessagesUsedThisMonth || 0;
+    const resetAt = (user as any).aiMessagesResetAt ? new Date((user as any).aiMessagesResetAt) : null;
+    const now = new Date();
+    const isStale = !resetAt || resetAt.getMonth() !== now.getMonth() || resetAt.getFullYear() !== now.getFullYear();
+    setMessagesRemaining(isStale ? PLUS_MONTHLY_LIMIT : Math.max(0, PLUS_MONTHLY_LIMIT - used));
+  }, [user, isProTier]);
 
   // Check if we should show personalized plan from interview
   useEffect(() => {
@@ -118,7 +134,21 @@ export default function FinancialCoach() {
       });
       
       const data = await response.json();
+
+      if (response.status === 429 && data.code === 'MESSAGE_LIMIT_REACHED') {
+        setMessagesRemaining(0);
+        setAnswer('__LIMIT_REACHED__');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed');
+      }
+
       setAnswer(data.answer);
+      if (data.remaining !== null && data.remaining !== undefined) {
+        setMessagesRemaining(data.remaining);
+      }
     } catch (error) {
       console.error('Error asking question:', error);
       setAnswer('Sorry, I encountered an error while processing your question. Please try again later.');
@@ -249,6 +279,30 @@ Money Mind 💰`);
   };
 
   const renderHealthTab = () => {
+    // Financial Health Report is a Pro-only feature
+    if (!isProTier) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
+            <span className="text-white text-2xl">✦</span>
+          </div>
+          <h3 className="text-xl font-bold text-neutral-800 mb-2">Pro Feature</h3>
+          <p className="text-neutral-600 mb-2 max-w-sm">
+            The <strong>Financial Health Report</strong> gives you an AI-powered score, strengths, improvement areas, and personalized recommendations — all in one view.
+          </p>
+          <p className="text-sm text-neutral-500 mb-6 max-w-sm">
+            Upgrade to <strong>Pro</strong> ($9.99/mo or $89/yr) to unlock this and unlimited AI messages.
+          </p>
+          <a
+            href="/subscribe"
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all"
+          >
+            Upgrade to Pro
+          </a>
+        </div>
+      );
+    }
+
     if (healthLoading) {
       return (
         <div className="flex flex-col items-center justify-center h-64">
@@ -432,10 +486,19 @@ Money Mind 💰`);
                 onChange={(e) => setAiQuestion(e.target.value)}
               ></textarea>
             </div>
+            {/* Message counter for Plus users */}
+            {!isProTier && messagesRemaining !== null && (
+              <div className={`mt-2 text-xs flex items-center gap-1 ${messagesRemaining <= 3 ? 'text-amber-600' : 'text-neutral-500'}`}>
+                <span>{messagesRemaining} of 20 messages remaining this month</span>
+                {messagesRemaining <= 5 && (
+                  <a href="/subscribe" className="ml-1 text-violet-600 font-semibold underline">Upgrade to Pro for unlimited</a>
+                )}
+              </div>
+            )}
             <div className="mt-3 flex justify-end">
               <Button
                 onClick={() => requireConsent(handleAskQuestion)}
-                disabled={isAsking || !aiQuestion.trim()}
+                disabled={isAsking || !aiQuestion.trim() || messagesRemaining === 0}
                 className="bg-primary-500 hover:bg-primary-600"
               >
                 {isAsking ? (
@@ -451,7 +514,20 @@ Money Mind 💰`);
           </CardContent>
         </Card>
 
-        {answer && (
+        {answer === '__LIMIT_REACHED__' ? (
+          <Card className="border-amber-200 bg-amber-50">
+            <CardContent className="p-6 text-center">
+              <p className="font-semibold text-amber-800 mb-2">You've used all 20 AI messages for this month.</p>
+              <p className="text-sm text-amber-700 mb-4">Your limit resets on the 1st of next month, or upgrade to Pro for unlimited messages.</p>
+              <a
+                href="/subscribe"
+                className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all text-sm"
+              >
+                Upgrade to Pro — Unlimited Messages
+              </a>
+            </CardContent>
+          </Card>
+        ) : answer && (
           <Card>
             <CardHeader>
               <CardTitle>AI Financial Coach Response</CardTitle>
@@ -570,7 +646,12 @@ Money Mind 💰`);
               >
                 <TabsList className="mb-2">
                   <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
-                  <TabsTrigger value="health">Financial Health</TabsTrigger>
+                  <TabsTrigger value="health" className="flex items-center gap-1">
+                    Financial Health
+                    {!isProTier && (
+                      <span className="ml-1 text-[10px] font-bold px-1 py-0.5 bg-violet-100 text-violet-700 rounded">PRO</span>
+                    )}
+                  </TabsTrigger>
                   <TabsTrigger value="ask">Ask Coach</TabsTrigger>
                 </TabsList>
                 
