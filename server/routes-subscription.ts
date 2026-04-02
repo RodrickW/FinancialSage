@@ -119,8 +119,11 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
             stripeTier = mapStripePriceToTier(priceId);
           }
           
-          // Sync tier to database if needed
-          if (stripeSubscriptionActive && user.subscriptionTier !== stripeTier) {
+          // Sync tier and/or status from Stripe whenever subscription is live
+          const dbStatusOk = ['active', 'trialing', 'past_due'].includes(user.subscriptionStatus || '');
+          const needsSync = stripeSubscriptionActive &&
+            (user.subscriptionTier !== stripeTier || !dbStatusOk);
+          if (needsSync) {
             await storage.updateUser(user.id, {
               subscriptionTier: stripeTier,
               isPremium: stripeTier !== 'free',
@@ -221,6 +224,49 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
     }
   });
   
+  // Downgrade from Pro to Plus (keeps same billing period)
+  app.post('/api/subscription/downgrade', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const currentTier = getUserTier(user);
+
+      if (currentTier !== 'pro') {
+        return res.status(400).json({ message: 'You must be on the Pro plan to downgrade' });
+      }
+
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ message: 'No active Stripe subscription found. Apple subscriptions cannot be downgraded here.' });
+      }
+
+      // Use same billing period as current subscription
+      const period = user.subscriptionPeriod === 'annual' ? 'annual' : 'monthly';
+      const priceId = period === 'annual'
+        ? process.env.STRIPE_PLUS_ANNUAL_PRICE_ID
+        : process.env.STRIPE_PLUS_MONTHLY_PRICE_ID;
+
+      if (!priceId) {
+        return res.status(500).json({ message: 'Plus plan not configured. Please contact support.' });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        items: [{ id: subscription.items.data[0].id, price: priceId }],
+        proration_behavior: 'create_prorations',
+      });
+
+      await storage.updateUser(user.id, {
+        subscriptionTier: 'plus',
+        stripePriceId: priceId,
+        subscriptionPeriod: period,
+      });
+
+      res.json({ success: true, newTier: 'plus', message: 'You\'ve been downgraded to Plus. Changes take effect immediately.' });
+    } catch (error) {
+      console.error('Error downgrading subscription:', error);
+      res.status(500).json({ message: 'Failed to downgrade subscription. Please try again or contact support.' });
+    }
+  });
+
   // Cancel subscription
   app.post('/api/subscription/cancel', requireAuth, async (req, res) => {
     try {

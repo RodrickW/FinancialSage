@@ -218,7 +218,7 @@ export async function handleStripeWebhook(event: Stripe.Event) {
         .where(eq(users.stripeCustomerId, subscription.customer as string));
       
       if (user) {
-        const isActive = subscription.status === 'active' || subscription.status === 'past_due';
+        const isActive = subscription.status === 'active' || subscription.status === 'trialing' || subscription.status === 'past_due';
         
         await db.update(users)
           .set({ 
