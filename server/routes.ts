@@ -4988,8 +4988,10 @@ IMPORTANT:
         success: true,
         message: 'Demo account created successfully',
         credentials: {
+          username: 'demo_reviewer',
           email: demoEmail,
           password: 'AppReview2026!',
+          loginField: 'Use the USERNAME field (not email) to log in: demo_reviewer',
           tier: 'pro',
           note: 'This account has pre-populated bank accounts, 45 transactions, budgets, and savings goals',
         },
