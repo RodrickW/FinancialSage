@@ -1097,6 +1097,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Sync Apple IAP subscription to backend immediately after purchase
+  // Called by the web app when it detects window.mobileSubscriptionTier was injected
+  // Verifies the entitlement directly with RevenueCat before updating the database
+  app.post('/api/mobile/sync-subscription', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { tier: claimedTier } = req.body as { tier: 'plus' | 'pro' };
+
+      if (!claimedTier || !['plus', 'pro'].includes(claimedTier)) {
+        return res.status(400).json({ message: 'Invalid tier' });
+      }
+
+      // Verify with RevenueCat REST API using the user's ID as app_user_id
+      const rcSecretKey = process.env.REVENUECAT_SECRET_KEY;
+      if (!rcSecretKey) {
+        console.warn('REVENUECAT_SECRET_KEY not set — skipping RC verification, trusting claimed tier');
+        await storage.updateUser(user.id, {
+          subscriptionTier: claimedTier,
+          isPremium: true,
+          subscriptionStatus: 'active',
+          revenuecatTier: claimedTier,
+          revenuecatPlatform: 'ios'
+        });
+        return res.json({ success: true, tier: claimedTier, verified: false });
+      }
+
+      const rcResponse = await fetch(
+        `https://api.revenuecat.com/v1/subscribers/${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${rcSecretKey}`,
+            'Content-Type': 'application/json',
+            'X-Platform': 'ios'
+          }
+        }
+      );
+
+      if (!rcResponse.ok) {
+        console.warn(`RevenueCat subscriber lookup failed for user ${user.id}: ${rcResponse.status}`);
+        // If RC lookup fails (e.g. network issue), fall back to trusting the native claim
+        await storage.updateUser(user.id, {
+          subscriptionTier: claimedTier,
+          isPremium: true,
+          subscriptionStatus: 'active',
+          revenuecatTier: claimedTier,
+          revenuecatPlatform: 'ios'
+        });
+        return res.json({ success: true, tier: claimedTier, verified: false });
+      }
+
+      const rcData: any = await rcResponse.json();
+      const entitlements = rcData?.subscriber?.entitlements || {};
+      const activeEntitlements = Object.entries(entitlements).filter(
+        ([, e]: any) => e.expires_date === null || new Date(e.expires_date) > new Date()
+      );
+
+      let verifiedTier: 'plus' | 'pro' | null = null;
+      if (activeEntitlements.some(([key]) => key === 'pro')) {
+        verifiedTier = 'pro';
+      } else if (activeEntitlements.some(([key]) => key === 'plus' || key === 'premium')) {
+        verifiedTier = 'plus';
+      }
+
+      if (verifiedTier) {
+        const expiresEntry: any = Object.values(entitlements).find((e: any) =>
+          e.expires_date && new Date(e.expires_date) > new Date()
+        );
+        await storage.updateUser(user.id, {
+          subscriptionTier: verifiedTier,
+          isPremium: true,
+          subscriptionStatus: 'active',
+          revenuecatTier: verifiedTier,
+          revenuecatPlatform: 'ios',
+          revenuecatExpiresAt: expiresEntry?.expires_date ? new Date(expiresEntry.expires_date) : null
+        });
+        console.log(`✅ [User ${user.id}] Mobile subscription synced via RC API: ${verifiedTier}`);
+        return res.json({ success: true, tier: verifiedTier, verified: true });
+      }
+
+      // RC confirmed no active subscription — reject
+      console.warn(`⚠️ [User ${user.id}] Claimed ${claimedTier} but RC shows no active entitlement`);
+      return res.status(403).json({ message: 'No active subscription found in RevenueCat' });
+    } catch (error) {
+      console.error('Error syncing mobile subscription:', error);
+      res.status(500).json({ message: 'Sync failed' });
+    }
+  });
+
   // Financial overview - requires active trial or subscription
   app.get('/api/financial-overview', requireAccess, async (req, res) => {
     try {
