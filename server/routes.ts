@@ -2558,6 +2558,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Regenerate Money Playbook from saved interview responses (for users who upgraded after completing interview)
+  app.post('/api/ai/interview/regenerate', requireTier('plus'), async (req, res) => {
+    try {
+      const user = req.user as User;
+      const interview = await storage.getLatestInterview(user.id);
+
+      if (!interview) {
+        return res.status(404).json({ message: 'No interview found. Please complete the interview first.' });
+      }
+
+      const accounts = await storage.getAccounts(user.id);
+      const transactions = await storage.getTransactions(user.id);
+
+      const { generateMoneyPlaybook } = await import('./openai');
+      const moneyPlaybook = await generateMoneyPlaybook({
+        userName: user.firstName || user.username,
+        userResponses: interview.responses as Record<string, any>,
+        financialContext: {
+          accounts: accounts.map(a => ({ name: a.accountName, type: a.accountType, balance: a.balance })),
+          recentSpending: transactions.slice(0, 20).map(t => ({
+            name: t.description,
+            amount: t.amount,
+            category: t.category
+          }))
+        }
+      });
+
+      await storage.updateInterview(interview.id, { personalizedPlan: moneyPlaybook });
+
+      res.json({ success: true, moneyPlaybook });
+    } catch (error) {
+      console.error('Error regenerating playbook:', error);
+      res.status(500).json({ message: 'Failed to generate Money Playbook' });
+    }
+  });
+
   // Generate weekly spending analysis based on Money Playbook
   app.get('/api/ai/weekly-analysis', requireAccess, async (req, res) => {
     try {

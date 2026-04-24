@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
-import TierGate from '@/components/TierGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -343,8 +342,11 @@ export default function CoachInterview() {
       const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
       const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
       const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
+      // Also check native mobile tier injected after Apple IAP purchase
+      const nativeTier = typeof window !== 'undefined' ? (window as any).mobileSubscriptionTier : null;
+      const hasNativeTierAccess = nativeTier === 'plus' || nativeTier === 'pro';
 
-      if (hasTierAccess || hasLegacyAccess) {
+      if (hasTierAccess || hasLegacyAccess || hasNativeTierAccess) {
         // Responses saved — now try to generate AI plan
         saveAiInterviewMutation.mutate(variables);
       } else {
@@ -410,28 +412,10 @@ export default function CoachInterview() {
     );
   }
 
-  // Check tier access - gate non-onboarding access for free users
+  // All users can access the interview - tier only affects AI generation at the end
   const currentTier = (user?.subscriptionTier as SubscriptionTier) || 'free';
   const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
   const hasTierAccess = currentTier === 'plus' || currentTier === 'pro';
-  
-  if (!isOnboarding && !hasLegacyAccess && !hasTierAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 pb-16">
-        <BottomNavigation user={user} />
-        <TopNav title="Money Mind Interview" />
-        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <TierGate 
-            feature="AI Financial Interview" 
-            requiredTier="plus" 
-            currentTier={currentTier}
-          >
-            <div />
-          </TierGate>
-        </main>
-      </div>
-    );
-  }
 
   // Free tier onboarding completion screen
   if (isFreeTierComplete) {

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -8,6 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Brain, Target, AlertTriangle, Sparkles, CheckCircle, Calendar, TrendingUp, Heart, Zap, ArrowRight, RefreshCw } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface MoneyPlaybook {
   moneyPersonalityType: string;
@@ -91,6 +93,8 @@ function ScoreBar({ label, score, color }: { label: string; score: number; color
 
 export default function MoneyPlaybook() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: userData } = useQuery({
     queryKey: ['/api/users/profile']
@@ -101,6 +105,23 @@ export default function MoneyPlaybook() {
   });
 
   const user = userData as any;
+  const currentTier = user?.subscriptionTier || 'free';
+  const hasLegacyAccess = user?.hasStartedTrial || user?.isPremium;
+  const canGeneratePlaybook = currentTier === 'plus' || currentTier === 'pro' || hasLegacyAccess;
+
+  const generatePlaybookMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/ai/interview/regenerate', {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/ai/interview/latest'] });
+      toast({ title: 'Your Money Playbook is ready!', description: 'Scroll down to see your personalized plan.' });
+    },
+    onError: () => {
+      toast({ title: 'Generation failed', description: 'Please try again in a moment.', variant: 'destructive' });
+    }
+  });
 
   if (isLoading) {
     return (
@@ -109,6 +130,9 @@ export default function MoneyPlaybook() {
       </div>
     );
   }
+
+  // User completed the interview but has no AI plan yet (upgraded after completing as free user)
+  const interviewDoneButNoPlaybook = interviewData?.hasInterview && !interviewData.interview?.moneyPlaybook;
 
   if (!interviewData?.hasInterview || !interviewData.interview?.moneyPlaybook) {
     return (
@@ -122,17 +146,39 @@ export default function MoneyPlaybook() {
               <Brain className="w-7 h-7 text-emerald-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Your Money Playbook</h2>
-            <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">
-              Complete the 5-minute Money Mind Interview to unlock your personalized money personality type and 30-day action plan.
-            </p>
-            <Button
-              onClick={() => setLocation('/coach/interview')}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 h-11 rounded-xl shadow-sm"
-              data-testid="button-start-interview"
-            >
-              Start the Interview
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+
+            {interviewDoneButNoPlaybook && canGeneratePlaybook ? (
+              <>
+                <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">
+                  Your interview responses are saved. Generate your personalized AI plan now!
+                </p>
+                <Button
+                  onClick={() => generatePlaybookMutation.mutate()}
+                  disabled={generatePlaybookMutation.isPending}
+                  className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 h-11 rounded-xl shadow-sm"
+                >
+                  {generatePlaybookMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating your plan...</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 mr-2" />Generate My Playbook</>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">
+                  Complete the 5-minute Money Mind Interview to unlock your personalized money personality type and 30-day action plan.
+                </p>
+                <Button
+                  onClick={() => setLocation('/coach/interview')}
+                  className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 h-11 rounded-xl shadow-sm"
+                  data-testid="button-start-interview"
+                >
+                  Start the Interview
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Blurred Preview */}

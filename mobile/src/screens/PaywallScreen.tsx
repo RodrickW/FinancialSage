@@ -100,6 +100,7 @@ export default function PaywallScreen({
     // Match 'yearly' OR 'annual' since App Store Connect uses 'yearly'
     const periodTerms = isAnnual ? ['yearly', 'annual'] : ['monthly'];
 
+    // Exact match: tier + billing period in the identifier
     const byId = packages.find(
       (p) =>
         p.identifier.toLowerCase().includes(tierStr) &&
@@ -107,14 +108,14 @@ export default function PaywallScreen({
     );
     if (byId) return byId;
 
-    const byType = packages.find((p) =>
-      isAnnual
-        ? p.packageType === 'ANNUAL'
-        : p.packageType === 'MONTHLY',
+    // Partial match: at least the tier name matches
+    const byTierOnly = packages.find((p) =>
+      p.identifier.toLowerCase().includes(tierStr),
     );
-    if (byType) return byType;
+    if (byTierOnly) return byTierOnly;
 
-    return packages[0];
+    // No match for this tier — return null so we fall back to hardcoded prices
+    return null;
   };
 
   const getDisplayPrice = (): string => {

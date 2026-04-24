@@ -64,6 +64,7 @@ export interface IStorage {
   // Interview operations
   getLatestInterview(userId: number): Promise<Interview | undefined>;
   createInterview(interview: InsertInterview): Promise<Interview>;
+  updateInterview(id: number, data: Partial<Interview>): Promise<Interview>;
 
   // Daily check-in operations
   getTodayCheckin(userId: number): Promise<DailyCheckin | undefined>;
@@ -465,6 +466,11 @@ export class DatabaseStorage implements IStorage {
   async createInterview(interview: InsertInterview): Promise<Interview> {
     const [created] = await db.insert(interviews).values(interview).returning();
     return created;
+  }
+
+  async updateInterview(id: number, data: Partial<Interview>): Promise<Interview> {
+    const [updated] = await db.update(interviews).set(data).where(eq(interviews.id, id)).returning();
+    return updated;
   }
 
   // Daily check-in operations
