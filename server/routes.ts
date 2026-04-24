@@ -2548,7 +2548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as User;
       const { responses, completedAt } = req.body;
-      const interview = await storage.createInterview({
+      const interview = await storage.upsertInterview({
         userId: user.id,
         responses: responses,
         completedAt: completedAt ? new Date(completedAt) : new Date()
@@ -2591,7 +2591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Save interview responses and Money Playbook to database
-      const interview = await storage.createInterview({
+      const interview = await storage.upsertInterview({
         userId: user.id,
         responses,
         completedAt: completedAt ? new Date(completedAt) : new Date(),
