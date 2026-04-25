@@ -33,6 +33,7 @@ export default function Admin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ secret: 'AppleReview2026' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
