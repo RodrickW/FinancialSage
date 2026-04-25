@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Star, MessageSquare, User, Clock, ArrowLeft, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'wouter';
-import { apiRequest } from '@/lib/queryClient';
 
 interface FeedbackItem {
   id: number;
@@ -30,8 +29,13 @@ export default function Admin() {
     setDemoStatus('loading');
     setDemoMessage('');
     try {
-      const res = await apiRequest('POST', '/api/demo/setup');
+      const res = await fetch('/api/demo/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
       setDemoStatus('success');
       setDemoMessage(data.message || 'Demo account reset successfully.');
     } catch (err: any) {
