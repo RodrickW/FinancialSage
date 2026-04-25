@@ -6,10 +6,10 @@ import { MailCheck, MailX, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react
 import { useToast } from '@/hooks/use-toast';
 
 export default function VerifyEmail() {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  const params = new URLSearchParams(location.split('?')[1] || '');
+  const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
   const email = params.get('email') || '';
 
