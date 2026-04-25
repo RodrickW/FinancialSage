@@ -4967,11 +4967,11 @@ IMPORTANT:
         email: demoEmail,
       });
 
-      // Upgrade to Pro
+      // Leave on free tier — reviewer will subscribe via IAP to unlock features
       await storage.updateUser(demoUser.id, {
-        subscriptionTier: 'pro',
-        isPremium: true,
-        subscriptionStatus: 'active',
+        subscriptionTier: 'free',
+        isPremium: false,
+        subscriptionStatus: null,
         hasCompletedOnboarding: true,
       });
 
@@ -5158,12 +5158,12 @@ IMPORTANT:
 
       res.json({
         success: true,
-        message: 'Demo account created successfully',
+        message: 'Demo account ready. Log in as demo_reviewer, then subscribe via in-app purchase to unlock all features.',
         account: {
           username: 'demo_reviewer',
           password: 'AppReview2026!',
-          tier: 'pro',
-          loginNote: 'Use the USERNAME field (not email)',
+          tier: 'free',
+          loginNote: 'Use the USERNAME field (not email). After subscribing via IAP, bank data and AI unlock automatically.',
         },
       });
     } catch (error: any) {

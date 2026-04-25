@@ -190,7 +190,7 @@ export default function Admin() {
               <div className="flex-1">
                 <h2 className="text-lg font-semibold text-amber-900">Apple Review Demo Account</h2>
                 <p className="text-sm text-amber-700 mt-1">
-                  Run after every deploy. Creates <strong>demo_reviewer</strong> with Pro access and pre-loaded financial data so the reviewer can test the full app experience.
+                  Run after every deploy. Creates <strong>demo_reviewer</strong> as a <strong>free</strong> user with pre-loaded bank data. The reviewer logs in, sees the free experience, then subscribes via in-app purchase to unlock all features — exactly like a real user.
                 </p>
                 {demoMessage && (
                   <div className={`flex items-center gap-2 mt-2 text-sm font-medium ${demoStatus === 'success' ? 'text-emerald-700' : 'text-red-600'}`}>
