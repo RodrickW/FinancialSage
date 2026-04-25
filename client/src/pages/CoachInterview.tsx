@@ -12,8 +12,16 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { UserProfile, SubscriptionTier } from '@/types';
-import { Loader2, MessageCircle, ArrowRight, ArrowLeft, Check, Lock, Sparkles } from 'lucide-react';
+import { Loader2, MessageCircle, ArrowRight, ArrowLeft, Check, Lock, Sparkles, AlertTriangle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 // Removed mock data import - using real API data only
@@ -297,10 +305,14 @@ export default function CoachInterview() {
   const [isComplete, setIsComplete] = useState(false);
   const [isFreeTierComplete, setIsFreeTierComplete] = useState(false);
   const [location, setLocation] = useLocation();
+  const [showRetakeWarning, setShowRetakeWarning] = useState(false);
+  const [confirmedRetake, setConfirmedRetake] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const isOnboarding = new URLSearchParams(location.split('?')[1] || '').get('onboarding') === 'true';
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const isOnboarding = urlParams.get('onboarding') === 'true';
+  const alreadyConfirmed = urlParams.get('confirmed') === 'true';
 
   // Get the user data
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -308,6 +320,21 @@ export default function CoachInterview() {
   });
 
   const user: UserProfile = userData as any;
+
+  // Check for existing interview to decide whether to show retake warning.
+  // Skip if this is a new-user onboarding flow or the user already confirmed on a prior screen.
+  const { data: existingInterviewData, isLoading: existingInterviewLoading } = useQuery({
+    queryKey: ['/api/ai/interview/latest'],
+    enabled: !userLoading && !!userData && !isOnboarding && !alreadyConfirmed,
+  });
+
+  useEffect(() => {
+    if (existingInterviewLoading || isOnboarding || alreadyConfirmed || confirmedRetake) return;
+    const existing = existingInterviewData as any;
+    if (existing?.interview) {
+      setShowRetakeWarning(true);
+    }
+  }, [existingInterviewData, existingInterviewLoading, isOnboarding, alreadyConfirmed, confirmedRetake]);
 
   // Save interview responses with AI (Plus/Pro) — called AFTER basic save succeeds
   const saveAiInterviewMutation = useMutation({
@@ -708,6 +735,40 @@ export default function CoachInterview() {
               </CardContent>
             </Card>
           </main>
+
+      {/* Retake warning dialog — shown when a completed interview already exists */}
+      <Dialog open={showRetakeWarning} onOpenChange={(open) => {
+        if (!open) setLocation('/money-playbook');
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              You Already Have a Money Playbook
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-sm text-gray-700">
+              Continuing will permanently replace your existing Money Playbook and all of your previous interview responses. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setLocation('/money-playbook')}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmedRetake(true);
+                setShowRetakeWarning(false);
+              }}
+            >
+              Yes, Retake Interview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

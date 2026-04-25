@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
@@ -7,6 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Loader2, Brain, Target, AlertTriangle, Sparkles, CheckCircle, Calendar, TrendingUp, Heart, Zap, ArrowRight, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -93,6 +102,7 @@ function ScoreBar({ label, score, color }: { label: string; score: number; color
 
 export default function MoneyPlaybook() {
   const [, setLocation] = useLocation();
+  const [showRetakeDialog, setShowRetakeDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -474,7 +484,7 @@ export default function MoneyPlaybook() {
         <div className="text-center pt-4">
           <Button 
             variant="outline"
-            onClick={() => setLocation('/coach/interview')}
+            onClick={() => setShowRetakeDialog(true)}
             className="border-gray-300"
             data-testid="button-retake-interview"
           >
@@ -485,6 +495,38 @@ export default function MoneyPlaybook() {
           </p>
         </div>
       </main>
+
+      {/* Retake confirmation dialog */}
+      <Dialog open={showRetakeDialog} onOpenChange={setShowRetakeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Retake the Interview?
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-sm text-gray-700">
+              Retaking the interview will permanently replace your current Money Playbook and all of your previous responses. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowRetakeDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setShowRetakeDialog(false);
+                setLocation('/coach/interview?confirmed=true');
+              }}
+            >
+              Yes, Retake Interview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <BottomNavigation user={user} />
     </div>
