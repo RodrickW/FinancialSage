@@ -56,8 +56,10 @@ export default function DailyCheckin() {
   }
 
   if (error || !data) {
-    const errorMessage = (error as any)?.message || 'Something went wrong';
-    const needsInterview = errorMessage.includes('Interview');
+    const errorData = (error as any)?.data || {};
+    const errorMessage = (error as any)?.message || '';
+    const needsInterview = errorData?.needsInterview || errorMessage.includes('Interview');
+    const needsPlaybook = errorData?.needsPlaybook || errorMessage.includes('Playbook');
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
@@ -67,17 +69,28 @@ export default function DailyCheckin() {
               <Brain className="w-8 h-8 text-emerald-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              {needsInterview ? 'Complete Your Interview First' : 'Check-In Unavailable'}
+              {needsInterview ? 'Complete Your Interview First'
+               : needsPlaybook ? 'Generate Your Playbook First'
+               : 'Check-In Unavailable'}
             </h2>
             <p className="text-gray-600 mb-4">
-              {needsInterview 
+              {needsInterview
                 ? 'Take the Money Mind Interview to unlock personalized daily check-ins.'
+                : needsPlaybook
+                ? 'Your interview is saved! Generate your Money Playbook to unlock daily check-ins.'
                 : 'Unable to load your daily check-in. Please try again.'}
             </p>
             {needsInterview && (
               <Link href="/coach/interview">
                 <Button className="bg-emerald-600 hover:bg-emerald-700">
                   Start Interview <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            )}
+            {needsPlaybook && (
+              <Link href="/money-playbook">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
+                  Generate My Playbook <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             )}

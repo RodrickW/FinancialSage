@@ -2743,10 +2743,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the user's Money Playbook for personalized content
       const interview = await storage.getLatestInterview(user.id);
       
-      if (!interview || !interview.personalizedPlan) {
+      if (!interview) {
         return res.status(400).json({ 
           message: 'Complete the Money Mind Interview first to access daily check-ins',
           needsInterview: true
+        });
+      }
+
+      if (!interview.personalizedPlan) {
+        return res.status(400).json({
+          message: 'Generate your Money Playbook first to unlock daily check-ins',
+          needsPlaybook: true
         });
       }
       
@@ -5108,6 +5115,47 @@ IMPORTANT:
         color: '#3B82F6',
       });
 
+      // Seed a completed Money Mind Interview + pre-built Money Playbook
+      // (hardcoded so no OpenAI call is needed during App Store review)
+      const demoPlaybook = {
+        moneyPersonalityType: 'The Planner',
+        moneyPersonalityDescription: 'You approach your finances with structure and foresight. You love systems, budgets, and spreadsheets — but sometimes analysis paralysis keeps you from taking the next step. You know what you should do; doing it consistently is the real challenge.',
+        strengths: ['Strong budget awareness', 'Long-term goal oriented', 'Thoughtful about major purchases'],
+        weaknesses: ['Overthinks financial decisions', 'Prone to "perfect plan" procrastination', 'Underestimates small daily spending leaks'],
+        emotionalPatterns: ['Feels anxious when finances feel out of control', 'Gets motivated by visible progress', 'Stress-shops when overwhelmed at work'],
+        behavioralPatterns: ['Checks bank balance frequently', 'Makes detailed budgets but deviates on weekends', 'Saves aggressively then splurges as a "reward"'],
+        spendingTriggers: ['Work stress leading to dining out', 'Weekend boredom and online shopping', 'Social pressure to keep up with peers'],
+        coreMoneyValues: ['Security', 'Freedom', 'Family well-being'],
+        thirtyDayPlan: {
+          week1: ['Review last 30 days of transactions and find your top 3 spending leaks', 'Set up a weekly "money date" — 15 minutes every Sunday to review spending', 'Automate $50 extra to savings this week'],
+          week2: ['Create a "fun budget" of $40 for guilt-free weekend spending', 'Identify one subscription you can pause or cancel', 'Track every purchase over $20 before you make it'],
+          week3: ['Review your Emergency Fund progress and set a target date', 'Meal prep twice this week to cut dining-out costs', 'Share your financial goal with one trusted person for accountability'],
+          week4: ['Calculate your net worth and write it down', 'Celebrate every win from this month — no matter how small', 'Plan your financial focus for next month']
+        },
+        dailyHabit: 'Before any non-essential purchase, pause for 60 seconds and ask: "Does this move me closer to Hawaii or further away?"',
+        purposeStatement: 'Alex is building financial freedom so that unexpected expenses don\'t cause panic, and the family vacation to Hawaii becomes a reality — not just a dream on a vision board.',
+        rootMoneyInsight: 'Your real challenge isn\'t knowledge — it\'s follow-through. You build solid plans but allow "just this once" exceptions that accumulate into significant leakage. The pattern: earn, plan carefully, overspend on stress/social occasions, feel guilty, recommit. Breaking this cycle starts with a guilt-free "fun fund" so planned spending doesn\'t derail the bigger plan.',
+        scores: { savingHabitScore: 72, financialAwarenessScore: 85, spendingTriggerIntensity: 58 },
+        weeklyFocus: 'Identify your single biggest spending trigger this week and create one concrete rule to address it.',
+        encouragement: 'You already have the mindset — most people never get this far. The gap between where you are and where you want to be is smaller than you think. Keep showing up.'
+      };
+
+      await storage.upsertInterview({
+        userId: demoUser.id,
+        responses: {
+          financialGoal: 'Build a 6-month emergency fund and pay off credit card debt',
+          monthlyIncome: '$3,200 – $5,000',
+          biggestChallenge: 'Sticking to my budget on weekends and when I\'m stressed',
+          moneyEmotion: 'Anxious — I worry about unexpected expenses',
+          spendingHabit: 'I budget carefully but tend to overspend on dining and online shopping',
+          savingsFrequency: 'Sometimes, when I remember',
+          financialWin: 'Saved $4,200 toward my emergency fund',
+          moneyGoal90Days: 'Pay off my Chase Sapphire card and increase my emergency fund to $6,000',
+        },
+        completedAt: new Date(),
+        personalizedPlan: demoPlaybook,
+      });
+
       res.json({
         success: true,
         message: 'Demo account created successfully',
@@ -5117,7 +5165,7 @@ IMPORTANT:
           password: 'AppReview2026!',
           loginField: 'Use the USERNAME field (not email) to log in: demo_reviewer',
           tier: 'pro',
-          note: 'This account has pre-populated bank accounts, 45 transactions, budgets, and savings goals',
+          note: 'This account has pre-populated bank accounts, 45 transactions, budgets, savings goals, and a completed Money Playbook',
         },
       });
     } catch (error: any) {
