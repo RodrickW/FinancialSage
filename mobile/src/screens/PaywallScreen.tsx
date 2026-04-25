@@ -60,6 +60,7 @@ export default function PaywallScreen({
 }: PaywallScreenProps) {
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [offeringsError, setOfferingsError] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [selectedTier, setSelectedTier] = useState<TierKey>('plus');
@@ -69,28 +70,38 @@ export default function PaywallScreen({
     loadOfferings();
   }, []);
 
-  const loadOfferings = async () => {
-    try {
-      const offerings = await Purchases.getOfferings();
-      const all: PurchasesPackage[] = [];
-
-      if (offerings.current) {
-        all.push(...offerings.current.availablePackages);
-      }
-      Object.values(offerings.all).forEach((off: PurchasesOffering) => {
-        off.availablePackages.forEach((pkg) => {
-          if (!all.find((p) => p.identifier === pkg.identifier)) {
-            all.push(pkg);
-          }
+  const loadOfferings = async (silent = false): Promise<PurchasesPackage[]> => {
+    if (!silent) setIsLoading(true);
+    setOfferingsError(false);
+    const maxAttempts = 3;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const offerings = await Purchases.getOfferings();
+        const all: PurchasesPackage[] = [];
+        if (offerings.current) {
+          all.push(...offerings.current.availablePackages);
+        }
+        Object.values(offerings.all).forEach((off: PurchasesOffering) => {
+          off.availablePackages.forEach((pkg) => {
+            if (!all.find((p) => p.identifier === pkg.identifier)) {
+              all.push(pkg);
+            }
+          });
         });
-      });
-
-      setPackages(all);
-    } catch (error: any) {
-      console.error('Error loading offerings:', error?.message);
-    } finally {
-      setIsLoading(false);
+        setPackages(all);
+        if (!silent) setIsLoading(false);
+        return all;
+      } catch (error: any) {
+        console.error(`Error loading offerings (attempt ${attempt}/${maxAttempts}):`, error?.message);
+        if (attempt < maxAttempts) {
+          await new Promise(r => setTimeout(r, attempt * 1500));
+        } else {
+          setOfferingsError(true);
+        }
+      }
     }
+    if (!silent) setIsLoading(false);
+    return [];
   };
 
   const getPackageForSelection = (): PurchasesPackage | null => {
@@ -125,13 +136,32 @@ export default function PaywallScreen({
   };
 
   const handlePurchase = async () => {
-    const pkg = getPackageForSelection();
+    let pkg = getPackageForSelection();
+
+    // If offerings didn't load yet, try once more before giving up
     if (!pkg) {
-      Alert.alert(
-        'Unavailable',
-        'Subscription options failed to load. Please try again or contact support.',
-      );
-      return;
+      setIsPurchasing(true);
+      const freshPackages = await loadOfferings(true);
+      const tierStr = selectedTier;
+      const periodTerms = isAnnual ? ['yearly', 'annual'] : ['monthly'];
+      pkg = freshPackages.find(
+        (p) =>
+          p.identifier.toLowerCase().includes(tierStr) &&
+          periodTerms.some((term) => p.identifier.toLowerCase().includes(term)),
+      ) || freshPackages.find((p) => p.identifier.toLowerCase().includes(tierStr)) || null;
+
+      if (!pkg) {
+        setIsPurchasing(false);
+        Alert.alert(
+          'Store Unavailable',
+          'Could not connect to the App Store. Please check your internet connection and try again.',
+          [
+            { text: 'Retry', onPress: () => { loadOfferings(); } },
+            { text: 'Cancel', style: 'cancel' },
+          ],
+        );
+        return;
+      }
     }
 
     setIsPurchasing(true);
@@ -263,6 +293,18 @@ export default function PaywallScreen({
         <TouchableOpacity onPress={() => setSelectedTier('pro')}>
           <Text style={styles.compareLink}>See what's in Pro →</Text>
         </TouchableOpacity>
+      )}
+
+      {/* Offerings error notice */}
+      {offeringsError && packages.length === 0 && (
+        <View style={styles.offeringsErrorBanner}>
+          <Text style={styles.offeringsErrorText}>
+            Could not load App Store pricing. Tap the button below to try — it will automatically retry connecting to the App Store.
+          </Text>
+          <TouchableOpacity onPress={() => loadOfferings()} style={styles.offeringsRetryButton}>
+            <Text style={styles.offeringsRetryText}>Reload Pricing</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Purchase CTA */}
@@ -461,4 +503,28 @@ const styles = StyleSheet.create({
   legalLinks: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 4 },
   legalLink: { fontSize: 12, color: '#6B7280', textDecorationLine: 'underline' },
   legalSep: { fontSize: 12, color: '#9CA3AF' },
+
+  offeringsErrorBanner: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#D97706',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  offeringsErrorText: {
+    fontSize: 13,
+    color: '#92400E',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  offeringsRetryButton: {
+    backgroundColor: '#D97706',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  offeringsRetryText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
 });

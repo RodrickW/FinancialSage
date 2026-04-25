@@ -76,6 +76,26 @@ export async function generateFinancialInsights(userData: any): Promise<any> {
 
 // Financial coaching based on specific questions
 export async function getFinancialCoaching(question: string, userData: any, faithModeEnabled: boolean = false): Promise<string> {
+  const maxRetries = 2;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await _getFinancialCoachingOnce(question, userData, faithModeEnabled);
+    } catch (error: any) {
+      lastError = error;
+      const status = error?.status || error?.response?.status;
+      console.error(`getFinancialCoaching attempt ${attempt}/${maxRetries} failed — status: ${status}, message: ${error.message}`);
+      if (status === 400 || status === 401 || status === 403) break;
+      if (attempt < maxRetries) await new Promise(r => setTimeout(r, attempt * 2000));
+    }
+  }
+
+  console.error("getFinancialCoaching failed after all retries:", lastError?.message);
+  throw new Error("Failed to get financial coaching");
+}
+
+async function _getFinancialCoachingOnce(question: string, userData: any, faithModeEnabled: boolean): Promise<string> {
   try {
     const faithModeContext = faithModeEnabled ? `
 
@@ -117,8 +137,7 @@ You provide personalized, actionable financial advice based on the user's specif
 
     return response.choices[0].message.content || "";
   } catch (error: any) {
-    console.error("Error getting financial coaching:", error.message);
-    throw new Error("Failed to get financial coaching");
+    throw error;
   }
 }
 
