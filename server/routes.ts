@@ -5156,16 +5156,46 @@ IMPORTANT:
         personalizedPlan: demoPlaybook,
       });
 
+      // ── Free-tier account for testing the in-app purchase flow ──────────────
+      // Reviewers can log in as free_reviewer, then tap "Get Plus" in the native
+      // navigation bar to reach the PaywallScreen and test Apple IAP.
+      let freeUser = await storage.getUserByUsername('free_reviewer');
+      if (freeUser) {
+        await storage.deleteUser(freeUser.id);
+      }
+      const freePwd = await bcrypt.hash('AppReview2026!', 12);
+      freeUser = await storage.createUser({
+        username: 'free_reviewer',
+        password: freePwd,
+        firstName: 'Free',
+        lastName: 'Reviewer',
+        email: 'free_reviewer@mindmymoney.com',
+      });
+      // Explicitly free tier — no subscription
+      await storage.updateUser(freeUser.id, {
+        subscriptionTier: 'free',
+        subscriptionStatus: null,
+        hasCompletedOnboarding: true,
+      });
+
       res.json({
         success: true,
-        message: 'Demo account created successfully',
-        credentials: {
-          username: 'demo_reviewer',
-          email: demoEmail,
-          password: 'AppReview2026!',
-          loginField: 'Use the USERNAME field (not email) to log in: demo_reviewer',
-          tier: 'pro',
-          note: 'This account has pre-populated bank accounts, 45 transactions, budgets, savings goals, and a completed Money Playbook',
+        message: 'Demo accounts created successfully',
+        accounts: {
+          proAccount: {
+            username: 'demo_reviewer',
+            password: 'AppReview2026!',
+            tier: 'pro',
+            purpose: 'Test all AI features — bank data, coach chat, budget AI, Playbook',
+            loginNote: 'Use the USERNAME field (not email)',
+          },
+          freeAccount: {
+            username: 'free_reviewer',
+            password: 'AppReview2026!',
+            tier: 'free',
+            purpose: 'Test the in-app purchase flow — log in, then tap the green "Get Plus" button in the top-right of the nav bar to open the PaywallScreen and make a purchase',
+            loginNote: 'Use the USERNAME field (not email)',
+          },
         },
       });
     } catch (error: any) {
