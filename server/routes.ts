@@ -721,17 +721,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email
       });
       
-      // Send email notifications for new user signup
-      const { sendNewUserNotification, sendWelcomeEmail } = await import('./emailService');
-      
-      // Send admin notification (don't block registration if it fails)
+      // Generate email verification token
+      const crypto = await import('crypto');
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await storage.updateUser(user.id, {
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
+      });
+
+      // Build the verification URL
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.headers['x-forwarded-host'] || req.get('host');
+      const verifyUrl = `${protocol}://${host}/verify-email?token=${verificationToken}`;
+
+      // Send verification email (must succeed — registration is blocked until verified)
+      const { sendVerificationEmail, sendNewUserNotification } = await import('./emailService');
+      sendVerificationEmail(user, verifyUrl).catch(error => {
+        console.error('Failed to send verification email:', error);
+      });
+
+      // Send admin notification (non-blocking)
       sendNewUserNotification(user).catch(error => {
         console.error('Failed to send admin notification:', error);
-      });
-      
-      // Send welcome email to user (don't block registration if it fails)
-      sendWelcomeEmail(user).catch(error => {
-        console.error('Failed to send welcome email:', error);
       });
 
       // Create Stripe customer immediately after registration (don't block if it fails)
@@ -739,8 +753,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ensureStripeCustomer(user.id).catch(error => {
         console.error('Failed to create Stripe customer during registration:', error);
       });
-      
-      res.status(201).json({ message: 'User created successfully' });
+
+      res.status(201).json({
+        message: 'Registration successful. Please check your email to verify your account.',
+        emailVerificationRequired: true,
+        email: user.email,
+      });
     } catch (error: any) {
       console.error('Registration error:', error);
       
@@ -774,6 +792,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return res.status(401).json({ message: info?.message || 'Authentication failed' });
       }
+      // Block login for unverified emails (emailVerified defaults to true for existing users)
+      if (user.emailVerified === false) {
+        logSecurityEvent('USER_LOGIN_BLOCKED_UNVERIFIED', user.id, { username: user.username });
+        return res.status(403).json({
+          message: 'Please verify your email address before logging in.',
+          emailNotVerified: true,
+          email: user.email,
+        });
+      }
+
       req.logIn(user, async (err) => {
         if (err) {
           return next(err);
@@ -820,6 +848,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: 'Logged out successfully' });
     });
+  });
+
+  // Verify email address via token from the link in the verification email
+  app.get('/api/auth/verify-email', async (req, res) => {
+    const { token } = req.query;
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ message: 'Verification token is required.' });
+    }
+
+    try {
+      // Find user with this token
+      const allUsers = await storage.getAllUsers?.();
+      let targetUser = allUsers?.find(
+        (u: any) =>
+          u.emailVerificationToken === token &&
+          u.emailVerificationExpires &&
+          new Date(u.emailVerificationExpires) > new Date()
+      );
+
+      if (!targetUser) {
+        // Try a direct DB query as fallback
+        const { db } = await import('./db');
+        const { users } = await import('../shared/schema');
+        const { eq } = await import('drizzle-orm');
+        const [found] = await db.select().from(users).where(eq(users.emailVerificationToken, token)).limit(1);
+        if (found && found.emailVerificationExpires && new Date(found.emailVerificationExpires) > new Date()) {
+          targetUser = found;
+        }
+      }
+
+      if (!targetUser) {
+        return res.status(400).json({
+          message: 'This verification link is invalid or has expired. Please request a new one.',
+          expired: true,
+        });
+      }
+
+      await storage.updateUser(targetUser.id, {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      });
+
+      // Send welcome email now that the account is verified
+      const { sendWelcomeEmail } = await import('./emailService');
+      sendWelcomeEmail(targetUser).catch(() => {});
+
+      return res.json({ message: 'Email verified successfully! You can now log in.' });
+    } catch (error: any) {
+      console.error('Email verification error:', error);
+      return res.status(500).json({ message: 'Verification failed. Please try again.' });
+    }
+  });
+
+  // Resend verification email
+  app.post('/api/auth/resend-verification', async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    try {
+      const { db } = await import('./db');
+      const { users } = await import('../shared/schema');
+      const { eq } = await import('drizzle-orm');
+      const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+
+      // Always return success to prevent email enumeration
+      if (!user || user.emailVerified) {
+        return res.json({ message: 'If that email has a pending verification, a new link has been sent.' });
+      }
+
+      const crypto = await import('crypto');
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await storage.updateUser(user.id, {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
+      });
+
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.headers['x-forwarded-host'] || req.get('host');
+      const verifyUrl = `${protocol}://${host}/verify-email?token=${verificationToken}`;
+
+      const { sendVerificationEmail } = await import('./emailService');
+      sendVerificationEmail(user, verifyUrl).catch(console.error);
+
+      return res.json({ message: 'Verification email sent! Please check your inbox.' });
+    } catch (error: any) {
+      console.error('Resend verification error:', error);
+      return res.status(500).json({ message: 'Failed to resend. Please try again.' });
+    }
   });
 
   // Delete user account - required for Apple App Store compliance (Guideline 5.1.1v)
@@ -4968,11 +5089,15 @@ IMPORTANT:
       });
 
       // Leave on free tier — reviewer will subscribe via IAP to unlock features
+      // emailVerified: true so reviewer doesn't need to go through email verification
       await storage.updateUser(demoUser.id, {
         subscriptionTier: 'free',
         isPremium: false,
         subscriptionStatus: null,
         hasCompletedOnboarding: true,
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
       });
 
       // Create bank accounts

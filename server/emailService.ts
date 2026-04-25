@@ -282,3 +282,72 @@ export async function sendWelcomeEmail(user: any): Promise<boolean> {
     html
   });
 }
+
+/**
+ * Send email address verification link to new user
+ */
+export async function sendVerificationEmail(user: any, verifyUrl: string): Promise<boolean> {
+  const fromEmail = process.env.FROM_EMAIL || 'noreply@mindmymoney.com';
+
+  const subject = 'Verify your Mind My Money email address';
+
+  const text = `Hi ${user.firstName},\n\nPlease verify your email address by clicking the link below:\n\n${verifyUrl}\n\nThis link expires in 24 hours.\n\nIf you didn't create a Mind My Money account, you can safely ignore this email.\n\n— The Mind My Money Team`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verify Your Email - Mind My Money</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 40px 20px;">
+            <table role="presentation" style="max-width: 560px; margin: 0 auto; background-color: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden;">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 36px 40px; text-align: center;">
+                  <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 700;">Mind My Money</h1>
+                  <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0; font-size: 14px;">Personal Finance, Powered by AI</p>
+                </td>
+              </tr>
+              <!-- Body -->
+              <tr>
+                <td style="padding: 40px;">
+                  <h2 style="margin: 0 0 8px; color: #111827; font-size: 20px; font-weight: 700;">Confirm your email address</h2>
+                  <p style="margin: 0 0 24px; color: #6b7280; font-size: 15px; line-height: 1.6;">
+                    Hi ${user.firstName}, thanks for signing up! Click the button below to verify your email and activate your account.
+                  </p>
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${verifyUrl}" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 16px; font-weight: 600;">
+                      Verify My Email
+                    </a>
+                  </div>
+                  <p style="margin: 24px 0 0; color: #9ca3af; font-size: 13px; line-height: 1.6;">
+                    This link expires in <strong>24 hours</strong>. If you didn't create an account, you can safely ignore this email.
+                  </p>
+                  <p style="margin: 12px 0 0; color: #9ca3af; font-size: 12px; word-break: break-all;">
+                    Or copy this link: ${verifyUrl}
+                  </p>
+                </td>
+              </tr>
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 20px 40px; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center;">
+                  <p style="margin: 0; color: #9ca3af; font-size: 12px;">© ${new Date().getFullYear()} Mind My Money. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  if (!user.email) return false;
+
+  return await sendEmail({ to: user.email, from: fromEmail, subject, text, html });
+}

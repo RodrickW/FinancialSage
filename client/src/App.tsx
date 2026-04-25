@@ -45,6 +45,7 @@ import WhatIfSimulator from "@/pages/WhatIfSimulator";
 import DebtPayoff from "@/pages/DebtPayoff";
 import MoneyStory from "@/pages/MoneyStory";
 import FaithMode from "@/pages/FaithMode";
+import VerifyEmail from "@/pages/VerifyEmail";
 import NotFound from "@/pages/not-found";
 
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
@@ -137,6 +138,7 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/forgot-username" component={ForgotUsername} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/demo" component={Dashboard} />
       <Route path="/dashboard">
         {(params) => <ProtectedRoute component={Dashboard} params={params} />}

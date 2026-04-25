@@ -55,10 +55,10 @@ export default function Register() {
       if (response.ok) {
         toast({
           title: 'Registration successful',
-          description: "Welcome! Let's get to know you first.",
+          description: "Check your email to verify your account before logging in.",
           variant: 'default',
         });
-        navigate('/login?new=true');
+        navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
       } else {
         const errorData = await response.json();
         toast({

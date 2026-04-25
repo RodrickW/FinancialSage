@@ -56,6 +56,11 @@ export const users = pgTable("users", {
   // Notification preferences
   emailNotifications: boolean("email_notifications").default(true),
   marketingEmails: boolean("marketing_emails").default(false),
+
+  // Email verification
+  emailVerified: boolean("email_verified").default(true),
+  emailVerificationToken: text("email_verification_token"),
+  emailVerificationExpires: timestamp("email_verification_expires"),
 });
 
 // Connected account schema (bank accounts via Plaid)

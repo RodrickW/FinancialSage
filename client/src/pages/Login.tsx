@@ -86,6 +86,23 @@ export default function Login() {
         setTimeout(() => {
           navigate(isNewUser ? '/coach/interview?onboarding=true' : '/');
         }, 500);
+      } else if (response.status === 403) {
+        const errorData = await response.json();
+        if (errorData.emailNotVerified) {
+          toast({
+            title: 'Email not verified',
+            description: 'Please check your inbox and verify your email before logging in.',
+            variant: 'destructive',
+          });
+          const emailHint = errorData.email ? `?email=${encodeURIComponent(errorData.email)}` : '';
+          navigate(`/verify-email${emailHint}`);
+        } else {
+          toast({
+            title: 'Login failed',
+            description: errorData.message || 'Access denied.',
+            variant: 'destructive',
+          });
+        }
       } else {
         const errorData = await response.json();
         toast({
@@ -123,9 +140,9 @@ export default function Login() {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
             <p className="text-xs font-medium text-gray-600 mb-1.5">Try the demo</p>
             <div className="bg-white rounded px-2.5 py-1.5 text-xs text-gray-700 font-mono border border-gray-100">
-              Username: <span className="font-semibold">demo</span>
+              Username: <span className="font-semibold">demo_reviewer</span>
               <span className="mx-1.5 text-gray-300">|</span>
-              Password: <span className="font-semibold">demo123</span>
+              Password: <span className="font-semibold">AppReview2026!</span>
             </div>
           </div>
         </CardHeader>
