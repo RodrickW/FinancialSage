@@ -41,7 +41,7 @@ export default function Admin() {
       if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
       setDemoStatus('success');
       setDemoMessage(data.message || 'Demo accounts reset successfully.');
-      if (data.accounts) setDemoAccounts(data.accounts);
+      if (data.account) setDemoAccounts(data.account);
     } catch (err: any) {
       setDemoStatus('error');
       setDemoMessage(err.message || 'Something went wrong. Try again.');
@@ -188,9 +188,9 @@ export default function Admin() {
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-amber-900">Apple Review Demo Accounts</h2>
+                <h2 className="text-lg font-semibold text-amber-900">Apple Review Demo Account</h2>
                 <p className="text-sm text-amber-700 mt-1">
-                  Run after every deploy. Creates two accounts: <strong>demo_reviewer</strong> (Pro — test AI features) and <strong>free_reviewer</strong> (Free — test in-app purchase via the native "Get Plus" button).
+                  Run after every deploy. Creates <strong>demo_reviewer</strong> with Pro access and pre-loaded financial data so the reviewer can test the full app experience.
                 </p>
                 {demoMessage && (
                   <div className={`flex items-center gap-2 mt-2 text-sm font-medium ${demoStatus === 'success' ? 'text-emerald-700' : 'text-red-600'}`}>
@@ -201,14 +201,12 @@ export default function Admin() {
                   </div>
                 )}
                 {demoAccounts && (
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {Object.values(demoAccounts).map((acct: any) => (
-                      <div key={acct.username} className="bg-white rounded-lg border border-amber-200 p-3 text-xs space-y-1">
-                        <div className="font-bold text-gray-900 text-sm">{acct.username} <span className="text-amber-700 font-normal">({acct.tier})</span></div>
-                        <div className="text-gray-600">Password: <code className="bg-gray-100 px-1 rounded">{acct.password}</code></div>
-                        <div className="text-gray-500 leading-tight">{acct.purpose}</div>
-                      </div>
-                    ))}
+                  <div className="mt-4">
+                    <div className="bg-white rounded-lg border border-amber-200 p-3 text-xs space-y-1 max-w-xs">
+                      <div className="font-bold text-gray-900 text-sm">{demoAccounts.username} <span className="text-amber-700 font-normal">({demoAccounts.tier})</span></div>
+                      <div className="text-gray-600">Password: <code className="bg-gray-100 px-1 rounded">{demoAccounts.password}</code></div>
+                      <div className="text-gray-500 leading-tight">{demoAccounts.loginNote}</div>
+                    </div>
                   </div>
                 )}
               </div>

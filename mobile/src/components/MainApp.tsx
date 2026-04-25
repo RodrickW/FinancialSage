@@ -196,14 +196,6 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
           <Icon name="account-balance-wallet" size={20} color="#059669" />
           <Text style={styles.appTitle}>Mind My Money</Text>
         </View>
-
-        {/* Show upgrade button when user has no active IAP subscription */}
-        {!activeTier && (
-          <TouchableOpacity style={styles.upgradeButton} onPress={onShowPaywall}>
-            <Icon name="star" size={14} color="#FFFFFF" />
-            <Text style={styles.upgradeButtonText}>Get Plus</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <WebView
@@ -260,16 +252,7 @@ const styles = StyleSheet.create({
   navButtonDisabled: { opacity: 0.35 },
   appInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   appTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
-  upgradeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#059669',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  upgradeButtonText: { fontSize: 12, fontWeight: '700', color: '#FFFFFF' },
+
   webview: { flex: 1 },
   loadingContainer: {
     position: 'absolute',
