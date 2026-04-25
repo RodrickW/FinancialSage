@@ -425,14 +425,7 @@ If unclear which goal or amount, set needsMoreInfo to true and ask for clarifica
 }
 
 // Generate comprehensive Money Playbook from interview responses
-export async function generateMoneyPlaybook(interviewData: any): Promise<any> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are the Mind My Money AI Coach. Your role is to help users change their financial behavior, not just track expenses. 
+const PLAYBOOK_SYSTEM_PROMPT = `You are the Mind My Money AI Coach. Your role is to help users change their financial behavior, not just track expenses. 
 
 USER INPUT YOU WILL RECEIVE:
 - Money Mind Interview answers
@@ -503,21 +496,47 @@ Respond in JSON format with this exact structure:
 
 Keep the tone: direct, supportive, and practical.
 Avoid fluff. Make this feel like a real coach speaking to them.
-Address the user by their first name if provided.`
-        },
-        {
-          role: "user",
-          content: `Analyze this user's Money Mind Interview responses and create their personalized Money Playbook:\n\n${JSON.stringify(interviewData, null, 2)}`
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
+Address the user by their first name if provided.`;
 
-    return JSON.parse(response.choices[0].message.content || "{}");
-  } catch (error: any) {
-    console.error("Error generating Money Playbook:", error.message);
-    throw new Error("Failed to generate Money Playbook");
+export async function generateMoneyPlaybook(interviewData: any): Promise<any> {
+  const maxRetries = 2;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await openai.chat.completions.create(
+        {
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: PLAYBOOK_SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: `Analyze this user's Money Mind Interview responses and create their personalized Money Playbook:\n\n${JSON.stringify(interviewData, null, 2)}`
+            }
+          ],
+          response_format: { type: "json_object" }
+        },
+        { timeout: 60000 }
+      );
+
+      const content = response.choices[0].message.content;
+      if (!content) throw new Error("Empty response from OpenAI");
+      return JSON.parse(content);
+    } catch (error: any) {
+      lastError = error;
+      const status = error?.status || error?.response?.status;
+      console.error(`generateMoneyPlaybook attempt ${attempt}/${maxRetries} failed — status: ${status}, message: ${error.message}`);
+
+      // Don't retry on non-retryable errors
+      if (status === 400 || status === 401 || status === 403) break;
+
+      // Wait before retrying (2s then 4s)
+      if (attempt < maxRetries) await new Promise(r => setTimeout(r, attempt * 2000));
+    }
   }
+
+  console.error("generateMoneyPlaybook failed after all retries:", lastError?.message);
+  throw new Error("Failed to generate Money Playbook");
 }
 
 // Generate weekly spending analysis compared to Money Playbook
