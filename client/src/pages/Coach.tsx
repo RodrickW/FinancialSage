@@ -4,7 +4,7 @@ import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
 import TierGate from '@/components/TierGate';
-import AiConsentModal, { hasAiConsent } from '@/components/AiConsentModal';
+import AiConsentModal, { hasAiConsent, grantAiConsent } from '@/components/AiConsentModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,7 +28,7 @@ export default function FinancialCoach() {
   const [isCreatingBudget, setIsCreatingBudget] = useState(false);
 
   // AI data sharing consent (required by Apple App Store guideline 5.1.2)
-  const [aiConsentGiven, setAiConsentGiven] = useState(() => hasAiConsent());
+  const [aiConsentGiven, setAiConsentGiven] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
@@ -42,6 +42,7 @@ export default function FinancialCoach() {
   };
 
   const handleConsentAccepted = () => {
+    if (user?.id) grantAiConsent(user.id);
     setAiConsentGiven(true);
     setShowConsentModal(false);
     if (pendingAction) {
@@ -77,6 +78,17 @@ export default function FinancialCoach() {
   const hasAccess = hasLegacyAccess || hasTierAccess;
   const isProTier = currentTier === 'pro' ||
     ((window as any).mobileSubscriptionTier === 'pro');
+
+  // Show consent modal on page load when user has AI access but hasn't consented yet for this account
+  useEffect(() => {
+    if (!user?.id) return;
+    const alreadyConsented = hasAiConsent(user.id);
+    if (alreadyConsented) {
+      setAiConsentGiven(true);
+    } else if (hasAccess) {
+      setShowConsentModal(true);
+    }
+  }, [user?.id, hasAccess]);
 
   // Get budget recommendations - only fetch if user has Plus+
   const { data: budgetData, isLoading: budgetLoading } = useQuery({
@@ -127,6 +139,7 @@ export default function FinancialCoach() {
     try {
       const response = await fetch('/api/ai/coaching', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -163,6 +176,7 @@ export default function FinancialCoach() {
     try {
       const response = await fetch('/api/ai/create-budget', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
