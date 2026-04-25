@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MessageSquare, User, Clock, ArrowLeft } from 'lucide-react';
+import { Star, MessageSquare, User, Clock, ArrowLeft, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
 
 interface FeedbackItem {
   id: number;
@@ -22,6 +23,23 @@ interface FeedbackItem {
 }
 
 export default function Admin() {
+  const [demoStatus, setDemoStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [demoMessage, setDemoMessage] = useState('');
+
+  const handleDemoSetup = async () => {
+    setDemoStatus('loading');
+    setDemoMessage('');
+    try {
+      const res = await apiRequest('POST', '/api/demo/setup');
+      const data = await res.json();
+      setDemoStatus('success');
+      setDemoMessage(data.message || 'Demo account reset successfully.');
+    } catch (err: any) {
+      setDemoStatus('error');
+      setDemoMessage(err.message || 'Something went wrong. Try again.');
+    }
+  };
+
   const { data: feedback, isLoading, error } = useQuery<FeedbackItem[]>({
     queryKey: ['/api/feedback'],
     retry: false,
@@ -156,6 +174,36 @@ export default function Admin() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Feedback Management</h1>
           <p className="text-gray-600">Review and manage user feedback</p>
         </div>
+
+        {/* Demo Account Reset */}
+        <Card className="mb-8 border-amber-200 bg-amber-50">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-amber-900">Apple Review Demo Account</h2>
+                <p className="text-sm text-amber-700 mt-1">
+                  Run this after every deploy to reset <strong>demo_reviewer</strong> with a fresh pre-loaded playbook, accounts, and transactions.
+                </p>
+                {demoMessage && (
+                  <div className={`flex items-center gap-2 mt-2 text-sm font-medium ${demoStatus === 'success' ? 'text-emerald-700' : 'text-red-600'}`}>
+                    {demoStatus === 'success'
+                      ? <CheckCircle2 className="w-4 h-4" />
+                      : <XCircle className="w-4 h-4" />}
+                    {demoMessage}
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={handleDemoSetup}
+                disabled={demoStatus === 'loading'}
+                className="bg-amber-600 hover:bg-amber-700 text-white whitespace-nowrap"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${demoStatus === 'loading' ? 'animate-spin' : ''}`} />
+                {demoStatus === 'loading' ? 'Resetting…' : 'Reset Demo Account'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
