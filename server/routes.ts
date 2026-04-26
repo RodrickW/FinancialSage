@@ -1307,7 +1307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Financial overview - requires active trial or subscription
-  app.get('/api/financial-overview', requireAccess, async (req, res) => {
+  app.get('/api/financial-overview', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       // Get all user accounts
@@ -1431,7 +1431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Plaid routes - requires active trial or subscription
-  app.post('/api/plaid/create-link-token', requireAccess, async (req, res) => {
+  app.post('/api/plaid/create-link-token', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       console.log('Creating link token for user:', user.id);
@@ -1446,7 +1446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/plaid/exchange-token', requireAccess, async (req, res) => {
+  app.post('/api/plaid/exchange-token', requireAuth, async (req, res) => {
     try {
       const { publicToken, metadata } = req.body;
       const user = req.user as User;
@@ -1572,7 +1572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Accounts routes - requires active trial or subscription
-  app.get('/api/accounts', requireAccess, async (req, res) => {
+  app.get('/api/accounts', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -1591,7 +1591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/accounts/:id', requireAccess, async (req, res) => {
+  app.get('/api/accounts/:id', requireAuth, async (req, res) => {
     try {
       const accountId = parseInt(req.params.id);
       const account = await storage.getAccount(accountId);
@@ -1677,7 +1677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Sync transactions from Plaid for connected accounts - requires active trial or subscription
-  app.post('/api/plaid/sync-transactions', requireAccess, async (req, res) => {
+  app.post('/api/plaid/sync-transactions', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       const { accountId, days = 30 } = req.body;
@@ -1750,7 +1750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Force refresh recent transactions (last 7 days) for all accounts
-  app.post('/api/plaid/refresh-transactions', requireAccess, async (req, res) => {
+  app.post('/api/plaid/refresh-transactions', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       const { days = 7 } = req.body; // Default to last 7 days for cost efficiency
@@ -2335,7 +2335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Monthly spending trends endpoint - provides data for the trends chart
-  app.get('/api/spending-trends', requireAccess, async (req, res) => {
+  app.get('/api/spending-trends', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       console.log(`📊 Generating spending trends for user ${user.id}`);
@@ -2845,7 +2845,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Daily Check-In - Get today's check-in or create a new one
-  app.get('/api/daily-checkin', requireAccess, async (req, res) => {
+  app.get('/api/daily-checkin', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       
@@ -2922,7 +2922,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark habit as completed for today's check-in
-  app.post('/api/daily-checkin/complete-habit', requireAccess, async (req, res) => {
+  app.post('/api/daily-checkin/complete-habit', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
       

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import TopNav from '@/components/TopNav';
 import BottomNavigation from '@/components/BottomNavigation';
-import TrialGate from '@/components/TrialGate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -37,12 +36,6 @@ export default function Accounts() {
     queryKey: ['/api/accounts'],
   });
 
-  
-  // Check if this is demo mode
-  const isDemoMode = !userData;
-  
-  // New users should have access by default (don't show trial gates on first login)
-  const hasDefaultAccess = userData && (!(userData as any)?.hasSeenPaywall);
   
   // Only use real user data - no mock fallbacks
   const user = userData;
@@ -168,8 +161,7 @@ export default function Accounts() {
               <p className="text-neutral-500">Manage your linked financial accounts</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
-              <TrialGate feature="Bank Connection" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode || hasDefaultAccess}>
-                <PlaidLinkButton 
+              <PlaidLinkButton 
                   className="flex items-center bg-black text-white border border-gray-300 hover:bg-gray-800 shadow-md btn-animate card-hover"
                   onSuccess={() => {
                     toast({
@@ -185,7 +177,6 @@ export default function Accounts() {
                   <span className="material-icons text-sm mr-1">add</span>
                   Connect Account
                 </PlaidLinkButton>
-              </TrialGate>
               
               
 
@@ -193,8 +184,7 @@ export default function Accounts() {
           </div>
 
           
-          <TrialGate feature="Account Management" hasStartedTrial={(user as any)?.hasStartedTrial || (user as any)?.isPremium || isDemoMode}>
-            {accountsLoading ? (
+          {accountsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="bg-white rounded-xl shadow-sm">
@@ -260,7 +250,6 @@ export default function Accounts() {
               })}
               </div>
             )}
-          </TrialGate>
         </div>
       </main>
 
