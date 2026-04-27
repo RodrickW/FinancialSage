@@ -5088,12 +5088,12 @@ IMPORTANT:
         email: demoEmail,
       });
 
-      // Leave on free tier — reviewer will subscribe via IAP to unlock features
+      // Set to plus tier so reviewer can immediately test AI features without IAP
       // emailVerified: true so reviewer doesn't need to go through email verification
       await storage.updateUser(demoUser.id, {
-        subscriptionTier: 'free',
-        isPremium: false,
-        subscriptionStatus: null,
+        subscriptionTier: 'plus',
+        isPremium: true,
+        subscriptionStatus: 'active',
         hasCompletedOnboarding: true,
         emailVerified: true,
         emailVerificationToken: null,
@@ -5283,12 +5283,12 @@ IMPORTANT:
 
       res.json({
         success: true,
-        message: 'Demo account ready. Log in as demo_reviewer, then subscribe via in-app purchase to unlock all features.',
+        message: 'Demo account ready. Log in as demo_reviewer with Plus tier — all features including AI Coach are immediately accessible.',
         account: {
           username: 'demo_reviewer',
           password: 'AppReview2026!',
-          tier: 'free',
-          loginNote: 'Use the USERNAME field (not email). After subscribing via IAP, bank data and AI unlock automatically.',
+          tier: 'plus',
+          loginNote: 'Use the USERNAME field (not email). AI Coach, bank data, and all Plus features are available immediately.',
         },
       });
     } catch (error: any) {
