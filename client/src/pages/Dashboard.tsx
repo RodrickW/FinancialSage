@@ -43,12 +43,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (userData && !userLoading) {
-      const tourShownThisSession = sessionStorage.getItem('tourShownThisSession');
-      if (tourShownThisSession) return;
       const tourViews = userData.tourViewCount || 0;
-      if (tourViews < 2) {
-        sessionStorage.setItem('tourShownThisSession', 'true');
+      // Always show for brand-new accounts (tourViewCount === 0) — covers demo resets and real new users
+      // For the second showing (tourViewCount === 1), use sessionStorage so it only shows once per session
+      if (tourViews === 0) {
         setTimeout(() => setShowOnboarding(true), 1000);
+      } else if (tourViews === 1) {
+        const tourShownThisSession = sessionStorage.getItem('tourShownThisSession');
+        if (!tourShownThisSession) {
+          sessionStorage.setItem('tourShownThisSession', 'true');
+          setTimeout(() => setShowOnboarding(true), 1000);
+        }
       }
     }
   }, [userData, userLoading]);
