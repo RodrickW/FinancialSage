@@ -115,50 +115,7 @@ export default function PaywallScreen({
   };
 
   const getPackageForSelection = (): PurchasesPackage | null => {
-    if (packages.length === 0) return null;
-
-    const tierStr = selectedTier;
-    const annualTypes = ['ANNUAL', 'TWO_MONTH', 'THREE_MONTH', 'SIX_MONTH'];
-    const monthlyTypes = ['MONTHLY', 'WEEKLY'];
-    const targetTypes = isAnnual ? annualTypes : monthlyTypes;
-    const periodTerms = isAnnual ? ['yearly', 'annual', 'year'] : ['monthly', 'month'];
-
-    // Strategy 1: offering named after tier + correct package type (most reliable)
-    const byOfferingAndType = packages.find(
-      (p) =>
-        (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr) &&
-        targetTypes.includes((p.packageType ?? '').toUpperCase()),
-    );
-    if (byOfferingAndType) return byOfferingAndType;
-
-    // Strategy 2: offering named after tier, any period
-    const byOffering = packages.find((p) =>
-      (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr),
-    );
-    if (byOffering) return byOffering;
-
-    // Strategy 3: identifier contains tier + period keywords
-    const byId = packages.find(
-      (p) =>
-        p.identifier.toLowerCase().includes(tierStr) &&
-        periodTerms.some((term) => p.identifier.toLowerCase().includes(term)),
-    );
-    if (byId) return byId;
-
-    // Strategy 4: identifier contains tier name only
-    const byTier = packages.find((p) =>
-      p.identifier.toLowerCase().includes(tierStr),
-    );
-    if (byTier) return byTier;
-
-    // Strategy 5: correct package type from any offering (period-only match)
-    const byType = packages.find((p) =>
-      targetTypes.includes((p.packageType ?? '').toUpperCase()),
-    );
-    if (byType) return byType;
-
-    // Strategy 6: last resort — return first available package
-    return packages[0] ?? null;
+    return selectBestPackage(packages, selectedTier, isAnnual);
   };
 
   const getDisplayPrice = (): string => {
@@ -167,21 +124,44 @@ export default function PaywallScreen({
     return FALLBACK_PRICES[selectedTier][isAnnual ? 'annual' : 'monthly'];
   };
 
-  const findBestPackage = (pkgList: PurchasesPackage[]): PurchasesPackage | null => {
+  const selectBestPackage = (pkgList: PurchasesPackage[], tier: TierKey, annual: boolean): PurchasesPackage | null => {
     if (pkgList.length === 0) return null;
-    const tierStr = selectedTier;
     const annualTypes = ['ANNUAL', 'TWO_MONTH', 'THREE_MONTH', 'SIX_MONTH'];
     const monthlyTypes = ['MONTHLY', 'WEEKLY'];
-    const targetTypes = isAnnual ? annualTypes : monthlyTypes;
-    const periodTerms = isAnnual ? ['yearly', 'annual', 'year'] : ['monthly', 'month'];
-    return (
-      pkgList.find(p => (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr) && targetTypes.includes((p.packageType ?? '').toUpperCase())) ||
-      pkgList.find(p => (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr)) ||
-      pkgList.find(p => p.identifier.toLowerCase().includes(tierStr) && periodTerms.some(t => p.identifier.toLowerCase().includes(t))) ||
-      pkgList.find(p => p.identifier.toLowerCase().includes(tierStr)) ||
-      pkgList.find(p => targetTypes.includes((p.packageType ?? '').toUpperCase())) ||
-      pkgList[0]
-    );
+    const targetTypes = annual ? annualTypes : monthlyTypes;
+
+    if (tier === 'pro') {
+      // 1. Explicit 'pro' identifier + correct period type
+      const a = pkgList.find(p => p.identifier.toLowerCase().includes('pro') && targetTypes.includes((p.packageType ?? '').toUpperCase()));
+      if (a) return a;
+      // 2. Explicit 'pro' identifier, any period
+      const b = pkgList.find(p => p.identifier.toLowerCase().includes('pro'));
+      if (b) return b;
+      // 3. Non-default, non-plus identifier + correct type (catches identifiers like 'Monthly_' for Pro)
+      const c = pkgList.find(p => !p.identifier.startsWith('$rc_') && !p.identifier.toLowerCase().includes('plus') && targetTypes.includes((p.packageType ?? '').toUpperCase()));
+      if (c) return c;
+    } else {
+      // Plus tier — RC defaults ($rc_annual, $rc_monthly) are Plus packages
+      // 1. Explicit 'plus' in identifier + correct type
+      const a = pkgList.find(p => p.identifier.toLowerCase().includes('plus') && targetTypes.includes((p.packageType ?? '').toUpperCase()));
+      if (a) return a;
+      // 2. RC default identifier ($rc_annual / $rc_monthly) + correct type
+      const b = pkgList.find(p => p.identifier.startsWith('$rc_') && targetTypes.includes((p.packageType ?? '').toUpperCase()));
+      if (b) return b;
+      // 3. Any non-pro identifier + correct type
+      const c = pkgList.find(p => !p.identifier.toLowerCase().includes('pro') && targetTypes.includes((p.packageType ?? '').toUpperCase()));
+      if (c) return c;
+    }
+
+    // Period-only fallback
+    const byType = pkgList.find(p => targetTypes.includes((p.packageType ?? '').toUpperCase()));
+    if (byType) return byType;
+
+    return pkgList[0] ?? null;
+  };
+
+  const findBestPackage = (pkgList: PurchasesPackage[]): PurchasesPackage | null => {
+    return selectBestPackage(pkgList, selectedTier, isAnnual);
   };
 
   const handlePurchase = async () => {
