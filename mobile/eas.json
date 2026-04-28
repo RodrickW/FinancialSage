@@ -7,7 +7,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "image": "macos-sonoma-14.6-xcode-16.1"
+        "image": "latest"
       }
     },
     "preview": {
@@ -16,7 +16,7 @@
       },
       "ios": {
         "simulator": false,
-        "image": "macos-sonoma-14.6-xcode-16.1"
+        "image": "latest"
       },
       "distribution": "internal"
     },
@@ -25,7 +25,7 @@
         "buildType": "app-bundle"
       },
       "ios": {
-        "image": "macos-sonoma-14.6-xcode-16.1"
+        "image": "latest"
       }
     }
   },
