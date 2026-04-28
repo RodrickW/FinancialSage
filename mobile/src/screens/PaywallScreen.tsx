@@ -88,6 +88,16 @@ export default function PaywallScreen({
             }
           });
         });
+        console.log('[RevenueCat] Loaded offerings:', JSON.stringify({
+          currentOffering: offerings.current?.identifier,
+          allOfferings: Object.keys(offerings.all),
+          packages: all.map(p => ({
+            id: p.identifier,
+            type: p.packageType,
+            offering: p.offeringIdentifier,
+            price: p.product?.priceString,
+          })),
+        }));
         setPackages(all);
         if (!silent) setIsLoading(false);
         return all;
@@ -108,10 +118,26 @@ export default function PaywallScreen({
     if (packages.length === 0) return null;
 
     const tierStr = selectedTier;
-    // Match 'yearly' OR 'annual' since App Store Connect uses 'yearly'
-    const periodTerms = isAnnual ? ['yearly', 'annual'] : ['monthly'];
+    const annualTypes = ['ANNUAL', 'TWO_MONTH', 'THREE_MONTH', 'SIX_MONTH'];
+    const monthlyTypes = ['MONTHLY', 'WEEKLY'];
+    const targetTypes = isAnnual ? annualTypes : monthlyTypes;
+    const periodTerms = isAnnual ? ['yearly', 'annual', 'year'] : ['monthly', 'month'];
 
-    // Exact match: tier + billing period in the identifier
+    // Strategy 1: offering named after tier + correct package type (most reliable)
+    const byOfferingAndType = packages.find(
+      (p) =>
+        (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr) &&
+        targetTypes.includes((p.packageType ?? '').toUpperCase()),
+    );
+    if (byOfferingAndType) return byOfferingAndType;
+
+    // Strategy 2: offering named after tier, any period
+    const byOffering = packages.find((p) =>
+      (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr),
+    );
+    if (byOffering) return byOffering;
+
+    // Strategy 3: identifier contains tier + period keywords
     const byId = packages.find(
       (p) =>
         p.identifier.toLowerCase().includes(tierStr) &&
@@ -119,14 +145,20 @@ export default function PaywallScreen({
     );
     if (byId) return byId;
 
-    // Partial match: at least the tier name matches
-    const byTierOnly = packages.find((p) =>
+    // Strategy 4: identifier contains tier name only
+    const byTier = packages.find((p) =>
       p.identifier.toLowerCase().includes(tierStr),
     );
-    if (byTierOnly) return byTierOnly;
+    if (byTier) return byTier;
 
-    // No match for this tier — return null so we fall back to hardcoded prices
-    return null;
+    // Strategy 5: correct package type from any offering (period-only match)
+    const byType = packages.find((p) =>
+      targetTypes.includes((p.packageType ?? '').toUpperCase()),
+    );
+    if (byType) return byType;
+
+    // Strategy 6: last resort — return first available package
+    return packages[0] ?? null;
   };
 
   const getDisplayPrice = (): string => {
@@ -135,28 +167,39 @@ export default function PaywallScreen({
     return FALLBACK_PRICES[selectedTier][isAnnual ? 'annual' : 'monthly'];
   };
 
+  const findBestPackage = (pkgList: PurchasesPackage[]): PurchasesPackage | null => {
+    if (pkgList.length === 0) return null;
+    const tierStr = selectedTier;
+    const annualTypes = ['ANNUAL', 'TWO_MONTH', 'THREE_MONTH', 'SIX_MONTH'];
+    const monthlyTypes = ['MONTHLY', 'WEEKLY'];
+    const targetTypes = isAnnual ? annualTypes : monthlyTypes;
+    const periodTerms = isAnnual ? ['yearly', 'annual', 'year'] : ['monthly', 'month'];
+    return (
+      pkgList.find(p => (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr) && targetTypes.includes((p.packageType ?? '').toUpperCase())) ||
+      pkgList.find(p => (p.offeringIdentifier?.toLowerCase() ?? '').includes(tierStr)) ||
+      pkgList.find(p => p.identifier.toLowerCase().includes(tierStr) && periodTerms.some(t => p.identifier.toLowerCase().includes(t))) ||
+      pkgList.find(p => p.identifier.toLowerCase().includes(tierStr)) ||
+      pkgList.find(p => targetTypes.includes((p.packageType ?? '').toUpperCase())) ||
+      pkgList[0]
+    );
+  };
+
   const handlePurchase = async () => {
     let pkg = getPackageForSelection();
 
-    // If offerings didn't load yet, try once more before giving up
+    // Offerings haven't loaded — try one more time before giving up
     if (!pkg) {
       setIsPurchasing(true);
       const freshPackages = await loadOfferings(true);
-      const tierStr = selectedTier;
-      const periodTerms = isAnnual ? ['yearly', 'annual'] : ['monthly'];
-      pkg = freshPackages.find(
-        (p) =>
-          p.identifier.toLowerCase().includes(tierStr) &&
-          periodTerms.some((term) => p.identifier.toLowerCase().includes(term)),
-      ) || freshPackages.find((p) => p.identifier.toLowerCase().includes(tierStr)) || null;
+      pkg = findBestPackage(freshPackages);
 
       if (!pkg) {
         setIsPurchasing(false);
         Alert.alert(
-          'Store Unavailable',
-          'Could not connect to the App Store. Please check your internet connection and try again.',
+          'Plans Unavailable',
+          'Subscription plans could not be loaded from the App Store. Please check your connection and try again.',
           [
-            { text: 'Retry', onPress: () => { loadOfferings(); } },
+            { text: 'Retry', onPress: () => loadOfferings() },
             { text: 'Cancel', style: 'cancel' },
           ],
         );
