@@ -1,0 +1,146 @@
+~/workspace/mobile$ eas build --platform ios --profile production
+★ eas-cli@18.8.1 is now available.
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
+
+An Expo user account is required to proceed.
+
+Log in to EAS with email or username (exit and run eas login --help to see other login options)
+✔ Email or username … npm
+✔ Password … 
+"password": String must contain at least 1 character(s).
+    Error: build command failed.
+~/workspace/mobile$ npm install -g eas-cli
+npm warn deprecated @xmldom/xmldom@0.7.13: this version has critical issues, please update to the latest version
+npm warn deprecated rimraf@2.4.5: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@6.0.4: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated lodash.get@4.4.2: This package is deprecated. Use the optional chaining (?.) operator instead.
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated tar@7.5.7: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+
+added 77 packages, removed 27 packages, and changed 437 packages in 19s
+
+65 packages are looking for funding
+  run `npm fund` for details
+~/workspace/mobile$ eas build --platform ios --profile production
+An Expo user account is required to proceed.
+
+Log in to EAS with email or username (exit and run eas login --help to see other login options)
+✔ Email or username … waddleinnovations@outlook.com
+✔ Password … ********
+
+⚠️ Detected that your app uses Expo Go for development, this is not recommended when building production apps.
+Learn more: https://expo.fyi/why-not-build-expo-go-for-production
+To suppress this warning, set EAS_BUILD_NO_EXPO_GO_WARNING=true.
+
+The field "cli.appVersionSource" is not set, but it will be required in the future. Learn more: https://docs.expo.dev/build-reference/app-versions/
+Resolved "production" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "production" environment on EAS.
+
+
+
+The field "cli.appVersionSource" is not set, but it will be required in the future. Learn more: https://docs.expo.dev/build-reference/app-versions/
+✔ Using remote iOS credentials (Expo server)
+
+If you provide your Apple account credentials we will be able to generate all necessary build credentials and fully validate them.
+This is optional, but without Apple account access you will need to provide all the missing values manually and we can only run minimal validation on them.
+✔ Do you want to log in to your Apple account? … yes
+
+› Log in to your Apple Developer account to continue
+✔ Apple ID: … rlloydinv@gmail.com
+› The password is only used to authenticate with Apple and never stored on EAS servers
+  Learn more: https://bit.ly/2VtGWhU
+✔ Password (for rlloydinv@gmail.com): … *********
+› Saving Apple ID password to the local Keychain
+  Learn more: https://docs.expo.dev/distribution/security#keychain
+✔ Logged in, verify your Apple account to continue
+Two-factor Authentication (6 digit code) is enabled for rlloydinv@gmail.com. Learn more: https://support.apple.com/en-us/HT204915
+
+✔ How do you want to validate your account? … device / sms
+✔ Please enter the 6 digit code … 816613
+✔ Valid code
+✔ Logged in and verified
+› Team Rodrick Waddle (BRFZ979CLY)
+✔ Select a Provider › Rodrick Waddle (128097280)
+✔ Bundle identifier registered com.mindmymoney.app
+✔ Synced capabilities: No updates
+✔ Synced capability identifiers: No updates
+✔ Fetched Apple distribution certificates
+✔ Fetched Apple provisioning profiles
+
+Project Credentials Configuration
+
+Project                   @rodrickw/mind-my-money
+Bundle Identifier         com.mindmymoney.app
+                          
+App Store Configuration   
+                          
+Distribution Certificate  
+Serial Number             FB9C82D880F7A7757FDC08F975F23F1
+Expiration Date           Sat, 31 Oct 2026 03:27:22 UTC
+Apple Team                BRFZ979CLY (Rodrick Waddle (Individual))
+Updated                   5 months ago
+                          
+Provisioning Profile      
+Developer Portal ID       B36A9YN456
+Status                    active
+Expiration                Sat, 31 Oct 2026 03:27:22 UTC
+Apple Team                BRFZ979CLY (Rodrick Waddle (Individual))
+Updated                   5 months ago
+                          
+All credentials are ready to build @rodrickw/mind-my-money (com.mindmymoney.app)
+
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+✔ Compressed project files 40s (568 MB)
+Your project archive is 568 MB. You can reduce its size and the time it takes to upload by excluding files that are unnecessary for the build process in .easignore file. Learn more: https://expo.fyi/eas-build-archive
+✔ Uploaded to EAS 1m 41s
+
+See logs: https://expo.dev/accounts/rodrickw/projects/mind-my-money/builds/1f2cdb39-b5fc-4f77-9a58-b839a97eb225
+
+Waiting for build to complete. You can press Ctrl+C to exit.
+✔ Build finished
+
+🍏 iOS app:
+https://expo.dev/artifacts/eas/4RhdJuzHwBAErn4tLEK6mi.ipa
+~/workspace/mobile$ eas submit --platform ios --latest
+
+Ensuring your app exists on App Store Connect. This step can be skipped by providing ascAppId in the submit
+profile. Learn more: https://expo.fyi/asc-app-id
+
+› Log in to your Apple Developer account to continue
+✔ Apple ID: … rlloydinv@gmail.com
+› Restoring session /home/runner/.app-store/auth/rlloydinv@gmail.com/cookie
+› Team Rodrick Waddle (BRFZ979CLY)
+› Provider Rodrick Waddle (128097280)
+✔ Logged in Local session
+
+✔ Bundle identifier registered com.mindmymoney.app
+✔ Prepared App Store Connect for Mind My Money com.mindmymoney.app
+Looking up credentials configuration for com.mindmymoney.app...
+✔ App Store Connect API Key already set up.
+Using Api Key ID: 6HT973T98F ([Expo] EAS Submit CkU2VQHIdU)
+
+ASC App ID:                 6754730072
+Project ID:                 4a34e0fe-3a75-411d-a739-5637883800b1
+App Store Connect API Key:  
+    Key Name  :  [Expo] EAS Submit CkU2VQHIdU
+    Key ID    :  6HT973T98F
+    Key Source:  EAS servers
+Build:                      
+    Build ID    :  1f2cdb39-b5fc-4f77-9a58-b839a97eb225
+    Build Date  :  4/28/2026, 10:47:07 PM
+    App Version :  3.5.0
+    Build number:  17
+
+✔ Scheduled iOS submission
+
+Submission details: https://expo.dev/accounts/rodrickw/projects/mind-my-money/submissions/f0a57f86-42b5-4ede-8924-c63919bdc19c
+
+Waiting for submission to complete. You can press Ctrl+C to exit.
+✖ Something went wrong when submitting your app to Apple App Store Connect.
+~/workspace/mobile$ cd mobile
