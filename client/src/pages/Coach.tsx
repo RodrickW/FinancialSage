@@ -597,6 +597,35 @@ Money Mind 💰`);
             </p>
           </div>
 
+          {/* Free tier — upgrade banner */}
+          {!hasAccess && (
+            <div className="mb-5 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 p-5 text-white shadow-lg">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-base mb-1">Upgrade to Talk to Money Mind AI</p>
+                  <p className="text-sm text-white/85 leading-relaxed mb-3">
+                    Get personalized financial coaching, AI-generated budgets, and 20 messages/month with your AI coach.
+                  </p>
+                  <button
+                    onClick={() => {
+                      if ((window as any).ReactNativeWebView) {
+                        (window as any).ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOW_PAYWALL' }));
+                      } else {
+                        window.location.href = '/pricing';
+                      }
+                    }}
+                    className="bg-white text-emerald-700 font-semibold text-sm px-5 py-2 rounded-lg hover:bg-emerald-50 transition-colors"
+                  >
+                    Upgrade to Plus →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Proactive Coach Greeting */}
           {hasAccess && (
             <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 flex gap-3">

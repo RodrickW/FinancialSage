@@ -5088,12 +5088,11 @@ IMPORTANT:
         email: demoEmail,
       });
 
-      // Set to plus tier so reviewer can immediately test AI features without IAP
+      // Free tier so reviewer experiences the natural upgrade/IAP flow
       // emailVerified: true so reviewer doesn't need to go through email verification
       await storage.updateUser(demoUser.id, {
-        subscriptionTier: 'plus',
-        isPremium: true,
-        subscriptionStatus: 'active',
+        subscriptionTier: 'free',
+        isPremium: false,
         hasCompletedOnboarding: false,
         hasSeenTour: false,
         tourViewCount: 0,
@@ -5285,12 +5284,12 @@ IMPORTANT:
 
       res.json({
         success: true,
-        message: 'Demo account ready. Log in as demo_reviewer with Plus tier — all features including AI Coach are immediately accessible.',
+        message: 'Demo account ready. Log in as demo_reviewer on the free tier — upgrade via in-app purchase to unlock AI Coach and test the full purchase flow.',
         account: {
           username: 'demo_reviewer',
           password: 'AppReview2026!',
-          tier: 'plus',
-          loginNote: 'Use the USERNAME field (not email). AI Coach, bank data, and all Plus features are available immediately.',
+          tier: 'free',
+          loginNote: 'Use the USERNAME field (not email). Bank data is pre-loaded. Upgrade via IAP to unlock AI Coach and test the purchase flow naturally.',
         },
       });
     } catch (error: any) {

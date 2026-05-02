@@ -9,9 +9,10 @@ interface MainAppProps {
   onUserAuthenticated: (userId: string, hasSubscription?: boolean) => void;
   onShowPaywall: () => void;
   activeTier?: 'plus' | 'pro' | null;
+  initialPath?: string;
 }
 
-export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier }: MainAppProps) {
+export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier, initialPath }: MainAppProps) {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -201,7 +202,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
       <WebView
         ref={webViewRef}
         source={{
-          uri: WEB_APP_URL,
+          uri: initialPath ? `${WEB_APP_URL}${initialPath}` : WEB_APP_URL,
           headers: { 'X-Mobile-App': 'true', 'X-Platform': 'ios' },
         }}
         style={styles.webview}

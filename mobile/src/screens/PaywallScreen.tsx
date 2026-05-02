@@ -202,10 +202,32 @@ export default function PaywallScreen({
 
       const grantedTier: TierKey = hasPro ? 'pro' : hasPlus ? 'plus' : 'plus';
 
+      // Apple App Store guideline 5.1.1(i) / 5.1.2(i): obtain explicit consent before
+      // sharing any personal data with a third-party AI service.
       Alert.alert(
-        'Welcome to Mind My Money!',
-        `Your ${TIER_LABELS[grantedTier]} subscription is now active.`,
-        [{ text: 'Get Started', onPress: () => onPurchaseComplete(grantedTier) }],
+        'AI Data Sharing — Your Permission Required',
+        'Mind My Money uses OpenAI to power your AI Financial Coach.\n\n' +
+        '📊 What is sent: Account balances, spending categories, transaction totals, and budget amounts.\n\n' +
+        '🏢 Who receives it: OpenAI (openai.com) processes your data to generate coaching advice. OpenAI does not use your data to train its models.\n\n' +
+        '🔒 How it is used: Your data is used solely to generate your coaching response and is never sold or shared with advertisers.\n\n' +
+        'You can revoke this permission at any time in Settings.',
+        [
+          {
+            text: 'Allow AI Features',
+            onPress: () => {
+              Alert.alert(
+                'Welcome to Mind My Money!',
+                `Your ${TIER_LABELS[grantedTier]} subscription is now active. Your AI Coach is ready!`,
+                [{ text: 'Get Started', onPress: () => onPurchaseComplete(grantedTier) }],
+              );
+            },
+          },
+          {
+            text: 'Not Now',
+            style: 'cancel',
+            onPress: () => onPurchaseComplete(grantedTier),
+          },
+        ],
       );
     } catch (error: any) {
       if (!error.userCancelled) {

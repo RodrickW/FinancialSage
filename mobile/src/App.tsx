@@ -38,6 +38,8 @@ export default function App() {
   const [userId, setUserId] = useState<string | null>(null);
   // Controls whether the native paywall is shown over the WebView
   const [showNativePaywall, setShowNativePaywall] = useState(false);
+  // After a purchase, open /coach so the AI consent modal is the first thing the user sees
+  const [postPurchasePath, setPostPurchasePath] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     initializeApp();
@@ -96,8 +98,9 @@ export default function App() {
   const handlePurchaseComplete = async (tier: SubscriptionTier) => {
     setActiveTier(tier);
     await AsyncStorage.setItem('subscriptionTier', tier);
-    // Dismiss paywall — WebView will re-mount and see the updated tier
-    // via mobileSubscriptionTier injected JS on next load
+    // After purchase, open the Coach page so the AI consent modal is immediately visible
+    setPostPurchasePath('/coach');
+    // Dismiss paywall — WebView will re-mount with the updated tier and navigate to /coach
     setShowNativePaywall(false);
   };
 
@@ -149,6 +152,7 @@ export default function App() {
           onUserAuthenticated={handleUserAuthenticated}
           onShowPaywall={handleShowNativePaywall}
           activeTier={activeTier}
+          initialPath={postPurchasePath}
         />
       </View>
 
