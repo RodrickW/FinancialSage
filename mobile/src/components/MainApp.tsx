@@ -68,6 +68,22 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
     console.error('WebView error:', nativeEvent);
   };
 
+  // Redirect to login if WebView lands on a raw JSON error response (broken session)
+  const handleLoadEnd = (syntheticEvent: any) => {
+    if (!webViewRef.current) return;
+    webViewRef.current.injectJavaScript(`
+      (function() {
+        try {
+          var body = document.body && document.body.innerText;
+          if (body && body.includes('deserialize') || body && body.includes('"message"') && !document.querySelector('#root')) {
+            window.location.href = '/login';
+          }
+        } catch(e) {}
+      })();
+      true;
+    `);
+  };
+
   const handleMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
@@ -209,6 +225,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
         onNavigationStateChange={handleNavigationStateChange}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onError={handleError}
+        onLoadEnd={handleLoadEnd}
         onMessage={handleMessage}
         injectedJavaScript={injectedJavaScript}
         javaScriptEnabled={true}

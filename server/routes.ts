@@ -302,9 +302,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
+      // If user no longer exists (e.g. demo account was reset), gracefully
+      // invalidate the session rather than throwing an error that renders as JSON.
+      if (!user) {
+        return done(null, false);
+      }
       done(null, user);
     } catch (err) {
-      done(err);
+      // On any error, invalidate the session gracefully instead of propagating
+      // the raw error — prevents "Failed to deserialize" JSON being shown in WebView.
+      done(null, false);
     }
   });
 
