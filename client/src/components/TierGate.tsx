@@ -73,8 +73,11 @@ export default function TierGate({ feature, requiredTier, currentTier, children 
   const tierName = requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1);
 
   const handleUpgrade = () => {
-    if (isMobileAppEnv) {
+    // Check ReactNativeWebView directly — reliable regardless of render timing
+    if ((window as any).ReactNativeWebView) {
       triggerNativePaywall();
+    } else if (isMobileAppEnv) {
+      triggerNativePaywall(); // flag set, bridge should be ready
     } else {
       setLocation('/pricing');
     }

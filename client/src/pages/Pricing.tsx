@@ -60,13 +60,15 @@ export default function Pricing() {
       (window as any).isMobileApp === true);
 
   const handleSubscribe = (tier: 'plus' | 'pro') => {
+    // Check ReactNativeWebView directly — most reliable signal, always live regardless of render timing
+    if ((window as any).ReactNativeWebView) {
+      (window as any).ReactNativeWebView.postMessage(
+        JSON.stringify({ type: 'SHOW_PAYWALL' })
+      );
+      return;
+    }
     if (isMobileApp) {
-      // Mobile: route to native Apple IAP paywall instead of Stripe
-      if ((window as any).ReactNativeWebView) {
-        (window as any).ReactNativeWebView.postMessage(
-          JSON.stringify({ type: 'SHOW_PAYWALL' })
-        );
-      }
+      // isMobileApp flag set but bridge not ready — don't fall through to Stripe
       return;
     }
     checkoutMutation.mutate({ 

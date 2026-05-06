@@ -613,6 +613,8 @@ Money Mind 💰`);
                     onClick={() => {
                       if ((window as any).ReactNativeWebView) {
                         (window as any).ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOW_PAYWALL' }));
+                      } else if (localStorage.getItem('isMobileApp') === 'true' || sessionStorage.getItem('isMobileApp') === 'true') {
+                        return; // mobile but bridge not ready
                       } else {
                         window.location.href = '/pricing';
                       }
