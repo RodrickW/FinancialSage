@@ -115,7 +115,7 @@ export function getUpgradeMessage(tier: SubscriptionTier, feature: string): stri
 }
 
 export function mapStripePriceToTier(priceId: string): SubscriptionTier {
-  const plusMonthly = process.env.STRIPE_PLUS_MONTHLY_PRICE_ID;
+  const plusMonthly = process.env.STRIPE_PLUS_PRICE_ID;
   const plusAnnual = process.env.STRIPE_PLUS_ANNUAL_PRICE_ID;
   const proMonthly = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
   const proAnnual = process.env.STRIPE_PRO_ANNUAL_PRICE_ID;

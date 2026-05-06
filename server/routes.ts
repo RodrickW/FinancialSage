@@ -3575,9 +3575,9 @@ IMPORTANT:
       let priceId: string;
       
       if (planType === 'annual') {
-        priceId = process.env.STRIPE_ANNUAL_PRICE_ID!;
+        priceId = process.env.STRIPE_PLUS_ANNUAL_PRICE_ID!;
       } else {
-        priceId = process.env.STRIPE_PREMIUM_PRICE_ID!; // Monthly plan
+        priceId = process.env.STRIPE_PLUS_PRICE_ID!; // Monthly plan
       }
 
       if (!priceId) {

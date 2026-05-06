@@ -38,7 +38,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
       let priceId: string | undefined;
       if (tier === 'plus') {
         priceId = period === 'monthly' 
-          ? process.env.STRIPE_PLUS_MONTHLY_PRICE_ID 
+          ? process.env.STRIPE_PLUS_PRICE_ID 
           : process.env.STRIPE_PLUS_ANNUAL_PRICE_ID;
       } else {
         priceId = period === 'monthly'
@@ -188,7 +188,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
       let priceId: string | undefined;
       if (newTier === 'plus') {
         priceId = period === 'monthly'
-          ? process.env.STRIPE_PLUS_MONTHLY_PRICE_ID
+          ? process.env.STRIPE_PLUS_PRICE_ID
           : process.env.STRIPE_PLUS_ANNUAL_PRICE_ID;
       } else {
         priceId = period === 'monthly'
@@ -242,7 +242,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
       const period = user.subscriptionPeriod === 'annual' ? 'annual' : 'monthly';
       const priceId = period === 'annual'
         ? process.env.STRIPE_PLUS_ANNUAL_PRICE_ID
-        : process.env.STRIPE_PLUS_MONTHLY_PRICE_ID;
+        : process.env.STRIPE_PLUS_PRICE_ID;
 
       if (!priceId) {
         return res.status(500).json({ message: 'Plus plan not configured. Please contact support.' });
