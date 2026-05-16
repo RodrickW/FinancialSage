@@ -662,6 +662,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: manually activate a user's subscription from Stripe by email
+  app.post('/api/admin/activate-subscription', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { email, userId } = req.body;
+      const { mapStripePriceToTier } = await import('./tiers');
+
+      let user: any = null;
+      if (userId) {
+        user = await storage.getUser(userId);
+      } else if (email) {
+        user = await storage.getUserByEmail(email);
+      }
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!user.stripeCustomerId) {
+        return res.status(400).json({ error: 'User has no Stripe customer ID' });
+      }
+
+      // Pull active subscriptions from Stripe
+      const subscriptions = await stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: 'active',
+        limit: 1
+      });
+
+      if (subscriptions.data.length === 0) {
+        return res.status(400).json({ error: 'No active Stripe subscription found for this user' });
+      }
+
+      const subscription = subscriptions.data[0];
+      const priceId = subscription.items.data[0]?.price?.id || '';
+      const tier = mapStripePriceToTier(priceId);
+      const period = subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
+
+      await storage.updateUser(user.id, {
+        stripeSubscriptionId: subscription.id,
+        subscriptionTier: tier,
+        stripePriceId: priceId,
+        subscriptionPeriod: period,
+        isPremium: tier !== 'free',
+        subscriptionStatus: 'active',
+        hasStartedTrial: true,
+      });
+
+      console.log(`Admin manually activated ${tier} (${period}) for user ${user.username} (${user.email})`);
+      res.json({ success: true, message: `Activated ${tier} (${period}) for ${user.email}`, tier, period });
+    } catch (error) {
+      console.error('Error activating subscription:', error);
+      res.status(500).json({ error: 'Failed to activate subscription' });
+    }
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
@@ -3443,6 +3498,8 @@ IMPORTANT:
     
     if (sessionId) {
       try {
+        const { mapStripePriceToTier } = await import('./tiers');
+        
         // Retrieve the session from Stripe
         const session = await stripe.checkout.sessions.retrieve(sessionId);
         
@@ -3454,23 +3511,28 @@ IMPORTANT:
             // Get the subscription details
             const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
             
-            // Calculate trial end date
-            const trialEndsAt = subscription.trial_end 
-              ? new Date(subscription.trial_end * 1000) 
-              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+            // Determine the actual tier from the price ID paid
+            const priceId = subscription.items.data[0]?.price?.id || '';
+            const tier = mapStripePriceToTier(priceId);
+            const period = subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
             
-            // Update user immediately to reflect trial status
+            console.log(`Activating subscription for user ${user.username}: tier=${tier}, period=${period}, priceId=${priceId}`);
+            
+            // Activate the subscription immediately
             await storage.updateUser(user.id, {
               stripeSubscriptionId: session.subscription as string,
+              subscriptionTier: tier,
+              stripePriceId: priceId,
+              subscriptionPeriod: period,
+              isPremium: tier !== 'free',
+              subscriptionStatus: subscription.status === 'trialing' ? 'trialing' : 'active',
               hasStartedTrial: true,
-              isPremium: false,
-              trialEndsAt,
-              subscriptionStatus: 'trialing'
+              trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
             });
           }
         }
       } catch (error) {
-        console.error('Error processing trial success:', error);
+        console.error('Error processing subscription success:', error);
       }
     }
     
