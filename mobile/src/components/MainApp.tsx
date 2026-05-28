@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Linking } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, View, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -14,31 +14,6 @@ interface MainAppProps {
 
 export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier, initialPath }: MainAppProps) {
   const webViewRef = useRef<WebView>(null);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [canGoForward, setCanGoForward] = useState(false);
-
-  const handleGoBack = () => {
-    if (webViewRef.current && canGoBack) {
-      webViewRef.current.goBack();
-    }
-  };
-
-  const handleGoForward = () => {
-    if (webViewRef.current && canGoForward) {
-      webViewRef.current.goForward();
-    }
-  };
-
-  const handleRefresh = () => {
-    if (webViewRef.current) {
-      webViewRef.current.reload();
-    }
-  };
-
-  const handleNavigationStateChange = (navState: any) => {
-    setCanGoBack(navState.canGoBack);
-    setCanGoForward(navState.canGoForward);
-  };
 
   const handleShouldStartLoadWithRequest = (request: any) => {
     // Block ONLY the Stripe hosted checkout page — mobile users pay via Apple IAP.
@@ -186,35 +161,6 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
 
   return (
     <View style={styles.container}>
-      <View style={styles.navigationBar}>
-        <View style={styles.navButtons}>
-          <TouchableOpacity
-            style={[styles.navButton, !canGoBack && styles.navButtonDisabled]}
-            onPress={handleGoBack}
-            disabled={!canGoBack}
-          >
-            <Icon name="arrow-back" size={24} color={canGoBack ? '#059669' : '#CBD5E1'} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.navButton, !canGoForward && styles.navButtonDisabled]}
-            onPress={handleGoForward}
-            disabled={!canGoForward}
-          >
-            <Icon name="arrow-forward" size={24} color={canGoForward ? '#059669' : '#CBD5E1'} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navButton} onPress={handleRefresh}>
-            <Icon name="refresh" size={24} color="#059669" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.appInfo}>
-          <Icon name="account-balance-wallet" size={20} color="#059669" />
-          <Text style={styles.appTitle}>Mind My Money</Text>
-        </View>
-      </View>
-
       <WebView
         ref={webViewRef}
         source={{
@@ -222,7 +168,6 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
           headers: { 'X-Mobile-App': 'true', 'X-Platform': 'ios' },
         }}
         style={styles.webview}
-        onNavigationStateChange={handleNavigationStateChange}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onError={handleError}
         onLoadEnd={handleLoadEnd}
@@ -250,26 +195,6 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  navigationBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  navButtons: { flexDirection: 'row', gap: 4 },
-  navButton: { padding: 8 },
-  navButtonDisabled: { opacity: 0.35 },
-  appInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  appTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
 
   webview: { flex: 1 },
   loadingContainer: {
