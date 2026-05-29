@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { StyleSheet, View, Text, Linking } from 'react-native';
+import React, { useRef, useState, useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -14,18 +14,19 @@ interface MainAppProps {
 
 export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier, initialPath }: MainAppProps) {
   const webViewRef = useRef<WebView>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+
+  const handleRetry = useCallback(() => {
+    setLoadError(false);
+    setRetryKey(k => k + 1);
+  }, []);
 
   const handleShouldStartLoadWithRequest = (request: any) => {
-    // Block ONLY the Stripe hosted checkout page — mobile users pay via Apple IAP.
-    // The /subscribe page itself is allowed to load so upgrade prompts appear,
-    // then the web app posts SHOW_PAYWALL to transition to native IAP.
     if (request.url.includes('checkout.stripe.com')) {
-      // Instead of opening Stripe checkout, route to native paywall
       onShowPaywall();
       return false;
     }
-
-    // Open mailto/tel/sms links natively
     if (
       request.url.startsWith('mailto:') ||
       request.url.startsWith('tel:') ||
@@ -34,23 +35,34 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
       Linking.openURL(request.url);
       return false;
     }
-
     return true;
   };
 
-  const handleError = (syntheticEvent: any) => {
-    const { nativeEvent } = syntheticEvent;
-    console.error('WebView error:', nativeEvent);
+  const handleError = () => {
+    setLoadError(true);
   };
 
-  // Redirect to login if WebView lands on a raw JSON error response (broken session)
+  const handleHttpError = (syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    // Retry on 5xx server errors; ignore 4xx (those are normal auth redirects)
+    if (nativeEvent.statusCode >= 500) {
+      setLoadError(true);
+    }
+  };
+
   const handleLoadEnd = (syntheticEvent: any) => {
     if (!webViewRef.current) return;
     webViewRef.current.injectJavaScript(`
       (function() {
         try {
           var body = document.body && document.body.innerText;
-          if (body && body.includes('deserialize') || body && body.includes('"message"') && !document.querySelector('#root')) {
+          // Blank page — reload fresh
+          if (!body || body.trim().length === 0) {
+            window.location.reload();
+            return;
+          }
+          // Raw JSON error — redirect to login
+          if (body.includes('deserialize') || (body.includes('"message"') && !document.querySelector('#root'))) {
             window.location.href = '/login';
           }
         } catch(e) {}
@@ -62,13 +74,9 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
   const handleMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-
-      // Web app detected an authenticated user
       if (data.type === 'USER_AUTHENTICATED' && data.userId) {
         onUserAuthenticated(data.userId.toString(), data.hasSubscription);
       }
-
-      // Web app is requesting the native upgrade/paywall flow
       if (data.type === 'SHOW_PAYWALL') {
         onShowPaywall();
       }
@@ -81,13 +89,11 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
 
   const injectedJavaScript = `
     (function() {
-      // Mark session as mobile app
       localStorage.setItem('isMobileApp', 'true');
       sessionStorage.setItem('isMobileApp', 'true');
       window.isMobileApp = true;
       window.mobileSubscriptionTier = ${tierStr};
 
-      // Inject CSS helpers
       if (!document.getElementById('mmm-mobile-styles')) {
         var style = document.createElement('style');
         style.id = 'mmm-mobile-styles';
@@ -105,7 +111,6 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
         document.head.appendChild(style);
       }
 
-      // Intercept any click that would go to checkout.stripe.com and trigger native paywall
       document.addEventListener('click', function(e) {
         var target = e.target;
         while (target && target !== document) {
@@ -119,17 +124,14 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
         }
       }, true);
 
-      // Report authenticated user to native layer
       var authCheckCount = 0;
       var checkAuth = setInterval(function() {
         authCheckCount++;
         if (authCheckCount > 30) { clearInterval(checkAuth); return; }
-
         try {
           var storedId = sessionStorage.getItem('userId') || localStorage.getItem('userId');
           var userEl = document.querySelector('[data-user-id]');
           var userId = (userEl && userEl.getAttribute('data-user-id')) || storedId;
-
           if (userId) {
             fetch('/api/mobile/access', {
               credentials: 'include',
@@ -159,9 +161,23 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
     true;
   `;
 
+  if (loadError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Icon name="wifi-off" size={64} color="#9CA3AF" />
+        <Text style={styles.errorTitle}>Connection Lost</Text>
+        <Text style={styles.errorMessage}>Unable to reach Mind My Money. Check your connection and try again.</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+          <Text style={styles.retryText}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <WebView
+        key={retryKey}
         ref={webViewRef}
         source={{
           uri: initialPath ? `${WEB_APP_URL}${initialPath}` : WEB_APP_URL,
@@ -170,6 +186,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
         style={styles.webview}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onError={handleError}
+        onHttpError={handleHttpError}
         onLoadEnd={handleLoadEnd}
         onMessage={handleMessage}
         injectedJavaScript={injectedJavaScript}
@@ -177,7 +194,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
         thirdPartyCookiesEnabled={true}
-        cacheEnabled={true}
+        cacheEnabled={false}
         allowFileAccess={true}
         allowsInlineMediaPlayback={true}
         pullToRefreshEnabled={true}
@@ -195,7 +212,6 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-
   webview: { flex: 1 },
   loadingContainer: {
     position: 'absolute',
@@ -205,4 +221,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: '600', color: '#6B7280' },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 32,
+  },
+  errorTitle: { fontSize: 22, fontWeight: '700', color: '#1F2937', marginTop: 20, marginBottom: 10 },
+  errorMessage: { fontSize: 15, color: '#6B7280', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  retryButton: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  retryText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 });
