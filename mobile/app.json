@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mind My Money",
     "slug": "mind-my-money",
-    "version": "3.5.0",
+    "version": "3.5.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -32,7 +32,7 @@
           }
         }
       },
-      "buildNumber": "20"
+      "buildNumber": "21"
     },
     "android": {
       "adaptiveIcon": {
