@@ -82,6 +82,9 @@ app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
 app.use('/api/plaid/', apiLimiter); // Special limit for external API calls
 
+// Stripe webhook needs raw body for signature verification — must come BEFORE express.json()
+app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
