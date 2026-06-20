@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Linking, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -23,7 +23,9 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
   }, []);
 
   const handleShouldStartLoadWithRequest = (request: any) => {
-    if (request.url.includes('checkout.stripe.com')) {
+    // On iOS, intercept Stripe checkout and show Apple IAP paywall instead
+    // On Android, Stripe checkout works fine — let it through
+    if (Platform.OS === 'ios' && request.url.includes('checkout.stripe.com')) {
       onShowPaywall();
       return false;
     }
@@ -111,6 +113,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
         document.head.appendChild(style);
       }
 
+      ${Platform.OS === 'ios' ? `
       document.addEventListener('click', function(e) {
         var target = e.target;
         while (target && target !== document) {
@@ -122,7 +125,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
           }
           target = target.parentElement;
         }
-      }, true);
+      }, true);` : ''}
 
       var authCheckCount = 0;
       var checkAuth = setInterval(function() {
@@ -135,7 +138,7 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
           if (userId) {
             fetch('/api/mobile/access', {
               credentials: 'include',
-              headers: { 'X-Mobile-App': 'true', 'X-Platform': 'ios' }
+              headers: { 'X-Mobile-App': 'true', 'X-Platform': '${Platform.OS}' }
             })
             .then(function(r) { return r.json(); })
             .then(function(d) {
