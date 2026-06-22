@@ -48,6 +48,13 @@ import FaithMode from "@/pages/FaithMode";
 import VerifyEmail from "@/pages/VerifyEmail";
 import NotFound from "@/pages/not-found";
 
+function authFetch(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  return fetch(url, { credentials: 'include', signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
 // Home route component that shows Dashboard for logged-in users, Landing for visitors
 function HomeRoute() {
   const [isLoading, setIsLoading] = useState(true);
@@ -56,15 +63,8 @@ function HomeRoute() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/users/profile', {
-          credentials: 'include',
-        });
-        
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
+        const response = await authFetch('/api/users/profile');
+        setIsAuthenticated(response.ok);
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
@@ -96,10 +96,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/users/profile', {
-          credentials: 'include',
-        });
-        
+        const response = await authFetch('/api/users/profile');
         if (response.ok) {
           setIsAuthenticated(true);
         } else {

@@ -7,6 +7,15 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+const API_TIMEOUT_MS = 15000;
+
+function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = API_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -19,7 +28,7 @@ export async function apiRequest(
     headers["Content-Type"] = "application/json";
   }
   
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     method,
     headers,
     body: data !== null && data !== undefined ? JSON.stringify(data) : undefined,
@@ -46,7 +55,7 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const res = await fetchWithTimeout(queryKey[0] as string, {
       credentials: "include",
     });
 
