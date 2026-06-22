@@ -57,16 +57,20 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
     webViewRef.current.injectJavaScript(`
       (function() {
         try {
-          var body = document.body && document.body.innerText;
-          // Blank page — reload fresh
-          if (!body || body.trim().length === 0) {
-            window.location.reload();
-            return;
-          }
-          // Raw JSON error — redirect to login
-          if (body.includes('deserialize') || (body.includes('"message"') && !document.querySelector('#root'))) {
-            window.location.href = '/login';
-          }
+          // Wait for React to mount before checking content.
+          // Checking innerText immediately causes infinite reloads on SPAs
+          // because the body is empty until JS renders.
+          setTimeout(function() {
+            try {
+              var root = document.querySelector('#root');
+              var hasContent = root && root.children.length > 0;
+              // Raw JSON error page (no React root rendered)
+              var body = document.body && document.body.innerText;
+              if (!hasContent && body && (body.includes('deserialize') || body.includes('"message"'))) {
+                window.location.href = '/login';
+              }
+            } catch(e) {}
+          }, 3000);
         } catch(e) {}
       })();
       true;
