@@ -1,5 +1,5 @@
-// Force production URL for mobile builds
-const API_BASE_URL = 'https://mindmymoney.replit.app';
+// Use the custom domain for all API calls
+const API_BASE_URL = 'https://www.mindmymoneyapp.com';
 
 export async function apiRequest(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
