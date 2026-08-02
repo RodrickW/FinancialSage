@@ -1,0 +1,96 @@
+# Mind My Money — Security & Scalability Fixes
+
+Please implement the following fixes in order. Each one lists the file(s) involved, the problem, and exactly what to change. Do not skip the verification step at the end of each item — confirm the change works before moving to the next one.
+
+---
+
+## 1. Encrypt Plaid access tokens (CRITICAL — do this first)
+
+**Problem:** `plaidAccessToken` is stored in plaintext in the `users`/accounts table in Postgres. `server/dataEncryption.ts` has encryption functions but they are never called anywhere in the codebase.
+
+**Fix `server/dataEncryption.ts`:**
+- Replace `crypto.createCipher(ALGORITHM, ENCRYPTION_KEY)` with `crypto.createCipheriv(ALGORITHM, KEY, iv)`.
+- Replace `crypto.createDecipher(ALGORITHM, ENCRYPTION_KEY)` with `crypto.createDecipheriv(ALGORITHM, KEY, iv)`.
+- `ENCRYPTION_KEY` must be derived into a 32-byte key (e.g. `crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32)` or require it to already be a 32-byte hex/base64 string) since `aes-256-gcm` requires exactly 32 bytes.
+- Remove the hardcoded fallback string `'fallback-key-for-dev-only-not-secure'`. Throw an error on startup if `ENCRYPTION_KEY` is not set, instead of silently using a weak default.
+
+**Fix `server/envValidation.ts`:**
+- Add `ENCRYPTION_KEY` to the `RequiredEnvVars` list so the app warns/fails loudly if it's missing.
+
+**Fix everywhere Plaid tokens are written/read** (`server/plaid.ts`, `server/routes.ts` around the `/api/plaid/*` exchange endpoints, `server/storage.ts`):
+- Call `encryptSensitiveData(accessToken)` before saving to the database.
+- Call `decryptSensitiveData(...)` immediately before using the token to call the Plaid API.
+
+**Migration for existing data:**
+- Write a one-time script (`scripts/encrypt-existing-plaid-tokens.ts`) that reads all existing plaintext tokens, encrypts them in place, and updates the rows. Run it once, then confirm no plaintext tokens remain with a spot-check query.
+
+**Verify:** Link a test bank account, confirm the stored `plaid_access_token` column value is no longer a readable Plaid token string, and confirm balance sync / transaction sync still works end-to-end.
+
+---
+
+## 2. Enforce Stripe webhook signature verification (CRITICAL)
+
+**Problem:** In `server/routes.ts`, the `/api/webhook/stripe` handler falls back to trusting the raw request body if `STRIPE_WEBHOOK_SECRET` isn't set or the signature header is missing. Since this webhook grants premium subscription access, this is spoofable.
+
+**Fix `server/routes.ts`:**
+- Remove the `else` branch that does `event = req.body` without verification.
+- If `STRIPE_WEBHOOK_SECRET` is missing or the signature check fails, return `400` and do not process the event — no exceptions, no fallback path.
+
+**Fix `server/envValidation.ts`:**
+- Add `STRIPE_WEBHOOK_SECRET` to `RequiredEnvVars`.
+
+**Verify:** Use the Stripe CLI (`stripe trigger checkout.session.completed`) to confirm valid signed events still work, and manually POST an unsigned request to `/api/webhook/stripe` to confirm it's now rejected with 400.
+
+---
+
+## 3. Remove the auto-created demo account from production
+
+**Problem:** `server/routes.ts` creates a `demo` / `password` user on every server startup with no environment check.
+
+**Fix `server/routes.ts`:**
+- Wrap the demo user creation block in `if (process.env.NODE_ENV !== 'production') { ... }`.
+- If a demo account is needed for Apple App Store review, generate its password from a `DEMO_ACCOUNT_PASSWORD` environment variable (set as a secret in Replit) instead of the literal string `'password'`.
+
+**Verify:** Restart the production deployment and confirm no `demo` user is created (or, if kept for App Store review, confirm its password is no longer `'password'`).
+
+---
+
+## 4. Make Redis mandatory, not a silent fallback
+
+**Problem:** `server/redis.ts` silently falls back to in-memory session storage if `REDIS_URL` is unset or Redis is unreachable. `server/rateLimiter.ts` uses a plain in-memory `Map` for Plaid refresh cooldowns. Neither works correctly once the app runs on more than one instance — sessions and rate limits become inconsistent across instances.
+
+**Fix `server/index.ts` / `server/envValidation.ts`:**
+- Add `REDIS_URL` to `RequiredEnvVars`. Fail startup in production if it's not set.
+
+**Fix `server/redis.ts`:**
+- Remove the in-memory session fallback for production. If Redis fails to connect in production, the server should log a clear error and refuse to start, not silently degrade.
+
+**Fix `server/rateLimiter.ts`:**
+- Replace the in-memory `Map` in `PlaidRateLimiter` with Redis-backed storage (`cache.get`/`cache.set` from `server/cache.ts` or `redisClient` directly), keyed by `plaid-refresh:{userId}`, with a TTL of 720 minutes instead of manual timestamp math.
+
+**Fix `server/index.ts` general rate limiters:**
+- Replace the default in-memory store used by `express-rate-limit` with `rate-limit-redis`, pointed at the existing Redis client, so rate limits are shared across instances.
+
+**Verify:** Confirm the app refuses to start locally without `REDIS_URL` set, and that rate limiting/session persistence still work correctly with Redis running.
+
+---
+
+## 5. Lower-priority cleanup (do after 1–4 are done and verified)
+
+- **`server/security.ts` — `csrfProtection`:** This only checks `Content-Type`, it isn't real CSRF protection. Either rename it to reflect what it actually does, or replace it with a real CSRF token check for state-changing requests.
+- **`server/security.ts` — `validateInput`:** The regex-based SQL/XSS blocklist is redundant since Drizzle ORM already parameterizes queries, and regex blocklists are easy to bypass. Safe to simplify or remove, keeping the length-limiting `sanitizeInput` logic.
+- **`server/security.ts` — `logSecurityEvent`:** Currently hardcodes `ip: 'masked'`. Update it to log the real request IP (`req.ip`, respecting `trust proxy`) so security events are actually traceable.
+- **`server/index.ts` CSP:** `script-src` includes `'unsafe-inline'` and `'unsafe-eval'`, which weakens XSS protection. Investigate whether the production build can drop these (they're often only needed for Vite's dev server).
+- **`server/routes.ts` file size:** At 5,374 lines, split into separate route files by domain (`routes/auth.ts`, `routes/accounts.ts`, `routes/goals.ts`, `routes/coach.ts`, `routes/admin.ts`) and mount them in `index.ts`. Do this last, after the functional fixes above, to avoid merge conflicts with the security changes.
+
+---
+
+## Order of operations
+
+1. Item 1 (Plaid token encryption)
+2. Item 2 (Stripe webhook)
+3. Item 3 (demo account)
+4. Item 4 (Redis)
+5. Item 5 (cleanup, as time allows)
+
+After each item, run the app and manually exercise the affected flow (bank linking, checkout, login, rate-limited endpoint) before moving to the next item.
