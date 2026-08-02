@@ -2,11 +2,9 @@ import { createClient } from 'redis';
 
 const REDIS_URL = process.env.REDIS_URL;
 
-// Only attempt Redis if a real URL is configured — never try localhost in production
 const redisClient = createClient({
   url: REDIS_URL || 'redis://localhost:6379',
   socket: {
-    // Stop retrying after 3 attempts so we don't hammer a missing server forever
     reconnectStrategy: (retries) => {
       if (!REDIS_URL || retries >= 3) return false;
       return Math.min(retries * 200, 2000);
@@ -14,8 +12,9 @@ const redisClient = createClient({
   },
 });
 
-redisClient.on('error', () => {
-  // Suppress repeated error logs — we already log once on connect failure
+redisClient.on('error', (err) => {
+  // Only log the first error to avoid log spam
+  console.error('Redis error:', err.message);
 });
 
 redisClient.on('connect', () => {
@@ -26,25 +25,38 @@ redisClient.on('ready', () => {
   console.log('✓ Redis client ready');
 });
 
-// Connect to Redis only if a real URL is provided
-async function connectRedis() {
+/**
+ * Connect to Redis. In production, failure is fatal — the server refuses to start
+ * without Redis because sessions and rate limits require it to work consistently
+ * across instances.
+ */
+export async function connectRedis(): Promise<void> {
   if (!REDIS_URL) {
-    console.log('No REDIS_URL configured — using in-memory session storage');
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ FATAL: REDIS_URL is not set. Redis is required in production.');
+      process.exit(1);
+    }
+    console.log('⚠️  No REDIS_URL — using in-memory session storage (dev only)');
     return;
   }
+
   try {
     await redisClient.connect();
     console.log('✓ Redis connection established');
   } catch (error) {
-    console.log('Redis unavailable — falling back to in-memory session storage');
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ FATAL: Redis failed to connect in production:', error);
+      process.exit(1);
+    }
+    console.warn('⚠️  Redis unavailable — falling back to in-memory storage (dev only)');
   }
 }
 
-// Cache helper functions — all fail silently when Redis is unavailable
+// Cache helper functions — fail silently when Redis is unavailable (dev only)
 export const cache = {
   async get<T>(key: string): Promise<T | null> {
     try {
-      if (!REDIS_URL || !redisClient.isReady) return null;
+      if (!redisClient.isReady) return null;
       const value = await redisClient.get(key);
       return value ? JSON.parse(value) : null;
     } catch {
@@ -54,7 +66,7 @@ export const cache = {
 
   async set(key: string, value: any, ttl: number = 3600): Promise<void> {
     try {
-      if (!REDIS_URL || !redisClient.isReady) return;
+      if (!redisClient.isReady) return;
       await redisClient.setEx(key, ttl, JSON.stringify(value));
     } catch {
       // ignore
@@ -63,24 +75,32 @@ export const cache = {
 
   async del(key: string): Promise<void> {
     try {
-      if (!REDIS_URL || !redisClient.isReady) return;
+      if (!redisClient.isReady) return;
       await redisClient.del(key);
     } catch {
       // ignore
     }
   },
 
+  /**
+   * Delete all keys matching a pattern. Uses SCAN instead of KEYS
+   * to avoid blocking Redis on large datasets.
+   */
   async invalidatePattern(pattern: string): Promise<void> {
     try {
-      if (!REDIS_URL || !redisClient.isReady) return;
-      const keys = await redisClient.keys(pattern);
-      if (keys.length > 0) await redisClient.del(keys);
+      if (!redisClient.isReady) return;
+      let cursor = '0';
+      do {
+        const reply = await redisClient.scan(cursor as any, { MATCH: pattern, COUNT: 100 });
+        cursor = String(reply.cursor);
+        if (reply.keys.length > 0) {
+          await redisClient.del(reply.keys);
+        }
+      } while (cursor !== '0');
     } catch {
       // ignore
     }
-  }
+  },
 };
-
-connectRedis();
 
 export { redisClient };

@@ -1,90 +1,66 @@
 /**
- * Rate limiter for Plaid API calls to prevent excessive charges
- * Tracks last refresh time per user to enforce hourly limits
+ * Rate limiter for Plaid API calls.
+ * Uses Redis-backed storage so limits are consistent across server restarts
+ * and multiple instances.
  */
 
-interface UserRefreshRecord {
-  userId: number;
-  lastRefresh: Date;
+import { cache } from './redis';
+
+const REFRESH_COOLDOWN_MINUTES = 720; // 12 hours
+const COOLDOWN_SECONDS = REFRESH_COOLDOWN_MINUTES * 60;
+
+function redisKey(userId: number): string {
+  return `plaid-refresh:${userId}`;
 }
 
 class PlaidRateLimiter {
-  private userRefreshTimes = new Map<number, Date>();
-  private readonly REFRESH_COOLDOWN_MINUTES = 720; // 12 hours between refreshes per user
-
   /**
-   * Check if user can refresh their accounts
+   * Check if user can refresh their accounts.
+   * Returns { allowed: true } or { allowed: false, remainingTime: minutes }.
    */
-  canUserRefresh(userId: number): { allowed: boolean; remainingTime?: number } {
-    const lastRefresh = this.userRefreshTimes.get(userId);
-    
-    if (!lastRefresh) {
-      return { allowed: true };
-    }
+  async canUserRefresh(userId: number): Promise<{ allowed: boolean; remainingTime?: number }> {
+    const stored = await cache.get<{ ts: number }>(redisKey(userId));
+    if (!stored) return { allowed: true };
 
-    const timeSinceLastRefresh = Date.now() - lastRefresh.getTime();
-    const cooldownMs = this.REFRESH_COOLDOWN_MINUTES * 60 * 1000;
-    
-    if (timeSinceLastRefresh >= cooldownMs) {
-      return { allowed: true };
-    }
+    const elapsed = Date.now() - stored.ts;
+    const cooldownMs = COOLDOWN_SECONDS * 1000;
 
-    const remainingMs = cooldownMs - timeSinceLastRefresh;
-    const remainingMinutes = Math.ceil(remainingMs / (60 * 1000));
-    
-    return { 
-      allowed: false, 
-      remainingTime: remainingMinutes 
-    };
+    if (elapsed >= cooldownMs) return { allowed: true };
+
+    const remainingMinutes = Math.ceil((cooldownMs - elapsed) / 60_000);
+    return { allowed: false, remainingTime: remainingMinutes };
   }
 
   /**
-   * Record that user has refreshed their accounts
+   * Record that user has refreshed. Atomically sets the timestamp with TTL
+   * so the record auto-expires after the cooldown without manual cleanup.
    */
-  recordUserRefresh(userId: number): void {
-    this.userRefreshTimes.set(userId, new Date());
+  async recordUserRefresh(userId: number): Promise<void> {
+    await cache.set(redisKey(userId), { ts: Date.now() }, COOLDOWN_SECONDS);
     console.log(`⏰ Rate limiter: User ${userId} refresh recorded at ${new Date().toISOString()}`);
   }
 
   /**
-   * Get remaining cooldown time for user
+   * Get remaining cooldown time in minutes (0 = no cooldown active).
    */
-  getRemainingCooldown(userId: number): number {
-    const lastRefresh = this.userRefreshTimes.get(userId);
-    if (!lastRefresh) return 0;
-
-    const timeSinceLastRefresh = Date.now() - lastRefresh.getTime();
-    const cooldownMs = this.REFRESH_COOLDOWN_MINUTES * 60 * 1000;
-    const remaining = Math.max(0, cooldownMs - timeSinceLastRefresh);
-    
-    return Math.ceil(remaining / (60 * 1000)); // Return minutes
+  async getRemainingCooldown(userId: number): Promise<number> {
+    const check = await this.canUserRefresh(userId);
+    return check.allowed ? 0 : (check.remainingTime ?? 0);
   }
 
   /**
-   * Clear rate limit for a user (admin use)
+   * Clear rate limit for a user (admin use).
    */
-  clearUserLimit(userId: number): void {
-    this.userRefreshTimes.delete(userId);
+  async clearUserLimit(userId: number): Promise<void> {
+    await cache.del(redisKey(userId));
     console.log(`🔄 Rate limiter: Cleared limits for user ${userId}`);
   }
 
   /**
-   * Get stats for monitoring
+   * Get basic stats for monitoring.
    */
-  getStats(): { totalUsers: number; recentRefreshes: number } {
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    let recentRefreshes = 0;
-
-    for (const [userId, lastRefresh] of this.userRefreshTimes) {
-      if (lastRefresh.getTime() > oneHourAgo) {
-        recentRefreshes++;
-      }
-    }
-
-    return {
-      totalUsers: this.userRefreshTimes.size,
-      recentRefreshes
-    };
+  getStats(): { note: string } {
+    return { note: 'Stats are Redis-backed; query Redis directly for counts.' };
   }
 }
 

@@ -20,7 +20,17 @@ import * as ConnectRedis from "connect-redis";
 import { redisClient } from "./redis";
 import { validateInput, validateSession, logSecurityEvent, csrfProtection, sanitizeInput } from "./security";
 import { getUserTier } from "./tiers";
+import { encryptSensitiveData, decryptSensitiveData } from "./dataEncryption";
 import Stripe from "stripe";
+
+/**
+ * Decrypt a stored Plaid access token before using it with the Plaid API.
+ * Handles both encrypted tokens (post-migration) and plaintext tokens (pre-migration).
+ */
+function getPlaidToken(account: { plaidAccessToken?: string | null }): string {
+  if (!account.plaidAccessToken) throw new Error('Account has no Plaid access token');
+  return decryptSensitiveData(account.plaidAccessToken);
+}
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -81,7 +91,7 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
         console.log(`🔄 [User ${userId}] Refreshing: ${accountIdentifier}`);
         
         // Get fresh account data from Plaid
-        const accountsResponse = await getAccounts(account.plaidAccessToken!);
+        const accountsResponse = await getAccounts(getPlaidToken(account));
         const matchingAccount = accountsResponse.accounts.find(
           plaidAcc => plaidAcc.account_id === account.plaidAccountId
         );
@@ -125,7 +135,7 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
           startDate.setDate(startDate.getDate() - 7);
           
           const transactionsResponse = await getTransactions(
-            account.plaidAccessToken!,
+            getPlaidToken(account),
             startDate.toISOString().split('T')[0],
             endDate.toISOString().split('T')[0]
           );
@@ -566,21 +576,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Create demo user if it doesn't exist
-  try {
-    const existingUser = await storage.getUserByUsername('demo');
-    if (!existingUser) {
-      await storage.createUser({
-        username: 'demo',
-        password: await (await import('bcrypt')).hash('password', 12),
-        firstName: 'Demo',
-        lastName: 'User',
-        email: 'demo@example.com'
-      });
-      console.log('Demo user created successfully');
+  // Create demo user only in non-production environments
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      const existingUser = await storage.getUserByUsername('demo');
+      if (!existingUser) {
+        const demoPassword = process.env.DEMO_ACCOUNT_PASSWORD || 'demo-dev-only';
+        await storage.createUser({
+          username: 'demo',
+          password: await (await import('bcrypt')).hash(demoPassword, 12),
+          firstName: 'Demo',
+          lastName: 'User',
+          email: 'demo@example.com'
+        });
+        console.log('Demo user created (dev only)');
+      }
+    } catch (error) {
+      console.error('Error creating demo user:', error);
     }
-  } catch (error) {
-    console.error('Error creating demo user:', error);
   }
   
   // Plaid SDK proxy endpoint (before security middleware)
@@ -600,23 +613,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sig = req.headers['stripe-signature'];
       
-      // Verify webhook signature if secret is configured
-      if (process.env.STRIPE_WEBHOOK_SECRET && sig) {
-        // Get raw body for signature verification
-        const body = req.body;
-        
-        event = stripe.webhooks.constructEvent(
-          body,
-          sig,
-          process.env.STRIPE_WEBHOOK_SECRET
-        );
-        
-        console.log('Webhook signature verified');
-      } else {
-        // For development or if no secret is configured
-        event = req.body;
-        console.log('Webhook processed without signature verification');
+      // Signature verification is mandatory — no fallback path
+      if (!process.env.STRIPE_WEBHOOK_SECRET) {
+        console.error('STRIPE_WEBHOOK_SECRET is not set — rejecting webhook');
+        return res.status(400).json({ error: 'Webhook secret not configured' });
       }
+
+      if (!sig) {
+        console.error('Missing stripe-signature header — rejecting webhook');
+        return res.status(400).json({ error: 'Missing stripe-signature header' });
+      }
+
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+
+      console.log('Webhook signature verified');
       
       console.log('Processing webhook event:', event.type);
       
@@ -1518,11 +1532,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const exchangeResponse = await exchangePublicToken(publicToken);
       const accessToken = exchangeResponse.access_token;
+      const encryptedAccessToken = encryptSensitiveData(accessToken);
       const itemId = exchangeResponse.item_id;
       
       console.log('Successfully exchanged token, item ID:', itemId);
       
-      // Get accounts from Plaid
+      // Get accounts from Plaid (use the plaintext token for the current session only)
       const accountsResponse = await getAccounts(accessToken);
       console.log('Retrieved accounts:', accountsResponse.accounts.length);
       
@@ -1531,7 +1546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const accountsCreated = [];
       
       for (const plaidAccount of accountsResponse.accounts) {
-        const accountData = formatPlaidAccountData(plaidAccount, user.id, institutionName, accessToken);
+        const accountData = formatPlaidAccountData(plaidAccount, user.id, institutionName, encryptedAccessToken);
         const newAccount = await storage.createAccount(accountData);
         accountsCreated.push(newAccount);
         console.log('Created account:', newAccount.accountName, 'Balance:', newAccount.balance);
@@ -1765,7 +1780,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Syncing transactions for account ${accountId} from ${startDateStr} to ${endDateStr}`);
       
       // Fetch new transactions from Plaid
-      const transactionsResponse = await getTransactions(account.plaidAccessToken, startDateStr, endDateStr);
+      const transactionsResponse = await getTransactions(getPlaidToken(account), startDateStr, endDateStr);
       
       // Filter transactions for this specific account
       const accountTransactions = transactionsResponse.transactions.filter(
@@ -1849,7 +1864,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`🔄 Fetching transactions from ${startDateStr} to ${endDateStr} (today is ${now.toISOString().split('T')[0]})`);
           
           const transactionsResponse = await getTransactions(
-            account.plaidAccessToken!,
+            getPlaidToken(account),
             startDateStr,
             endDateStr
           );
@@ -1944,7 +1959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Full sync for ${account.institutionName} account: ${account.accountName} (last ${days} days)`);
           
           // 1. Refresh account balance
-          const plaidData = await getAccounts(account.plaidAccessToken!);
+          const plaidData = await getAccounts(getPlaidToken(account));
           const plaidAccount = plaidData.accounts.find(
             acc => acc.account_id === account.plaidAccountId
           );
@@ -1969,7 +1984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const endDateStr = today.toISOString().split('T')[0];
           
           const transactionsResponse = await getTransactions(
-            account.plaidAccessToken!, 
+            getPlaidToken(account), 
             startDateStr, 
             endDateStr
           );
@@ -4492,7 +4507,7 @@ IMPORTANT:
       // Test Plaid connection
       try {
         if (account.plaidAccessToken) {
-          const plaidData = await getAccounts(account.plaidAccessToken);
+          const plaidData = await getAccounts(getPlaidToken(account));
           const plaidAccount = plaidData.accounts.find(acc => acc.account_id === account.plaidAccountId);
           
           if (plaidAccount) {
@@ -4507,7 +4522,7 @@ IMPORTANT:
               yesterday.setDate(today.getDate() - 1);
               
               const transactionsResponse = await getTransactions(
-                account.plaidAccessToken,
+                getPlaidToken(account),
                 yesterday.toISOString().split('T')[0],
                 today.toISOString().split('T')[0]
               );

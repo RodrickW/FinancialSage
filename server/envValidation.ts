@@ -13,15 +13,28 @@ interface RequiredEnvVars {
   SENDGRID_API_KEY: string;
   FROM_EMAIL: string;
   ADMIN_EMAIL: string;
+  ENCRYPTION_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+  REDIS_URL: string;
+  SESSION_SECRET: string;
 }
 
+// Variables that must be present in production — missing any of these is a hard startup failure
+const PRODUCTION_CRITICAL: (keyof RequiredEnvVars)[] = [
+  'ENCRYPTION_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'REDIS_URL',
+  'SESSION_SECRET',
+];
+
 /**
- * Validate that all required environment variables are present
+ * Validate that all required environment variables are present.
+ * In production, critical variables cause a hard failure; others warn.
  */
 export function validateEnvironment(): void {
   const required: (keyof RequiredEnvVars)[] = [
     'DATABASE_URL',
-    'STRIPE_SECRET_KEY', 
+    'STRIPE_SECRET_KEY',
     'VITE_STRIPE_PUBLIC_KEY',
     'PLAID_CLIENT_ID',
     'PLAID_SECRET',
@@ -29,23 +42,37 @@ export function validateEnvironment(): void {
     'OPENAI_API_KEY',
     'SENDGRID_API_KEY',
     'FROM_EMAIL',
-    'ADMIN_EMAIL'
+    'ADMIN_EMAIL',
+    'ENCRYPTION_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'REDIS_URL',
+    'SESSION_SECRET',
   ];
 
   const missing: string[] = [];
-  
+  const missingCritical: string[] = [];
+
   for (const envVar of required) {
     if (!process.env[envVar]) {
       missing.push(envVar);
+      if (PRODUCTION_CRITICAL.includes(envVar as keyof RequiredEnvVars)) {
+        missingCritical.push(envVar);
+      }
     }
   }
 
   if (missing.length > 0) {
-    console.warn('Missing environment variables:', missing.join(', '));
-    console.warn('Some features may be limited without these variables');
+    console.warn('⚠️  Missing environment variables:', missing.join(', '));
   }
 
-  // Validate specific formats (non-blocking warnings)
+  // In production, critical variables are a hard stop
+  if (process.env.NODE_ENV === 'production' && missingCritical.length > 0) {
+    console.error('❌ FATAL: Missing required production secrets:', missingCritical.join(', '));
+    console.error('   Set these in Replit Secrets and restart.');
+    process.exit(1);
+  }
+
+  // Non-blocking format checks
   if (process.env.PLAID_ENV && !['sandbox', 'development', 'production'].includes(process.env.PLAID_ENV)) {
     console.warn('PLAID_ENV should be one of: sandbox, development, production');
   }
