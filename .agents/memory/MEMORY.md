@@ -1,0 +1,2 @@
+- [Plaid token encryption](plaid-token-encryption.md) — tokens encrypted at rest with AES-256-GCM; migration ran Aug 2026, all 15 accounts encrypted.
+- [Redis mandatory in production](redis-production-required.md) — Redis is required in prod for sessions and rate limits; in-memory fallback is dev-only.
