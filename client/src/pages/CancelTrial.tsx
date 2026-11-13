@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import TopNav from '@/components/TopNav';
@@ -28,6 +28,13 @@ interface SubscriptionStatus {
   hasAppleSubscription: boolean;
   isCancelled: boolean;
   subscriptionPeriod?: string | null;
+  billingStatusVerified?: boolean;
+  billingNeedsAttention?: boolean;
+  canManageBilling?: boolean;
+  canRestartSubscription?: boolean;
+  canResumeSubscription?: boolean;
+  stripeStatus?: string | null;
+  isPaused?: boolean;
 }
 
 export default function CancelTrial() {
@@ -36,6 +43,7 @@ export default function CancelTrial() {
   const queryClient = useQueryClient();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
+  const [nativePurchaseNotice, setNativePurchaseNotice] = useState('');
 
   const isMobileApp = typeof window !== 'undefined' && (
     localStorage.getItem('isMobileApp') === 'true' ||
@@ -48,11 +56,57 @@ export default function CancelTrial() {
     queryKey: ['/api/users/profile']
   });
 
-  const { data: subscriptionStatus, isLoading: statusLoading } = useQuery<SubscriptionStatus>({
-    queryKey: ['/api/subscription/status']
+  const { data: subscriptionStatus, dataUpdatedAt: statusUpdatedAt, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useQuery<SubscriptionStatus>({
+    queryKey: ['/api/subscription/status'],
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const user = userData;
+
+  useEffect(() => {
+    if (statusUpdatedAt) {
+      // The status endpoint reconciles access after returning from Stripe.
+      void queryClient.invalidateQueries({ queryKey: ['/api/users/profile'] });
+    }
+  }, [statusUpdatedAt, queryClient]);
+
+  useEffect(() => {
+    const onFocus = () => { void refetchStatus(); };
+    window.addEventListener('focus', onFocus);
+    if (new URLSearchParams(window.location.search).get('billing') === 'returned') {
+      void refetchStatus();
+    }
+    return () => window.removeEventListener('focus', onFocus);
+  }, [refetchStatus]);
+
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/subscription/billing-portal', {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data?.url) window.location.assign(data.url);
+      else toast({ title: 'Billing portal unavailable', description: 'Please try again in a moment.', variant: 'destructive' });
+    },
+    onError: (error: any) => toast({ title: 'Could not open billing', description: error.message || 'Please try again.', variant: 'destructive' }),
+  });
+
+  const resumeMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/subscription/resume', {});
+      const result = await response.json();
+      if (result?.success === false) throw new Error(result.error || 'Could not resume subscription');
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/profile'] });
+      toast({ title: 'Resume requested', description: 'Checking payment and access. You may still need to settle an outstanding invoice in Manage billing.' });
+    },
+    onError: (error: any) => toast({ title: 'Could not resume subscription', description: error.message || 'Please try again.', variant: 'destructive' }),
+  });
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
@@ -94,7 +148,7 @@ export default function CancelTrial() {
     },
   });
 
-  if (userLoading || statusLoading) {
+  if (statusLoading || userLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -109,6 +163,29 @@ export default function CancelTrial() {
   const subscriptionSource = subscriptionStatus?.subscriptionSource || 'none';
   const isCancelled = subscriptionStatus?.isCancelled;
   const isPaidPremium = hasActiveSubscription && !isOnTrial;
+  const hasStripeSubscription = !!subscriptionStatus?.hasStripeSubscription;
+  const needsAttention = !!subscriptionStatus?.billingNeedsAttention;
+  const canManageStripeBilling = subscriptionSource === 'stripe' && hasStripeSubscription && !!subscriptionStatus?.canManageBilling;
+  const hasScheduledCancellation = !!isCancelled && (!!hasActiveSubscription || !!subscriptionStatus?.canResumeSubscription);
+  const hasEnded = !!isCancelled && !hasStripeSubscription && !hasActiveSubscription;
+  const billingVerified = !statusError && subscriptionStatus?.billingStatusVerified === true;
+
+  const startOrRestartPlan = () => {
+    if (!billingVerified || subscriptionStatus?.canRestartSubscription !== true) {
+      setNativePurchaseNotice('Refresh your subscription status before starting another plan.');
+      return;
+    }
+    if (isMobileApp) {
+      const bridge = (window as any).ReactNativeWebView;
+      if (bridge?.postMessage) {
+        bridge.postMessage(JSON.stringify({ type: 'SHOW_PAYWALL' }));
+      } else {
+        setNativePurchaseNotice('The purchase screen is not available right now. Please reopen the app and try again.');
+      }
+      return;
+    }
+    setLocation('/pricing');
+  };
   const billingPeriod = subscriptionStatus?.subscriptionPeriod;
 
   const tierColor = tier === 'pro'
@@ -137,6 +214,61 @@ export default function CancelTrial() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Button>
+
+        {statusError && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <p className="font-semibold text-red-900">We couldn’t check your subscription.</p>
+              <p className="mt-1 text-sm text-red-800">Your plan details haven’t been verified. Retry before making a billing change.</p>
+              <Button className="mt-4" variant="outline" onClick={() => refetchStatus()}>Retry subscription check</Button>
+            </CardContent>
+          </Card>
+        )}
+        {!statusError && !billingVerified && (
+          <Card className="mb-6 border-amber-300 bg-amber-50">
+            <CardContent className="pt-6">
+              <p className="font-semibold text-amber-950">Subscription status is still being verified.</p>
+              <p className="mt-1 text-sm text-amber-900">We won’t label this account as free or start a new plan until the check completes.</p>
+              <Button className="mt-4" variant="outline" onClick={() => refetchStatus()}>Retry subscription check</Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {billingVerified && <>
+        {needsAttention && (
+          <Card className="mb-6 border-amber-300 bg-amber-50">
+            <CardContent className="pt-6">
+              <p className="font-semibold text-amber-950">{subscriptionStatus?.isPaused ? 'Subscription paused' : 'Payment needs attention'}</p>
+              <p className="mt-1 text-sm text-amber-900">Your existing subscription is still on file. Update your card and pay any outstanding invoices in billing. If your plan is paused, you can then resume it here.</p>
+              {canManageStripeBilling && <Button className="mt-4" onClick={() => portalMutation.mutate()} disabled={portalMutation.isPending}>
+                {portalMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Opening billing…</> : 'Update payment method'}
+              </Button>}
+              {subscriptionSource === 'apple' && <a className="mt-4 inline-flex text-sm font-medium text-amber-950 underline" href="https://apps.apple.com/account/subscriptions">Manage subscriptions with Apple</a>}
+              {subscriptionStatus?.isPaused && subscriptionStatus?.canResumeSubscription && (
+                <Button variant="outline" className="mt-4 ml-2" onClick={() => {
+                  if (window.confirm('Resume your subscription? Billing may restart immediately and your saved payment method may be charged.')) resumeMutation.mutate();
+                }} disabled={resumeMutation.isPending || portalMutation.isPending}>
+                  {resumeMutation.isPending ? 'Resuming…' : 'Resume subscription'}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {nativePurchaseNotice && <Card className="mb-6 border-amber-300 bg-amber-50"><CardContent className="pt-5 text-sm text-amber-950" role="alert">{nativePurchaseNotice}</CardContent></Card>}
+
+        {!statusError && !needsAttention && subscriptionStatus?.isPaused && (
+          <Card className="mb-6 border-amber-300 bg-amber-50">
+            <CardContent className="pt-6">
+              <p className="font-semibold text-amber-950">Subscription paused</p>
+              <p className="mt-1 text-sm text-amber-900">Your plan is paused. Resume it when you’re ready to continue.</p>
+              {subscriptionStatus.canResumeSubscription && <Button className="mt-4" onClick={() => {
+                if (window.confirm('Resume your subscription? Billing may restart immediately and your saved payment method may be charged.')) resumeMutation.mutate();
+              }} disabled={resumeMutation.isPending}>
+                {resumeMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Resuming…</> : 'Resume subscription'}
+              </Button>}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Current Plan Card */}
         <Card className="mb-6 border-gray-200">
@@ -181,20 +313,35 @@ export default function CancelTrial() {
               )}
 
               {/* Cancelled */}
-              {isCancelled && (
+              {hasScheduledCancellation && (
                 <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-yellow-600" />
                     <div>
-                      <p className="font-medium text-yellow-900">Subscription Cancelled</p>
-                      <p className="text-sm text-yellow-700">Access continues until your current period ends</p>
+                      <p className="font-medium text-yellow-900">Cancellation scheduled</p>
+                      <p className="text-sm text-yellow-700">Your access continues through the current period. You can resume before it ends.</p>
                     </div>
                   </div>
+                  {subscriptionStatus?.canResumeSubscription && <Button size="sm" variant="outline" onClick={() => {
+                    if (window.confirm('Resume your subscription now?')) resumeMutation.mutate();
+                  }} disabled={resumeMutation.isPending}>{resumeMutation.isPending ? 'Resuming…' : 'Resume'}</Button>}
                 </div>
               )}
 
               {/* No active subscription */}
-              {!hasActiveSubscription && !isCancelled && (
+              {hasEnded && (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="font-medium text-gray-900">Subscription ended</p>
+                      <p className="text-sm text-gray-600">Your plan has ended. You can start again whenever you’re ready.</p>
+                    </div>
+                  </div>
+                  <Button className="ml-3" onClick={startOrRestartPlan}>Restart subscription</Button>
+                </div>
+              )}
+              {!hasActiveSubscription && !isCancelled && !needsAttention && subscriptionStatus?.billingStatusVerified !== false && (
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-gray-500" />
@@ -210,7 +357,7 @@ export default function CancelTrial() {
         </Card>
 
         {/* Upgrade Options - free users only */}
-        {!hasActiveSubscription && !isCancelled && (
+        {subscriptionStatus?.canRestartSubscription === true && !hasActiveSubscription && !hasStripeSubscription && !needsAttention && (!isCancelled || hasEnded) && (
           <Card className="mb-6 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
             <CardHeader>
               <CardTitle className="text-xl text-emerald-900 flex items-center gap-2">
@@ -235,7 +382,7 @@ export default function CancelTrial() {
                     </div>
                   ))}
                 </div>
-                <Button className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 text-white" onClick={() => setLocation('/pricing')}>
+                <Button className="w-full bg-gradient-to-r from-emerald-700 to-emerald-500 text-white" onClick={startOrRestartPlan}>
                   Upgrade to Plus
                 </Button>
               </div>
@@ -259,7 +406,7 @@ export default function CancelTrial() {
                     </div>
                   ))}
                 </div>
-                <Button className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white" onClick={() => setLocation('/pricing')}>
+                <Button className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white" onClick={startOrRestartPlan}>
                   Upgrade to Pro
                 </Button>
               </div>
@@ -268,7 +415,7 @@ export default function CancelTrial() {
         )}
 
         {/* Mobile App Notice */}
-        {isMobileApp && (
+        {subscriptionSource === 'apple' && (
           <Card className="mb-6 border-blue-200 bg-blue-50">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
@@ -276,10 +423,23 @@ export default function CancelTrial() {
                 <div>
                   <p className="font-medium text-blue-900">Mobile App Subscription</p>
                   <p className="text-sm text-blue-700 mt-1">
-                    To manage your subscription, go to iPhone Settings → Your Name → Subscriptions → Mind My Money.
+                    Apple handles this subscription. Manage or cancel it from your Apple account.
                   </p>
+                  <a className="mt-3 inline-block text-sm font-semibold text-blue-800 underline" href="https://apps.apple.com/account/subscriptions">Open Apple subscriptions</a>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {canManageStripeBilling && (
+          <Card className="mb-6 border-emerald-200">
+            <CardHeader><CardTitle className="text-lg">Billing & payment</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-gray-600">Update your payment method, view invoices, or manage billing securely with Stripe.</p>
+              <Button className="w-full" onClick={() => portalMutation.mutate()} disabled={portalMutation.isPending}>
+                {portalMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Opening billing…</> : needsAttention ? 'Update payment method' : 'Manage billing'}
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -347,7 +507,7 @@ export default function CancelTrial() {
         )}
 
         {/* Cancel Options */}
-        {hasActiveSubscription && !isCancelled && !isMobileApp && (
+        {hasActiveSubscription && !isCancelled && !needsAttention && !isMobileApp && (
           <Card className="border-red-200">
             <CardHeader>
               <CardTitle className="text-xl text-red-900 flex items-center gap-2">
@@ -425,6 +585,7 @@ export default function CancelTrial() {
           </Card>
         )}
 
+        </>}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
             Need help? <a href="/feedback" className="text-emerald-700 hover:underline">Contact support</a>

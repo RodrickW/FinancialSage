@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { CheckCircle, ArrowLeft, Loader2, Crown, Sparkles, Zap } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Loader2, Crown, Sparkles, Zap, AlertTriangle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,15 +14,38 @@ interface SubscriptionStatus {
   tier: 'free' | 'plus' | 'pro';
   isPremium: boolean;
   hasActiveSubscription: boolean;
+  billingStatusVerified?: boolean;
+  billingNeedsAttention?: boolean;
+  canManageBilling?: boolean;
+  canRestartSubscription?: boolean;
+  subscriptionSource?: 'stripe' | 'apple' | 'none';
+  hasStripeSubscription?: boolean;
 }
 
 export default function Pricing() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isAnnual, setIsAnnual] = useState(true);
+  const [nativeNotice, setNativeNotice] = useState('');
   
-  const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
-    queryKey: ['/api/subscription/status']
+  const { data: subscriptionStatus, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useQuery<SubscriptionStatus>({
+    queryKey: ['/api/subscription/status'],
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
+
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/subscription/billing-portal', {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data?.url) window.location.assign(data.url);
+      else toast({ title: 'Billing portal unavailable', description: 'Please try again.', variant: 'destructive' });
+    },
+    onError: (error: any) => toast({ title: 'Could not open billing', description: error.message || 'Please try again.', variant: 'destructive' }),
   });
   
   const checkoutMutation = useMutation({
@@ -37,12 +60,19 @@ export default function Pricing() {
           (window as any).ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'SHOW_PAYWALL' })
           );
+        } else {
+          setNativeNotice('Your app is preparing the purchase screen. Please return to the app or try again shortly.');
         }
         return;
       }
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      if (data.requiresBillingRecovery && data.billingUrl) {
+        window.location.assign(data.billingUrl);
+        return;
       }
+      if (data.checkoutUrl) {
+        window.location.assign(data.checkoutUrl);
+      }
+      queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
     },
     onError: (error: any) => {
       toast({
@@ -59,7 +89,22 @@ export default function Pricing() {
       sessionStorage.getItem('isMobileApp') === 'true' ||
       (window as any).isMobileApp === true);
 
+  const hasStripeSubscription = !!subscriptionStatus?.hasStripeSubscription;
+  const hasActiveAppleSubscription = subscriptionStatus?.subscriptionSource === 'apple' && !!subscriptionStatus?.hasActiveSubscription;
+  const existingStripeNeedsRecovery = hasStripeSubscription;
+  const statusVerified = !statusError && subscriptionStatus?.billingStatusVerified === true;
+
   const handleSubscribe = (tier: 'plus' | 'pro') => {
+    setNativeNotice('');
+    if (statusLoading || !statusVerified) {
+      setNativeNotice('Refresh your subscription status before starting another plan.');
+      return;
+    }
+    if (hasStripeSubscription) {
+      if (subscriptionStatus?.canManageBilling) portalMutation.mutate();
+      return;
+    }
+    if (hasActiveAppleSubscription || subscriptionStatus?.canRestartSubscription !== true) return;
     // Check ReactNativeWebView directly — most reliable signal, always live regardless of render timing
     if ((window as any).ReactNativeWebView) {
       (window as any).ReactNativeWebView.postMessage(
@@ -69,6 +114,7 @@ export default function Pricing() {
     }
     if (isMobileApp) {
       // isMobileApp flag set but bridge not ready — don't fall through to Stripe
+      setNativeNotice('The in-app purchase screen is not available right now. Please reopen the app and try again.');
       return;
     }
     checkoutMutation.mutate({ 
@@ -141,6 +187,44 @@ export default function Pricing() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Button>
+
+        {statusLoading && <div className="mb-6 rounded-xl border border-emerald-200 bg-white/80 p-4 text-sm text-gray-600" role="status">Checking your subscription…</div>}
+        {statusError && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 text-red-700" />
+              <div className="flex-1">
+                <p className="font-semibold text-red-900">We couldn’t verify your subscription.</p>
+                <p className="mt-1 text-sm text-red-800">To avoid creating a duplicate plan, retry the check before subscribing.</p>
+                <Button className="mt-3" variant="outline" onClick={() => refetchStatus()}>Retry subscription check</Button>
+              </div>
+            </div>
+          </div>
+        )}
+        {!statusLoading && !statusError && subscriptionStatus?.billingStatusVerified === false && (
+          <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <p className="font-semibold text-amber-950">Your subscription is still being verified.</p>
+            <p className="mt-1 text-sm text-amber-900">We’ll hold off on starting a new plan until we can confirm your current billing status.</p>
+            <Button className="mt-3" variant="outline" onClick={() => refetchStatus()}>Retry subscription check</Button>
+          </div>
+        )}
+        {!statusLoading && !statusError && (existingStripeNeedsRecovery || hasActiveAppleSubscription) && (
+          <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <p className="font-semibold text-amber-950">{subscriptionStatus?.billingNeedsAttention ? 'Payment needs attention' : 'You already have a subscription'}</p>
+            <p className="mt-1 text-sm text-amber-900">
+              {existingStripeNeedsRecovery
+                ? 'Manage your existing Stripe subscription instead of starting another plan.'
+                : 'Your plan is managed by Apple. Manage or review it through your Apple account.'}
+            </p>
+            {existingStripeNeedsRecovery && subscriptionStatus?.canManageBilling && (
+              <Button className="mt-3" onClick={() => portalMutation.mutate()} disabled={portalMutation.isPending}>
+                {portalMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Opening billing…</> : subscriptionStatus?.billingNeedsAttention ? 'Update payment method' : 'Manage billing'}
+              </Button>
+            )}
+            {hasActiveAppleSubscription && <a className="mt-3 inline-block text-sm font-semibold text-amber-950 underline" href="https://apps.apple.com/account/subscriptions">Manage with Apple</a>}
+          </div>
+        )}
+        {nativeNotice && <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="alert">{nativeNotice}</div>}
 
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent">
@@ -256,13 +340,17 @@ export default function Pricing() {
                           : 'bg-gray-800 hover:bg-gray-900 text-white'
                       }`}
                       onClick={() => handleSubscribe(plan.tier)}
-                      disabled={checkoutMutation.isPending || isCurrentPlan}
+                      disabled={checkoutMutation.isPending || portalMutation.isPending || statusLoading || statusError || !statusVerified || isCurrentPlan || existingStripeNeedsRecovery || hasActiveAppleSubscription || subscriptionStatus?.canRestartSubscription === false}
                     >
                       {checkoutMutation.isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Processing...
                         </>
+                      ) : existingStripeNeedsRecovery ? (
+                        'Manage existing subscription'
+                      ) : hasActiveAppleSubscription ? (
+                        'Managed by Apple'
                       ) : isCurrentPlan ? (
                         'Current Plan'
                       ) : canUpgrade ? (

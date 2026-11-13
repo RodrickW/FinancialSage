@@ -23,6 +23,13 @@ export default function MainApp({ onUserAuthenticated, onShowPaywall, activeTier
   }, []);
 
   const handleShouldStartLoadWithRequest = (request: any) => {
+    // Apple billing management belongs in the system browser/App Store.
+    if (request.url.startsWith('https://apps.apple.com/account/subscriptions')) {
+      Linking.openURL(request.url).catch(() => setLoadError(true));
+      return false;
+    }
+    // billing.stripe.com is intentionally NOT intercepted: existing web
+    // subscribers can repair their card and return to the authenticated WebView.
     // On iOS, intercept Stripe checkout and show Apple IAP paywall instead
     // On Android, Stripe checkout works fine — let it through
     if (Platform.OS === 'ios' && request.url.includes('checkout.stripe.com')) {

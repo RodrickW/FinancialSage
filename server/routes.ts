@@ -20,6 +20,7 @@ import * as ConnectRedis from "connect-redis";
 import { redisClient } from "./redis";
 import { validateInput, validateSession, logSecurityEvent, csrfProtection, sanitizeInput } from "./security";
 import { getUserTier } from "./tiers";
+import { findBillingSubscription, hasAppleAccess, isExistingSubscription } from "./subscriptionBilling";
 import { encryptSensitiveData, decryptSensitiveData } from "./dataEncryption";
 import Stripe from "stripe";
 
@@ -3608,6 +3609,14 @@ IMPORTANT:
   app.post("/api/start-free-trial", requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+      // Legacy entry point must not bypass the same duplicate-subscription guard.
+      const existingBilling = await findBillingSubscription(stripe, user);
+      if (isExistingSubscription(existingBilling) || hasAppleAccess(user)) {
+        return res.json({ redirectToManage: true, message: 'Manage your existing subscription in Subscription settings.' });
+      }
+      if (req.headers['x-mobile-app'] === 'true' || ['ios', 'android'].includes(String(req.headers['x-platform']))) {
+        return res.json({ mobile: true, message: 'Use in-app purchase on mobile.' });
+      }
       
       const { planType = 'standard' } = req.body;
       

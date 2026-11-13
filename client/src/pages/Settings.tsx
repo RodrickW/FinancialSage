@@ -131,6 +131,18 @@ export default function Settings() {
       <main className="flex-1 pb-24">
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
+          <Card className="section-card border-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Subscription</CardTitle>
+              <CardDescription>Review your plan, payment details, or renewal options</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setLocation('/cancel-trial')}>
+                Manage Subscription
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Mobile delete banner */}
           {isMobileApp && (
             <Card className="border-2 border-red-500 bg-red-50" id="delete-account-section">

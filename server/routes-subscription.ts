@@ -4,13 +4,68 @@ import { storage } from "./storage";
 import { stripe } from "./stripe";
 import { getUserTier, getAIMessagesRemaining, TIER_LIMITS, mapStripePriceToTier, SubscriptionTier } from "./tiers";
 import Stripe from "stripe";
+import {
+  BILLING_REQUEST_OPTIONS, canResumeBilling, createBillingPortal, findBillingSubscription,
+  hasAppleAccess, isExistingSubscription, needsPaymentRecovery, resumeBilling, subscriptionCustomer,
+} from "./subscriptionBilling";
 
 export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
+  const billingReturnUrl = (req: Request) => {
+    const origin = process.env.NODE_ENV === 'production'
+      ? 'https://www.mindmymoneyapp.com'
+      : `${req.protocol}://${req.get('host')}`;
+    return `${origin}/cancel-trial?billing=returned`;
+  };
+
+  // Available with authentication only: expired users must be able to repair billing.
+  app.post('/api/subscription/billing-portal', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      let customerId = user.stripeCustomerId;
+      if (!customerId && user.stripeSubscriptionId) {
+        const subscription = await findBillingSubscription(stripe, user);
+        if (subscription) customerId = subscriptionCustomer(subscription);
+      }
+      if (!customerId) {
+        return res.status(400).json({ message: 'No web billing account found. Choose a plan to subscribe.' });
+      }
+      const url = await createBillingPortal(stripe, customerId, billingReturnUrl(req));
+      res.json({ url });
+    } catch {
+      console.error('Could not open Stripe billing portal');
+      res.status(503).json({ message: 'Billing is temporarily unavailable. Please try again.' });
+    }
+  });
+
+  app.post('/api/subscription/resume', requireAuth, async (req, res) => {
+    try {
+      const subscription = await findBillingSubscription(stripe, req.user as User);
+      if (!subscription || !canResumeBilling(subscription)) {
+        return res.status(409).json({ message: 'This subscription cannot be resumed here. Use Manage billing or choose a plan if it has ended.' });
+      }
+      await resumeBilling(stripe, subscription);
+      // Do not grant premium here. Status/webhook verifies the actual payment state.
+      res.json({ success: true, message: 'Resume requested. Refreshing your payment status.' });
+    } catch {
+      res.status(503).json({ message: 'Unable to resume. Update your card and settle outstanding invoices in Manage billing, then try again.' });
+    }
+  });
   
   // Create checkout session for tiered subscription
   app.post('/api/subscription/checkout', requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+
+      const existing = await findBillingSubscription(stripe, user);
+      if (isExistingSubscription(existing)) {
+        const billingUrl = await createBillingPortal(
+          stripe, subscriptionCustomer(existing!), billingReturnUrl(req),
+        );
+        return res.json({ billingUrl, requiresBillingRecovery: true });
+      }
+      if (hasAppleAccess(user)) {
+        return res.status(409).json({ message: 'You already have an Apple subscription. Manage it in Apple Subscriptions instead of buying another plan.' });
+      }
 
       // Mobile app users must subscribe via Apple In-App Purchase, not Stripe
       const isMobile =
@@ -58,7 +113,7 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           metadata: { userId: user.id.toString() }
-        });
+        }, { ...BILLING_REQUEST_OPTIONS, idempotencyKey: `mmm-customer-${user.id}` });
         customerId = customer.id;
         await storage.updateUser(user.id, { stripeCustomerId: customerId });
       }
@@ -83,12 +138,16 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
           tier,
           period
         }
+      }, {
+        ...BILLING_REQUEST_OPTIONS,
+        // Retries and simultaneous clicks share one session (even across servers).
+        idempotencyKey: `mmm-checkout-${user.id}-${Math.floor(Date.now() / 600000)}`,
       });
       
       res.json({ checkoutUrl: session.url });
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      res.status(500).json({ message: 'Failed to create checkout session' });
+      res.status(503).json({ message: 'Unable to verify billing or start checkout. Please try again; do not purchase another subscription elsewhere.' });
     }
   });
   
@@ -98,60 +157,40 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
       const user = req.user as User;
       
       // Get current tier
-      const tier = getUserTier(user);
-      const aiMessagesRemaining = getAIMessagesRemaining(user);
-      const tierLimits = TIER_LIMITS[tier];
-      
-      // Check Stripe subscription status directly if user has a subscription ID
-      let stripeSubscriptionActive = false;
-      let stripeStatus: string | null = null;
-      let stripeTier: SubscriptionTier = 'free';
-      
-      if (user.stripeSubscriptionId) {
-        try {
-          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-          stripeStatus = subscription.status;
-          stripeSubscriptionActive = ['active', 'past_due'].includes(subscription.status);
-          
-          // Get tier from price ID
-          const priceId = subscription.items.data[0]?.price?.id;
-          if (priceId) {
-            stripeTier = mapStripePriceToTier(priceId);
-          }
-          
-          // Sync tier and/or status from Stripe whenever subscription is live
-          const dbStatusOk = ['active', 'trialing', 'past_due'].includes(user.subscriptionStatus || '');
-          const needsSync = stripeSubscriptionActive &&
-            (user.subscriptionTier !== stripeTier || !dbStatusOk);
-          if (needsSync) {
-            await storage.updateUser(user.id, {
-              subscriptionTier: stripeTier,
-              isPremium: stripeTier !== 'free',
-              subscriptionStatus: subscription.status,
-              stripePriceId: priceId
-            });
-          }
-        } catch (stripeError: any) {
-          console.error('Error checking Stripe subscription:', stripeError.message);
+      const subscription = await findBillingSubscription(stripe, user);
+      const hasStripeSubscription = isExistingSubscription(subscription);
+      const hasAppleSubscription = hasAppleAccess(user);
+      const stripeEntitled = !!subscription && ['active', 'trialing'].includes(subscription.status);
+      const stripeStatus = subscription?.status || null;
+      const priceId = subscription?.items.data[0]?.price?.id;
+      const stripeTier = priceId ? mapStripePriceToTier(priceId) : 'free';
+      const tier: SubscriptionTier = stripeEntitled ? stripeTier
+        : hasAppleSubscription ? ((user.revenuecatTier || getUserTier(user)) as SubscriptionTier)
+        : (subscription || user.stripeSubscriptionId || user.stripeCustomerId) ? 'free' : getUserTier(user);
+      const effectiveUser = { ...user, subscriptionTier: tier };
+      const aiMessagesRemaining = getAIMessagesRemaining({
+        ...effectiveUser, subscriptionStatus: tier === 'free' ? 'inactive' : 'active',
+      });
+      const tierLimits = TIER_LIMITS[tier] || TIER_LIMITS.free;
+      const subscriptionSource = hasAppleSubscription && !stripeEntitled ? 'apple'
+        : subscription || user.stripeCustomerId ? 'stripe' : 'none';
+      const isCancelled = subscriptionSource === 'stripe' && (
+        !!subscription?.cancel_at_period_end || (!!subscription && !hasStripeSubscription)
+      );
+
+      if (subscription && !hasAppleSubscription) {
+        const period = subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
+        if (user.subscriptionTier !== tier || user.subscriptionStatus !== stripeStatus ||
+            user.isPremium !== (tier !== 'free') || user.stripeSubscriptionId !== subscription.id ||
+            user.stripePriceId !== priceId || user.subscriptionPeriod !== period) {
+          await storage.updateUser(user.id, {
+            subscriptionTier: tier, subscriptionStatus: stripeStatus,
+            isPremium: tier !== 'free', stripeSubscriptionId: subscription.id,
+            stripeCustomerId: subscriptionCustomer(subscription),
+            stripePriceId: priceId, subscriptionPeriod: period,
+          });
         }
       }
-      
-      // Check RevenueCat subscription
-      let hasAppleSubscription = false;
-      if (user.revenuecatExpiresAt && new Date(user.revenuecatExpiresAt) > new Date()) {
-        hasAppleSubscription = true;
-      }
-      
-      // Determine subscription source
-      let subscriptionSource: 'stripe' | 'apple' | 'none' = 'none';
-      if (stripeSubscriptionActive) {
-        subscriptionSource = 'stripe';
-      } else if (hasAppleSubscription) {
-        subscriptionSource = 'apple';
-      }
-      
-      // Check if subscription is cancelled but still active
-      const isCancelled = user.subscriptionStatus === 'cancelled' || user.subscriptionStatus === 'canceled';
       
       res.json({
         tier,
@@ -160,17 +199,26 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         subscriptionStatus: stripeStatus || user.subscriptionStatus,
         hasActiveSubscription: tier !== 'free',
         subscriptionSource,
-        hasStripeSubscription: stripeSubscriptionActive,
+        hasStripeSubscription,
         hasAppleSubscription,
         isCancelled,
+        billingStatusVerified: true,
+        stripeStatus,
+        billingNeedsAttention: needsPaymentRecovery(subscription),
+        isPaused: subscription?.status === 'paused' || !!subscription?.pause_collection,
+        canManageBilling: !!(user.stripeCustomerId || subscription),
+        canResumeSubscription: canResumeBilling(subscription),
+        canRestartSubscription: !hasStripeSubscription && !hasAppleSubscription,
         aiMessagesRemaining,
         aiMessagesLimit: tierLimits.aiMessagesPerMonth,
         features: tierLimits,
-        subscriptionPeriod: user.subscriptionPeriod
+        subscriptionPeriod: subscription
+          ? (subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly')
+          : user.subscriptionPeriod
       });
     } catch (error) {
-      console.error('Error checking subscription status:', error);
-      res.status(500).json({ message: 'Failed to check subscription status' });
+      console.error('Error verifying subscription status');
+      res.status(503).json({ billingStatusVerified: false, message: 'Unable to verify your subscription. Please retry before starting a new subscription.' });
     }
   });
   
