@@ -3,14 +3,14 @@ name: Redis mandatory in production
 description: Redis is required in production for sessions and rate limits; the app refuses to start without it.
 ---
 
-**Rule:** In production, Redis must be available. The server calls `process.exit(1)` if `REDIS_URL` is missing or Redis fails to connect.
+**Rule:** In production, Redis must be available. Missing or unavailable Redis must prevent startup, and session/rate-limit initialization must never silently fall back to memory. Memory fallback is development-only.
 
 **Why:** Sessions and Plaid refresh rate limits (12-hour cooldown) are Redis-backed. Without Redis in a multi-instance deployment, sessions evaporate on restart and rate limits are per-process — users can bypass them by hitting another instance.
 
-**How to apply:**
-- `REDIS_URL` is in `RequiredEnvVars` in `server/envValidation.ts` and is a production-critical variable (hard fail if missing).
-- `connectRedis()` is called in the startup sequence in `server/index.ts` before routes are registered.
-- Rate limiters use `rate-limit-redis` (`RedisStore`) when `redisClient.isReady`; fall back to in-memory only in dev.
-- `PlaidRateLimiter` in `server/rateLimiter.ts` uses Redis `cache.get/set` with TTL instead of an in-memory Map — all methods are async.
+**How to apply:** Connect Redis before initializing sessions or request limits. Treat session-store initialization errors as fatal in production rather than catching them and selecting a memory store.
 
-**Important:** All `plaidRateLimiter` call sites must `await` the methods (`canUserRefresh`, `recordUserRefresh`, `getRemainingCooldown`, `clearUserLimit`) since they became async.
+**Rule:** Isolate Redis keys by environment and give every independently configured rate limiter a distinct counter prefix.
+
+**Why:** Workspace and production can receive the same shared secret. Without environment isolation, testing can affect live sessions and limits. Reusing a counter prefix between limiters also mixes unrelated quotas and expiration windows.
+
+**How to apply:** Preserve environment-specific prefixes for sessions, caches and request limits. Give new rate limiters their own scope; never reuse another limiter's counters merely because the IP address is the same.

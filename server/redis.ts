@@ -1,10 +1,13 @@
 import { createClient } from 'redis';
+import { redisNamespace } from './redisStores';
 
 const REDIS_URL = process.env.REDIS_URL;
 
 const redisClient = createClient({
   url: REDIS_URL || 'redis://localhost:6379',
+  disableOfflineQueue: true,
   socket: {
+    connectTimeout: 10000,
     reconnectStrategy: (retries) => {
       if (!REDIS_URL || retries >= 3) return false;
       return Math.min(retries * 200, 2000);
@@ -57,7 +60,7 @@ export const cache = {
   async get<T>(key: string): Promise<T | null> {
     try {
       if (!redisClient.isReady) return null;
-      const value = await redisClient.get(key);
+      const value = await redisClient.get(`${redisNamespace()}cache:${key}`);
       return value ? JSON.parse(value) : null;
     } catch {
       return null;
@@ -67,7 +70,7 @@ export const cache = {
   async set(key: string, value: any, ttl: number = 3600): Promise<void> {
     try {
       if (!redisClient.isReady) return;
-      await redisClient.setEx(key, ttl, JSON.stringify(value));
+      await redisClient.setEx(`${redisNamespace()}cache:${key}`, ttl, JSON.stringify(value));
     } catch {
       // ignore
     }
@@ -76,7 +79,7 @@ export const cache = {
   async del(key: string): Promise<void> {
     try {
       if (!redisClient.isReady) return;
-      await redisClient.del(key);
+      await redisClient.del(`${redisNamespace()}cache:${key}`);
     } catch {
       // ignore
     }
@@ -91,7 +94,7 @@ export const cache = {
       if (!redisClient.isReady) return;
       let cursor = '0';
       do {
-        const reply = await redisClient.scan(cursor as any, { MATCH: pattern, COUNT: 100 });
+        const reply = await redisClient.scan(cursor as any, { MATCH: `${redisNamespace()}cache:${pattern}`, COUNT: 100 });
         cursor = String(reply.cursor);
         if (reply.keys.length > 0) {
           await redisClient.del(reply.keys);

@@ -15,9 +15,8 @@ import { generatePasswordResetToken, verifyResetToken, resetPassword, sendUserna
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
-import MemoryStore from "memorystore";
-import * as ConnectRedis from "connect-redis";
 import { redisClient } from "./redis";
+import { createSessionStore } from './redisStores';
 import { validateInput, validateSession, logSecurityEvent, csrfProtection, sanitizeInput } from "./security";
 import { getUserTier } from "./tiers";
 import { findBillingSubscription, hasAppleAccess, isExistingSubscription } from "./subscriptionBilling";
@@ -243,26 +242,11 @@ async function refreshUserBalancesOnLogin(userId: number): Promise<void> {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session with Redis fallback to memory
-  let sessionStore;
-  
-  try {
-    // Try Redis first for scalability
-    const RedisStore = ConnectRedis(session);
-    sessionStore = new RedisStore({
-      client: redisClient,
-      prefix: 'mindmymoney:sess:',
-      ttl: 7 * 24 * 60 * 60 // 1 week
-    });
-    console.log('✓ Using Redis session store');
-  } catch (error) {
-    // Fallback to memory store
-    const MemoryStoreSession = MemoryStore(session);
-    sessionStore = new MemoryStoreSession({
-      checkPeriod: 86400000 // Prune expired entries every 24h
-    });
-    console.log('⚠ Using memory session store (fallback)');
-  }
+  // A Redis failure must never silently create per-instance production sessions.
+  const sessionStore = createSessionStore(redisClient);
+  console.log(redisClient.isReady
+    ? '✓ Using Redis session store'
+    : '⚠ Using memory session store (development only)');
 
   app.use(session({
     secret: process.env.SESSION_SECRET || 'mindmymoneysecret',

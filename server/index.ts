@@ -6,7 +6,7 @@ import { validateEnvironment } from "./envValidation";
 import { connectRedis, redisClient } from "./redis";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { RedisStore as RateLimitRedisStore } from "rate-limit-redis";
+import { createRateLimitStore } from './redisStores';
 import cors from "cors";
 
 // Validate environment on startup (hard-fails in production for critical vars)
@@ -85,22 +85,13 @@ import { testDatabaseConnection } from "./db";
 
   // 3. Set up rate limiters — use Redis store if Redis is available,
   //    otherwise fall back to in-memory (dev only)
-  function makeStore() {
-    if (redisClient.isReady) {
-      return new RateLimitRedisStore({
-        sendCommand: (...args: string[]) => (redisClient as any).sendCommand(args),
-      });
-    }
-    return undefined; // express-rate-limit default (in-memory, dev only)
-  }
-
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 500,
     message: { error: 'Too many requests, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
-    store: makeStore(),
+    store: createRateLimitStore(redisClient, 'general'),
     skip: (req) =>
       req.path.startsWith('/assets/') ||
       req.path.startsWith('/static/') ||
@@ -113,7 +104,7 @@ import { testDatabaseConnection } from "./db";
     max: 10,
     message: { error: 'Too many authentication attempts, please try again later.' },
     skipSuccessfulRequests: true,
-    store: makeStore(),
+    store: createRateLimitStore(redisClient, 'auth'),
   });
 
   const apiLimiter = rateLimit({
@@ -122,7 +113,7 @@ import { testDatabaseConnection } from "./db";
     message: { error: 'API rate limit exceeded. Please slow down.' },
     standardHeaders: true,
     legacyHeaders: false,
-    store: makeStore(),
+    store: createRateLimitStore(redisClient, 'plaid'),
   });
 
   app.use('/api/', limiter);
