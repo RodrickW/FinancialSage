@@ -4,11 +4,28 @@ import express from "express";
 import { registerSubscriptionRoutes } from "./routes-subscription";
 import { stripe } from "./stripe";
 import { storage } from "./storage";
+import { EVENT_OFFER } from '../shared/eventOffer';
 
 // These stubs run ONLY in this isolated test process. No provider requests, DB
 // writes, real customer accounts, authentication bypasses or charges are made.
 test("subscription recovery API", async t => {
+  // Keep the approved event window deterministic after the real event ends.
+  t.mock.method(Date, 'now', () => Date.parse('2026-11-14T18:00:00Z'));
   process.env.STRIPE_PLUS_PRICE_ID = "price_fixture_plus";
+  process.env.STRIPE_PLUS_ANNUAL_PRICE_ID = "price_fixture_annual";
+  let lastCheckout: any;
+  stripe.prices.retrieve = (async () => ({
+    active: true, currency: 'usd', recurring: { interval: 'year', interval_count: 1 },
+    unit_amount: 4900, product: 'prod_fixture',
+  })) as any;
+  stripe.coupons.retrieve = (async () => ({
+    id: EVENT_OFFER.couponId, valid: true, percent_off: 50, duration: 'once',
+    max_redemptions: 100, times_redeemed: 0, redeem_by: EVENT_OFFER.expiresAt,
+    applies_to: { products: ['prod_fixture'] },
+  })) as any;
+  stripe.promotionCodes.list = (async () => ({ data: [{
+    id: 'promo_fixture', active: true, times_redeemed: 0, coupon: { id: EVENT_OFFER.couponId },
+  }] })) as any;
   let current: any = null;
   let unavailable = false;
   let checkoutCalls = 0;
@@ -46,6 +63,7 @@ test("subscription recovery API", async t => {
     return { url: "https://billing.stripe.com/p/session/fixture" };
   }) as any;
   stripe.checkout.sessions.create = (async (_params: any, options: any) => {
+    lastCheckout = _params;
     checkoutCalls++;
     assert.match(options.idempotencyKey, /^mmm-checkout-987654-/);
     return { url: "https://checkout.stripe.com/c/pay/fixture" };
@@ -71,6 +89,25 @@ test("subscription recovery API", async t => {
     return { status: response.status, body: await response.json() };
   };
   try {
+    await t.test("annual code cannot discount monthly or accept arbitrary coupons", async () => {
+      assert.equal((await call('checkout', { tier: 'plus', period: 'monthly', promoCode: 'EVENT50' })).status, 400);
+      assert.equal((await call('checkout', { tier: 'plus', period: 'annual', promoCode: 'OTHER' })).status, 400);
+      assert.equal(checkoutCalls, 0);
+    });
+    await t.test("annual checkout applies one verified discount without a trial or stacking", async () => {
+      const result = await call('checkout', {
+        tier: 'plus', period: 'annual', promoCode: ' event50 ',
+        discounts: [{ coupon: 'untrusted' }], customerId: 'cus_someone_else',
+      });
+      assert.equal(result.status, 200);
+      assert.equal(lastCheckout.customer, 'cus_fixture');
+      assert.equal(lastCheckout.line_items[0].price, 'price_fixture_annual');
+      assert.deepEqual(lastCheckout.discounts, [{ promotion_code: 'promo_fixture' }]);
+      assert.equal(lastCheckout.subscription_data, undefined);
+      assert.equal(lastCheckout.allow_promotion_codes, undefined);
+      assert.equal(lastCheckout.metadata.campaign, EVENT_OFFER.couponId);
+      checkoutCalls = 0;
+    });
     await t.test("all recovery endpoints require authentication", async () => {
       for (const path of ["billing-portal", "resume", "checkout"]) {
         const result = await call(path, {}, { "x-fixture-auth": "no" });

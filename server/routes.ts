@@ -3690,7 +3690,9 @@ IMPORTANT:
             planType: planType
           }
         },
-        allow_promotion_codes: true,
+        // Discounts are validated by the annual subscription checkout route;
+        // don't combine the event offer with this legacy 30-day trial.
+        allow_promotion_codes: false,
       });
 
       console.log(`Created Stripe checkout session for user ${user.id}: ${session.url}`);

@@ -1,3 +1,4 @@
 - [Plaid token encryption](plaid-token-encryption.md) — tokens encrypted at rest with AES-256-GCM; migration ran Aug 2026, all 15 accounts encrypted.
 - [Redis mandatory in production](redis-production-required.md) — Redis is required in prod for sessions and rate limits; in-memory fallback is dev-only.
 - [Subscription payment recovery](subscription-recovery.md) — recover through the original provider across devices; failed payments must not prompt a second subscription.
+- [Event discount policy](event-discount-policy.md) — approved EVENT50 terms, Stripe-enforced limits, and coupon product-restriction expansion.

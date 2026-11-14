@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { CheckCircle, ArrowLeft, Loader2, Crown, Sparkles, Zap, AlertTriangle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +29,7 @@ export default function Pricing() {
   const queryClient = useQueryClient();
   const [isAnnual, setIsAnnual] = useState(true);
   const [nativeNotice, setNativeNotice] = useState('');
+  const [promoCode, setPromoCode] = useState('');
   
   const { data: subscriptionStatus, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useQuery<SubscriptionStatus>({
     queryKey: ['/api/subscription/status'],
@@ -50,7 +52,9 @@ export default function Pricing() {
   
   const checkoutMutation = useMutation({
     mutationFn: async ({ tier, period }: { tier: 'plus' | 'pro', period: 'monthly' | 'annual' }) => {
-      const response = await apiRequest('POST', '/api/subscription/checkout', { tier, period });
+      const response = await apiRequest('POST', '/api/subscription/checkout', {
+        tier, period, ...(promoCode.trim() ? { promoCode: promoCode.trim().toUpperCase() } : {}),
+      });
       return response.json();
     },
     onSuccess: (data) => {
@@ -252,6 +256,25 @@ export default function Pricing() {
               </Badge>
             )}
           </div>
+        </div>
+
+        <div className="mx-auto mb-8 max-w-lg rounded-xl border bg-white p-4">
+          <Label htmlFor="annual-promo">Annual subscription discount code</Label>
+          <Input id="annual-promo" className="mt-2" value={promoCode}
+            onChange={event => setPromoCode(event.target.value)} maxLength={40}
+            autoCapitalize="characters" autoComplete="off" placeholder="Enter code"
+            aria-describedby="promo-terms" />
+          <p id="promo-terms" className="mt-2 text-sm text-gray-600">
+            {promoCode.trim() ? <>Event offer: 50% off your first annual payment. Plus $24.50 for the first year,
+            then $49/year; Pro $44.50 for the first year, then $89/year. Taxes may apply.
+            Ends November 15, 2026 at 11:59 PM Central. Limited to 100 redemptions,
+            one per billing customer. No stacking or unpaid-invoice discounts.
+            Redeem in a web browser, not Apple in-app purchases. Your code and final
+            total will be verified at checkout.</> : 'Have an event code? Enter it here before choosing an annual plan. Discounts are verified at checkout.'}
+          </p>
+          {!isAnnual && promoCode.trim() && (
+            <p className="mt-2 text-sm text-amber-800" role="alert">Select Annual to use EVENT50.</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
