@@ -3,7 +3,7 @@ name: Event annual discount policy
 description: Approved event offer terms and Stripe coupon expansion requirement.
 ---
 
-The approved vendor-event offer is EVENT50: 50% off the first annual payment for either Plus or Pro, normal annual renewals, 100 total redemptions, one per billing customer, expiring November 15, 2026 at 11:59 PM America/Chicago. It is web-only and must not stack with trials or reduce unpaid invoices.
+EVENT50 expired November 15, 2026 at 11:59 PM America/Chicago and was retired at the user's request. The web-only offer was 50% off the first annual payment for either Plus or Pro, normal annual renewals, 100 total redemptions, and one per billing customer. Preserve Stripe billing history and existing redemptions when retiring an event offer.
 
 **Why:** The user approved these exact terms for event attendees. Do not extend the expiration or make the discount recurring without approval.
 

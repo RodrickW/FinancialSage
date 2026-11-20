@@ -4,8 +4,6 @@ import { storage } from "./storage";
 import { stripe } from "./stripe";
 import { getUserTier, getAIMessagesRemaining, TIER_LIMITS, mapStripePriceToTier, SubscriptionTier } from "./tiers";
 import Stripe from "stripe";
-import { eventDiscount, OfferError, validateEventCode } from './eventOffer';
-import { EVENT_OFFER } from '../shared/eventOffer';
 import {
   BILLING_REQUEST_OPTIONS, canResumeBilling, createBillingPortal, findBillingSubscription,
   hasAppleAccess, isExistingSubscription, needsPaymentRecovery, resumeBilling, subscriptionCustomer,
@@ -90,7 +88,10 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
       if (!period || !['monthly', 'annual'].includes(period)) {
         return res.status(400).json({ message: 'Invalid period. Must be "monthly" or "annual"' });
       }
-      const useEventOffer = validateEventCode(promoCode, period);
+      // A stale pricing tab must not silently switch to full-price checkout.
+      if (promoCode !== undefined && promoCode !== '') {
+        return res.status(400).json({ message: 'Discount codes are no longer accepted. Refresh the pricing page to continue.' });
+      }
       
       // Get the right price ID based on tier and period
       let priceId: string | undefined;
@@ -121,8 +122,6 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         await storage.updateUser(user.id, { stripeCustomerId: customerId });
       }
       
-      const promotionId = useEventOffer ? await eventDiscount(stripe, customerId, priceId) : undefined;
-
       // Create checkout session
       const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://www.mindmymoneyapp.com'
@@ -132,9 +131,6 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
         customer: customerId,
         mode: 'subscription',
         payment_method_types: ['card'],
-        // No user-entered discounts in hosted Checkout: period and eligibility
-        // are verified above. Exactly one discount, never combined with a trial.
-        ...(promotionId ? { discounts: [{ promotion_code: promotionId }] } : {}),
         line_items: [{
           price: priceId,
           quantity: 1
@@ -145,17 +141,15 @@ export function registerSubscriptionRoutes(app: Express, requireAuth: any) {
           userId: user.id.toString(),
           tier,
           period,
-          ...(promotionId ? { campaign: EVENT_OFFER.couponId } : {}),
         }
       }, {
         ...BILLING_REQUEST_OPTIONS,
         // Retries and simultaneous clicks share one session (even across servers).
-        idempotencyKey: `mmm-checkout-${user.id}-${tier}-${period}-${promotionId || 'regular'}-${Math.floor(Date.now() / 600000)}`,
+        idempotencyKey: `mmm-checkout-${user.id}-${tier}-${period}-regular-${Math.floor(Date.now() / 600000)}`,
       });
       
       res.json({ checkoutUrl: session.url });
     } catch (error) {
-      if (error instanceof OfferError) return res.status(400).json({ message: error.message });
       console.error('Error creating checkout session:', error);
       res.status(503).json({ message: 'Unable to verify billing or start checkout. Please try again; do not purchase another subscription elsewhere.' });
     }

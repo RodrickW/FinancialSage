@@ -3674,8 +3674,7 @@ IMPORTANT:
             planType: planType
           }
         },
-        // Discounts are validated by the annual subscription checkout route;
-        // don't combine the event offer with this legacy 30-day trial.
+        // This legacy trial does not accept promotion codes.
         allow_promotion_codes: false,
       });
 
